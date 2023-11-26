@@ -4,30 +4,37 @@ import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior
 import kotlin.math.abs
 
 class CalcifiedMotor {
-    var direction = Direction.FORWARD
-    var cachingTolerance = 0.02
-    var enabled = true
+	var direction = Direction.FORWARD
+	var cachingTolerance = 0.02
+	var enabled = true
 
-    var zeroPowerBehavior = ZeroPowerBehavior.FLOAT
-        set(value) {
-            if (field != zeroPowerBehavior) TODO("send zero power command")
+	var zeroPowerBehavior = ZeroPowerBehavior.FLOAT
+		set(value) {
+			if (field != zeroPowerBehavior) TODO("send zero power command")
 
-            field = value
-        }
+			field = value
+		}
 
-    var power = 0.0
-        get() = if (enabled) field else 0.0
-        set(value) {
-            field = if (abs(power - value) > cachingTolerance) {
-                TODO("send power command")
-            } else { power }
-        }
+	var power = 0.0
+		get() = if (enabled) field else 0.0
+		set(value) {
+			field = if (abs(power - value) > cachingTolerance) {
+				TODO("send power command")
+			} else {
+				power
+			}
+		}
 
-    fun enable() { enabled = true }
-    fun disable() { enabled = false }
+	fun enable() {
+		enabled = true
+	}
 
-    enum class Direction(val multiplier: Double) {
-        FORWARD(1.0),
-        REVERSE(-1.0)
-    }
+	fun disable() {
+		enabled = false
+	}
+
+	enum class Direction(val multiplier: Byte) {
+		FORWARD(1),
+		REVERSE(-1)
+	}
 }
