@@ -13,7 +13,7 @@ import kotlin.collections.Collection
 import kotlin.collections.HashMap
 
 @Suppress("unused")
-class DataCarton private constructor(private val defaultRenderOrder: RenderOrder, private val publicationProcessors: Collection<PublicationProcessor<*>>, private val packageProcessors: Collection<PackageProcessor>) {
+class DataCarton private constructor(private val defaultRenderOrder: RenderOrder, private val publicationProcessors: Collection<PublicationProcessor>, private val packageProcessors: Collection<PackageProcessor>) {
 
 	//    private val output: Field = outputField
 	private val rendererHashMap: HashMap<String, CartonComponentRenderer> = HashMap()
@@ -225,7 +225,7 @@ class DataCarton private constructor(private val defaultRenderOrder: RenderOrder
 
 	class Builder {
 		private var defaultRenderOrder: RenderOrder? = null;
-		private val publicationProcessors = emptySet<PublicationProcessor<*>>().toMutableSet()
+		private val publicationProcessors = emptySet<PublicationProcessor>().toMutableSet()
 		private val packageProcessors = emptySet<PackageProcessor>().toMutableSet()
 
 		fun renderWithByDefault(defaultRenderOrder: RenderOrder): Builder {
@@ -233,7 +233,7 @@ class DataCarton private constructor(private val defaultRenderOrder: RenderOrder
 			return this
 		}
 
-		fun addPublicationProcessors(vararg publicationProcessors: PublicationProcessor<*>): Builder {
+		fun addPublicationProcessors(vararg publicationProcessors: PublicationProcessor): Builder {
 			this.publicationProcessors.addAll(publicationProcessors)
 			return this
 		}

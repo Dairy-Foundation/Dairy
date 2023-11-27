@@ -1,13 +1,13 @@
-package dev.frozenmilk.dairy.ftclink
+package dev.frozenmilk.dairy.ftclink.calcified.hardware
 
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorChannelEnableCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorChannelModeCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorConstantPowerCommand
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior
+import dev.frozenmilk.dairy.ftclink.calcified.CalcifiedModule
 import kotlin.math.abs
 
-class CalcifiedMotor internal constructor(private val module: CalcifiedModule, private val port: Byte) {
+open class CalcifiedMotor internal constructor(private val module: CalcifiedModule, private val port: Byte) {
 	var direction = Direction.FORWARD
 	var cachingTolerance = 0.02
 	var enabled = true
@@ -19,11 +19,11 @@ class CalcifiedMotor internal constructor(private val module: CalcifiedModule, p
 			}
 		}
 
-	var zeroPowerBehavior = ZeroPowerBehavior.FLOAT
+	var zeroPowerBehavior = ZeroPowerBehaviour.FLOAT
 		set(value) {
 			if (field != zeroPowerBehavior) {
 				// sets the command to change the 0 power behaviour
-				LynxSetMotorChannelModeCommand(module.lynxModule, port.toInt(), DcMotor.RunMode.RUN_WITHOUT_ENCODER, value)
+				LynxSetMotorChannelModeCommand(module.lynxModule, port.toInt(), DcMotor.RunMode.RUN_WITHOUT_ENCODER, value.wrapping)
 				field = value
 			}
 		}
@@ -38,9 +38,4 @@ class CalcifiedMotor internal constructor(private val module: CalcifiedModule, p
 				field = power
 			}
 		}
-
-	enum class Direction(val multiplier: Byte) {
-		FORWARD(1),
-		REVERSE(-1)
-	}
 }
