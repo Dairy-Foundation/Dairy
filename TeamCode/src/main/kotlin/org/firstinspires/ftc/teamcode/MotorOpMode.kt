@@ -18,11 +18,17 @@ class MotorOpMode : OpMode() {
 	}
 
 	val motorController: Controller<AngleRadians> by lazy {
-		PController(MotorControllerGroup(motor), MarrowMap.controlHub.encoders.getRadiansEncoder(0, 8192.0).positionSupplier, 0.1)
+		PController(
+				MotorControllerGroup(motor),
+				MarrowMap.controlHub.encoders.getRadiansEncoder(0, 8192.0).positionSupplier,
+				0.1
+		)
 	}
 
 	override fun init() {
 		motor.zeroPowerBehavior = ZeroPowerBehaviour.BRAKE
+
+
 		motorController.update(AngleRadians())
 	}
 
