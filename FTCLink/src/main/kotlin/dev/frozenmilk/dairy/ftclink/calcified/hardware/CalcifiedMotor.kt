@@ -38,4 +38,6 @@ open class CalcifiedMotor internal constructor(private val module: CalcifiedModu
 				field = power
 			}
 		}
+
+	// todo add current and other features of the motor in here, so we aren't limiting people
 }

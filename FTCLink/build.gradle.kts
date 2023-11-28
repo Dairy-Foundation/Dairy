@@ -33,6 +33,7 @@ android {
 }
 
 dependencies {
+	//noinspection GradleDependency
 	implementation("androidx.appcompat:appcompat:1.2.0")
 //	testImplementation("junit:junit:4.13.2")
 	api(project(":Core"))
