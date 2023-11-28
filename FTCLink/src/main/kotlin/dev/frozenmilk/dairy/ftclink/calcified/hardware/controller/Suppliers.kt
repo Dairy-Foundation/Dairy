@@ -16,7 +16,12 @@ interface ErrorSupplier<IN, OUT> {
 	}
 }
 
-interface CompoundSupplier<UNIT, ERROR> : ErrorSupplier<UNIT, ERROR>, Supplier<UNIT> {
+/**
+ * capable of supplying both position and error
+ */
+interface CompoundSupplier<UNIT, ERROR> : ErrorSupplier<UNIT, ERROR>, Supplier<UNIT>
+
+interface CachedCompoundSupplier<UNIT, ERROR> : CompoundSupplier<UNIT, ERROR> {
 	fun clearCache()
 }
 

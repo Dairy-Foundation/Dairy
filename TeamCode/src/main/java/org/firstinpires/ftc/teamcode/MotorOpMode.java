@@ -22,7 +22,7 @@ public class MotorOpMode extends OpMode {
 		controller = new PController<>(
 				new MotorControllerGroup(motor),
 				MarrowMap.INSTANCE.getControlHub().getEncoders()
-						.getRadiansEncoder((byte) 0, 8192).getPositionSupplier(),
+						.getRadiansEncoder((byte) 0, 8192).get_positionSupplier(),
 				0.5
 		);
 	}

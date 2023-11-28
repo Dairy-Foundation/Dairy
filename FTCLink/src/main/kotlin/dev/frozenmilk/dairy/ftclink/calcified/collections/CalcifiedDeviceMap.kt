@@ -10,7 +10,7 @@ import dev.frozenmilk.dairy.ftclink.calcified.hardware.RadiansEncoder
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.TicksEncoder
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.UnitEncoder
 
-abstract class CalcifiedDeviceMap<T> internal constructor(protected val module: CalcifiedModule, private val map: MutableMap<Byte, T> = mutableMapOf<Byte, T>()) : MutableMap<Byte, T> by map
+abstract class CalcifiedDeviceMap<T> internal constructor(protected val module: CalcifiedModule, private val map: MutableMap<Byte, T> = mutableMapOf()) : MutableMap<Byte, T> by map
 
 class Motors internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedMotor>(module) {
 	fun getMotor(port: Byte): CalcifiedMotor {

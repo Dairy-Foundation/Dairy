@@ -30,6 +30,9 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 				?: throw IllegalArgumentException("failed to cast device to type ${type.simpleName}")
 	}
 
+	var cachedTime: Double = System.nanoTime() / 1E9
+		private set
+	var previousCachedTime: Double = cachedTime
 	lateinit var bulkData: LynxGetBulkInputDataResponse
 		private set
 
@@ -40,10 +43,9 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 	fun refreshBulkCache() {
 		val command = LynxGetBulkInputDataCommand(lynxModule)
 		bulkData = command.sendReceive();
-		encoders.forEach { (_, ticksEncoder) ->
-			ticksEncoder.positionSupplier.clearCache()
-			ticksEncoder.velocitySupplier.clearCache()
-		}
+		encoders.forEach { (_, encoder) -> encoder.clearCache() }
+		previousCachedTime = cachedTime
+		cachedTime = System.nanoTime() / 1E9
 	}
 }
 

@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import dev.frozenmilk.dairy.ftclink.calcified.MarrowMap
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.MotorControllerGroup
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.RadiansEncoder
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.controller.Controller
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.controller.PController
@@ -20,7 +19,7 @@ class MotorOpMode : OpMode() {
 	val motorController: Controller<AngleRadians> by lazy {
 		PController(
 				MotorControllerGroup(motor),
-				MarrowMap.controlHub.encoders.getRadiansEncoder(0, 8192.0).positionSupplier,
+				MarrowMap.controlHub.encoders.getRadiansEncoder(0, 8192.0)._positionSupplier,
 				0.1
 		)
 	}
