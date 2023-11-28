@@ -18,8 +18,8 @@ class MotorOpMode : OpMode() {
 
 	val motorController: Controller<AngleRadians> by lazy {
 		PController(
-				MotorControllerGroup(motor),
-				MarrowMap.controlHub.encoders.getRadiansEncoder(0, 8192.0)._positionSupplier,
+				MotorControllerGroup(listOf(motor)),
+				MarrowMap.controlHub.encoders.getRadiansEncoder(0, 8192.0).positionSupplier,
 				0.1
 		)
 	}

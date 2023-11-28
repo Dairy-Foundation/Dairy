@@ -2,6 +2,9 @@ package org.firstinpires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import dev.frozenmilk.dairy.ftclink.calcified.MarrowMap;
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor;
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.MotorControllerGroup;
@@ -20,9 +23,9 @@ public class MotorOpMode extends OpMode {
 		motor = MarrowMap.INSTANCE.getControlHub().getMotors().getMotor((byte) 0);
 		
 		controller = new PController<>(
-				new MotorControllerGroup(motor),
+				new MotorControllerGroup(Collections.singleton(motor)),
 				MarrowMap.INSTANCE.getControlHub().getEncoders()
-						.getRadiansEncoder((byte) 0, 8192).get_positionSupplier(),
+						.getRadiansEncoder((byte) 0, 8192).getPositionSupplier(),
 				0.5
 		);
 	}

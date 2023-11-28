@@ -1,8 +1,6 @@
 package dev.frozenmilk.dairy.ftclink.calcified.hardware
 
-import java.util.function.DoubleFunction
-
-open class MotorControllerGroup(vararg motors: CalcifiedMotor) {
+open class MotorControllerGroup(motors: Collection<CalcifiedMotor>) : Collection<CalcifiedMotor> by motors {
 	val motors = motors.toMutableList()
 
 	fun setPowers(power: Double) {
