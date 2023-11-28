@@ -5,12 +5,17 @@ import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
+import dev.frozenmilk.dairy.ftclink.calcified.collections.Encoders
+import dev.frozenmilk.dairy.ftclink.calcified.collections.Motors
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedEncoder
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
+import dev.frozenmilk.dairy.ftclink.calcified.hardware.RadiansEncoder
+import dev.frozenmilk.dairy.ftclink.calcified.hardware.TicksEncoder
+import dev.frozenmilk.dairy.ftclink.calcified.hardware.UnitEncoder
 
 class CalcifiedModule(val lynxModule: LynxModule) {
-	private var motors = HashMap<Byte, CalcifiedMotor>().toMutableMap()
-	private var encoders = HashMap<Byte, CalcifiedEncoder>().toMutableMap()
+	val motors = Motors(this)
+	val encoders = Encoders(this)
 	private var deviceMap: MutableMap<Class<*>, MutableMap<Byte, out Any>> = mapOf(
 			CalcifiedMotor::class.java to motors,
 			CalcifiedEncoder::class.java to encoders
@@ -25,21 +30,6 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 				?: throw IllegalArgumentException("failed to cast device to type ${type.simpleName}")
 	}
 
-	fun getMotor(port: Byte): CalcifiedMotor {
-		// checks to confirm that the motor port is validly in range
-		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxDcMotorController.apiMotorFirst}, ${LynxDcMotorController.apiMotorLast}")
-		motors.putIfAbsent(port, CalcifiedMotor(this, port))
-		return motors[port]!!
-	}
-
-	fun getEncoder(port: Byte): CalcifiedEncoder {
-		// this is pretty much the same as the motors, as the encoders match the motors
-		// checks to confirm that the encoder port is validly in range
-		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxDcMotorController.apiMotorFirst}, ${LynxDcMotorController.apiMotorLast}")
-		encoders.putIfAbsent(port, CalcifiedEncoder(this, port))
-		return encoders[port]!!
-	}
-
 	lateinit var bulkData: LynxGetBulkInputDataResponse
 		private set
 
@@ -50,5 +40,11 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 	fun refreshBulkCache() {
 		val command = LynxGetBulkInputDataCommand(lynxModule)
 		bulkData = command.sendReceive();
+		encoders.forEach { (_, ticksEncoder) ->
+			ticksEncoder.positionSupplier.clearCache()
+			ticksEncoder.velocitySupplier.clearCache()
+		}
 	}
 }
+
+
