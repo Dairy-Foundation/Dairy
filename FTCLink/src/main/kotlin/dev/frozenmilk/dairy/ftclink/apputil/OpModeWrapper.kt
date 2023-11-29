@@ -3,6 +3,14 @@ package dev.frozenmilk.dairy.ftclink.apputil
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 
 class OpModeWrapper(private val opMode: OpMode, private val eventRegistrar: EventRegistrar) : OpMode() {
+	init {
+		// may allow passthrough to these user accessed values
+		opMode.gamepad1 = this.gamepad1
+		opMode.gamepad2 = this.gamepad2
+		opMode.hardwareMap = this.hardwareMap
+		opMode.telemetry = this.telemetry
+	}
+
 	override fun init() {
 		eventRegistrar.onOpModePreInit(this)
 		opMode.init()
