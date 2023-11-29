@@ -41,11 +41,16 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 	}
 
 	fun refreshBulkCache() {
-		val command = LynxGetBulkInputDataCommand(lynxModule)
-		bulkData = command.sendReceive();
-		encoders.forEach { (_, encoder) -> encoder.clearCache() }
+		// update cached time first
 		previousCachedTime = cachedTime
 		cachedTime = System.nanoTime() / 1E9
+
+		// encoders rely on the current bulk cache info, we ensure that the encoders get to look at it before we clear it
+		encoders.forEach { (_, encoder) -> encoder.clearCache() }
+
+		// finally, update the bulk cache
+		val command = LynxGetBulkInputDataCommand(lynxModule)
+		bulkData = command.sendReceive();
 	}
 }
 
