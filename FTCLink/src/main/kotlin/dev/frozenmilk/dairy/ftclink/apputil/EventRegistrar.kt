@@ -88,7 +88,10 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 
 		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
 		// todo may cause issues
-		OpModeManagerImpl::class.java.getField("activeOpMode").set(opModeManager, OpModeWrapper(opMode, this))
+		val activeOpMode = OpModeManagerImpl::class.java.getDeclaredField("activeOpMode")
+		activeOpMode.isAccessible = true
+		activeOpMode.set(opModeManager, OpModeWrapper(opMode, this))
+
 		activeListeners.forEach { it.get()?.preUserInitHook(opMode as OpModeWrapper) }
 	}
 
