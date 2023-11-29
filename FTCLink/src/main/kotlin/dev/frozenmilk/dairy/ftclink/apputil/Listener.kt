@@ -7,6 +7,11 @@ package dev.frozenmilk.dairy.ftclink.apputil
  */
 interface Listener {
 	/**
+	 * the feature flag that enables this for an OpMode
+	 */
+	val featureFlags: FeatureFlagManager
+
+	/**
 	 * provided by OpModeManagerNotifier.Notifications
 	 */
 	fun preUserInitHook(opMode: OpModeWrapper)

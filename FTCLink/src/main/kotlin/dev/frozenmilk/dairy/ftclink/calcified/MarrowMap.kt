@@ -6,7 +6,10 @@ import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
+import dev.frozenmilk.dairy.ftclink.apputil.DairyCore
 import dev.frozenmilk.dairy.ftclink.apputil.EventRegistrar
+import dev.frozenmilk.dairy.ftclink.apputil.FeatureFlagManager
+import dev.frozenmilk.dairy.ftclink.apputil.FlagCondition
 import dev.frozenmilk.dairy.ftclink.apputil.Listener
 import dev.frozenmilk.dairy.ftclink.apputil.OpModeWrapper
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
@@ -23,6 +26,11 @@ object MarrowMap : Listener {
 		private set
 	lateinit var expansionHub: CalcifiedModule
 		private set
+
+	/**
+	 * enabled by having either @DairyCore or @DairyCore.Calcified
+	 */
+	override val featureFlags = FeatureFlagManager(FlagCondition(DairyCore::class.java, DairyCore.Calcify::class.java))
 
 	override fun preUserInitHook(opMode: OpModeWrapper) {
 		modules = opMode.hardwareMap.getAll(LynxModule::class.java).map {

@@ -1,10 +1,11 @@
 package org.firstinpires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
+import dev.frozenmilk.dairy.ftclink.apputil.DairyCore;
 import dev.frozenmilk.dairy.ftclink.calcified.MarrowMap;
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor;
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.MotorControllerGroup;
@@ -14,6 +15,11 @@ import dev.frozenmilk.dairy.ftclink.geometry.angle.Angle;
 import dev.frozenmilk.dairy.ftclink.geometry.angle.AngleDegrees;
 import dev.frozenmilk.dairy.ftclink.geometry.angle.AngleRadians;
 
+/**
+ * enables all dairy features
+ */
+@DairyCore
+@TeleOp(name = "MotorOpMode (Java)")
 public class MotorOpMode extends OpMode {
 	private CalcifiedMotor motor;
 	private Controller<AngleRadians> controller;

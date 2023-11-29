@@ -10,15 +10,41 @@ import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
 import java.lang.ref.WeakReference
 
 object EventRegistrar : OpModeManagerNotifier.Notifications {
-	private val listeners: MutableSet<WeakReference<Listener>> = mutableSetOf()
+	/**
+	 * listeners that are registered to potentially become active
+	 */
+	private val registeredListeners: MutableSet<WeakReference<Listener>> = mutableSetOf()
 
+	/**
+	 * listeners that have been activated via the appropriate feature flag for this OpMode
+	 */
+	private val activeListeners: MutableSet<WeakReference<Listener>> = mutableSetOf()
+
+	/**
+	 * the feature flag annotations of the active OpMode
+	 */
+	private val activeFlags: MutableMap<Class<out Annotation>, Annotation> = mutableMapOf()
+
+	/**
+	 * this is mildly expensive to do while an OpMode is running, especially if many listeners are registered
+	 */
 	fun registerListener(listener: Listener) {
-		listeners.add(WeakReference(listener))
+		val weakRef = WeakReference(listener)
+		registeredListeners.add(weakRef)
+		if (listener.featureFlags.enabled(activeFlags.keys)) activeListeners.add(weakRef)
 	}
 
+	/**
+	 * this is mildly expensive to do while an OpMode is running, especially if many listeners are registered
+	 */
 	fun deregisterListener(listener: Listener) {
-		listeners.remove(
-				listeners.first {
+		registeredListeners.remove(
+				registeredListeners.first {
+					it.get() == listener
+				}
+		)
+		activeListeners.remove(
+				activeListeners.first {
 					it.get() == listener
 				}
 		)
@@ -30,7 +56,7 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	@OnCreateEventLoop
 	@JvmStatic
 			/**
-			 * registers this instance against the event loop, use this as the basis generator for all calcified operations for the moment
+			 * registers this instance against the event loop, automatically called by the FtcEventLoop, should not be called by the user
 			 */
 	fun registerSelf(context: Context, ftcEventLoop: FtcEventLoop) {
 		ftcEventLoop.opModeManager.registerListener(this)
@@ -38,44 +64,59 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	}
 
 	override fun onOpModePreInit(opMode: OpMode) {
+		// locate feature flags, and then populate active listeners
+		opMode.javaClass.annotations.forEach {
+			activeFlags[it::class.java] = it
+		}
+		registeredListeners
+				.filter {
+					it.get()?.featureFlags?.enabled(activeFlags.keys) ?: false
+				}
+				.forEach { activeListeners.add(it) }
+
+		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
 		// todo may cause issues
 		OpModeManagerImpl::class.java.getField("activeOpMode").set(opModeManager, OpModeWrapper(opMode, this))
-		listeners.forEach { it.get()?.preUserInitHook(opMode as OpModeWrapper) }
+		activeListeners.forEach { it.get()?.preUserInitHook(opMode as OpModeWrapper) }
 	}
 
 	fun onOpModePostInit(opMode: OpModeWrapper) {
-		listeners.forEach { it.get()?.postUserInitHook(opMode) }
+		activeListeners.forEach { it.get()?.postUserInitHook(opMode) }
 	}
 
 	fun onOpModePreInitLoop(opMode: OpModeWrapper) {
-		listeners.forEach { it.get()?.preUserInitLoopHook(opMode) }
+		activeListeners.forEach { it.get()?.preUserInitLoopHook(opMode) }
 	}
 
 	fun onOpModePostInitLoop(opMode: OpModeWrapper) {
-		listeners.forEach { it.get()?.postUserInitLoopHook(opMode) }
+		activeListeners.forEach { it.get()?.postUserInitLoopHook(opMode) }
 	}
 
 	override fun onOpModePreStart(opMode: OpMode) {
-		listeners.forEach { it.get()?.preUserStartHook(opMode as OpModeWrapper) }
+		activeListeners.forEach { it.get()?.preUserStartHook(opMode as OpModeWrapper) }
 	}
 
 	fun onOpModePostStart(opMode: OpModeWrapper) {
-		listeners.forEach { it.get()?.postUserStartHook(opMode) }
+		activeListeners.forEach { it.get()?.postUserStartHook(opMode) }
 	}
 
 	fun onOpModePreLoop(opMode: OpModeWrapper) {
-		listeners.forEach { it.get()?.preUserLoopHook(opMode) }
+		activeListeners.forEach { it.get()?.preUserLoopHook(opMode) }
 	}
 
 	fun onOpModePostLoop(opMode: OpModeWrapper) {
-		listeners.forEach { it.get()?.postUserLoopHook(opMode) }
+		activeListeners.forEach { it.get()?.postUserLoopHook(opMode) }
 	}
 
 	fun onOpModePreStop(opMode: OpModeWrapper) {
-		listeners.forEach { it.get()?.preUserStopHook(opMode) }
+		activeListeners.forEach { it.get()?.preUserStopHook(opMode) }
 	}
 
 	override fun onOpModePostStop(opMode: OpMode) {
-		listeners.forEach { it.get()?.postUserStopHook(opMode as OpModeWrapper) }
+		activeListeners.forEach { it.get()?.postUserStopHook(opMode as OpModeWrapper) }
+
+		// empty active listeners and active flags
+		activeListeners.clear()
+		activeFlags.clear()
 	}
 }

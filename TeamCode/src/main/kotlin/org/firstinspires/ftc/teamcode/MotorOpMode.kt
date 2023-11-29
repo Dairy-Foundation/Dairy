@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import dev.frozenmilk.dairy.ftclink.apputil.DairyCore
 import dev.frozenmilk.dairy.ftclink.calcified.MarrowMap
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.MotorControllerGroup
@@ -10,6 +11,10 @@ import dev.frozenmilk.dairy.ftclink.calcified.hardware.controller.Controller
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.controller.PController
 import dev.frozenmilk.dairy.ftclink.geometry.angle.AngleRadians
 
+/**
+ * enables all dairy features
+ */
+@DairyCore
 @TeleOp
 class MotorOpMode : OpMode() {
 	val motor: CalcifiedMotor by lazy {
