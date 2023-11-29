@@ -3,6 +3,7 @@
 plugins {
 	id("com.android.library")
 	id("kotlin-android")
+	id("org.jetbrains.dokka") version "1.9.10"
 }
 
 android {

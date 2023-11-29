@@ -4,7 +4,7 @@ package dev.frozenmilk.dairy.ftclink.apputil
  * stores a set of FlagConditions
  * A feature flag is enabled if the flags provided meet the requirements of all flag conditions
  */
-class FeatureFlagManager(vararg flagConditions: FlagCondition) {
+class FeatureFlagDependencyManager(vararg flagConditions: FlagCondition) {
 	private val requiredFlags: Set<FlagCondition> = setOf(*flagConditions)
 
 	/**
