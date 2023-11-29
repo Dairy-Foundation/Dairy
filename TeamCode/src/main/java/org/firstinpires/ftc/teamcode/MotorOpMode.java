@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import java.util.Collections;
 
 import dev.frozenmilk.dairy.ftclink.apputil.DairyCore;
+import dev.frozenmilk.dairy.ftclink.apputil.EventRegistrar;
 import dev.frozenmilk.dairy.ftclink.calcified.MarrowMap;
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor;
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.MotorControllerGroup;
@@ -26,6 +27,9 @@ public class MotorOpMode extends OpMode {
 	
 	@Override
 	public void init() {
+		// ensures that the feature flags to enable the MarrowMap are present, otherwise throws a helpful error
+		EventRegistrar.INSTANCE.checkFeatures(MarrowMap.INSTANCE);
+		
 		motor = MarrowMap.INSTANCE.getControlHub().getMotors().getMotor((byte) 0);
 		
 		controller = new PController<>(

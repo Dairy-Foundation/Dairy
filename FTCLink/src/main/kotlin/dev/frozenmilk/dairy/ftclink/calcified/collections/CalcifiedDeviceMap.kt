@@ -24,7 +24,7 @@ class Motors internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<
 class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedEncoder<*>>(module) {
 
 	/**
-	 * if the port is empty, makes a new ticks encoder, else, overrides the encoder on the port
+	 * if the port is empty, makes a new [TicksEncoder], else, overrides the encoder on the port
 	 */
 	fun getTicksEncoder(port: Byte): TicksEncoder {
 		// this is pretty much the same as the motors, as the encoders match the motors
@@ -35,8 +35,9 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 	}
 
 	/**
-	 * <p>this method is useful for if you have your own unit encoder overrides, for your own types, most of the time you want to use one of the other get<type>Encoder methods on this module</p>
-	 * overrides the encoder on the port with a UnitEncoder of the supplied type, with the ticksPerUnit specified
+	 * This method is useful for if you have your own [UnitEncoder] overrides, for your own types, most of the time you want to use one of the other get<type>Encoder methods on this module
+	 *
+	 * @return Overrides the encoder on the port with a [UnitEncoder] of the supplied type, with the [ticksPerUnit] specified
 	 */
 	fun <T : UnitEncoder<*>> getEncoder(type: Class<out T>, port: Byte, ticksPerUnit: Double): T {
 		val ticksEncoder = getTicksEncoder(port)

@@ -31,7 +31,19 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	fun registerListener(listener: Listener) {
 		val weakRef = WeakReference(listener)
 		registeredListeners.add(weakRef)
-		if (listener.featureFlags.enabled(activeFlags.keys)) activeListeners.add(weakRef)
+		if (listener.dependencyManager.enabled(activeFlags.keys)) activeListeners.add(weakRef)
+	}
+
+	/**
+	 * ensures that each listener is currently activated, if not, will through a descriptive error about why it isn't
+	 *
+	 * an optional dependency resolution diagnostic tool
+	 */
+	fun checkFeatures(vararg listeners: Listener) {
+		activeListeners
+				.forEach {
+					it.get()?.dependencyManager?.resolveOrError(activeFlags.keys) ?: false
+				}
 	}
 
 	/**
@@ -70,7 +82,7 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 		}
 		registeredListeners
 				.filter {
-					it.get()?.featureFlags?.enabled(activeFlags.keys) ?: false
+					it.get()?.dependencyManager?.enabled(activeFlags.keys) ?: false
 				}
 				.forEach { activeListeners.add(it) }
 
