@@ -10,6 +10,14 @@ import dev.frozenmilk.dairy.ftclink.apputil.Listener
 import dev.frozenmilk.dairy.ftclink.apputil.OpModeWrapper
 
 object MarrowMap : Listener {
+	/**
+	 * enabled by having either @DairyCore or @DairyCore.Calcified
+	 */
+	override val dependencyManager = FeatureFlagDependencyManager(
+			this,
+			IncludesAtLeastOneOf(DairyCore::class.java, DairyCore.Calcify::class.java)
+	)
+
 	init {
 		EventRegistrar.registerListener(this)
 	}
@@ -22,13 +30,6 @@ object MarrowMap : Listener {
 	lateinit var expansionHub: CalcifiedModule
 		private set
 
-	/**
-	 * enabled by having either @DairyCore or @DairyCore.Calcified
-	 */
-	override val dependencyManager = FeatureFlagDependencyManager(
-			this,
-			IncludesAtLeastOneOf(DairyCore::class.java, DairyCore.Calcify::class.java)
-	)
 
 	override fun preUserInitHook(opMode: OpModeWrapper) {
 		modules = opMode.hardwareMap.getAll(LynxModule::class.java).map {
