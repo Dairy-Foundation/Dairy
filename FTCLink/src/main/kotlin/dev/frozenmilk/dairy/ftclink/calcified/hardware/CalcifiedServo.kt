@@ -33,6 +33,7 @@ class CalcifiedServo internal constructor(private val module: CalcifiedModule, p
 
     var position = 0.0
     set(value) {
+        value.coerceIn(0.0, 1.0)
         if (value != field) {
             if ((abs(field - value) >= cachingTolerance) && pwmEnable) {
                 val pwm = Range.scale(field, 0.0, 1.0, pwmRange.usPulseLower, pwmRange.usPulseUpper)
