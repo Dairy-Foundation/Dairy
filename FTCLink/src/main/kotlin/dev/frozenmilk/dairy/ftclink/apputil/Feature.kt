@@ -7,7 +7,7 @@ package dev.frozenmilk.dairy.ftclink.apputil
  *
  * Instances can be deregistered against the EventRegistrar using .deregisterListener(this), should they wish to do so of their own violation
  */
-interface Listener {
+interface Feature {
 	/**
 	 * the feature flag that enables this for an OpMode
 	 */

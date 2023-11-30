@@ -5,7 +5,7 @@ package dev.frozenmilk.dairy.ftclink.apputil
  *
  * a feature is enabled if all of its dependencies resolve
  */
-class FeatureFlagDependencyManager(private val feature: Listener, vararg dependencies: Dependency) {
+class FeatureFlagDependencyManager(private val feature: Feature, vararg dependencies: Dependency) {
 	private val dependencies = setOf(*dependencies)
 
 	/**
@@ -30,7 +30,7 @@ class FeatureFlagDependencyManager(private val feature: Listener, vararg depende
 	}
 }
 
-class DependencyResolutionFailureException(feature: Listener, message: String) : RuntimeException("Failed to resolve dependencies for ${feature.javaClass.simpleName} as found flags " + message)
+class DependencyResolutionFailureException(feature: Feature, message: String) : RuntimeException("Failed to resolve dependencies for ${feature.javaClass.simpleName} as found flags " + message)
 sealed interface Dependency {
 	/**
 	 * returns true if this resolves against the found arguments
@@ -41,7 +41,7 @@ sealed interface Dependency {
 	 * throws an error if the dependency doesn't resolve that contains some helpful diagnostic information
 	 * @see[DependencyResolutionFailureException]
 	 */
-	fun resolvesOrError(feature: Listener, flags: Set<Class<out Annotation>>) {
+	fun resolvesOrError(feature: Feature, flags: Set<Class<out Annotation>>) {
 		if (!resolves(flags)) throw DependencyResolutionFailureException(feature, dependencyResolutionFailureMessage)
 	}
 

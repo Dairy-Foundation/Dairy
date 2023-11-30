@@ -6,10 +6,10 @@ import dev.frozenmilk.dairy.ftclink.apputil.DairyCore
 import dev.frozenmilk.dairy.ftclink.apputil.EventRegistrar
 import dev.frozenmilk.dairy.ftclink.apputil.FeatureFlagDependencyManager
 import dev.frozenmilk.dairy.ftclink.apputil.IncludesAtLeastOneOf
-import dev.frozenmilk.dairy.ftclink.apputil.Listener
+import dev.frozenmilk.dairy.ftclink.apputil.Feature
 import dev.frozenmilk.dairy.ftclink.apputil.OpModeWrapper
 
-object MarrowMap : Listener {
+object MarrowMap : Feature {
 	/**
 	 * enabled by having either @DairyCore or @DairyCore.Calcified
 	 */

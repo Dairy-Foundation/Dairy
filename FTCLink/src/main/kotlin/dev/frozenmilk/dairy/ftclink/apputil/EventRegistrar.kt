@@ -13,12 +13,12 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * listeners that are registered to potentially become active
 	 */
-	private val registeredListeners: MutableSet<WeakReference<Listener>> = mutableSetOf()
+	private val registeredListeners: MutableSet<WeakReference<Feature>> = mutableSetOf()
 
 	/**
 	 * listeners that have been activated via the appropriate feature flag for this OpMode
 	 */
-	private val activeListeners: MutableSet<WeakReference<Listener>> = mutableSetOf()
+	private val activeListeners: MutableSet<WeakReference<Feature>> = mutableSetOf()
 
 	/**
 	 * the feature flag annotations of the active OpMode
@@ -28,10 +28,10 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * this is mildly expensive to do while an OpMode is running, especially if many listeners are registered
 	 */
-	fun registerListener(listener: Listener) {
-		val weakRef = WeakReference(listener)
+	fun registerListener(feature: Feature) {
+		val weakRef = WeakReference(feature)
 		registeredListeners.add(weakRef)
-		if (listener.dependencyManager.enabled(activeFlags.keys)) activeListeners.add(weakRef)
+		if (feature.dependencyManager.enabled(activeFlags.keys)) activeListeners.add(weakRef)
 	}
 
 	/**
@@ -39,8 +39,8 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	 *
 	 * an optional dependency resolution diagnostic tool
 	 */
-	fun checkFeatures(vararg listeners: Listener) {
-		listeners
+	fun checkFeatures(vararg features: Feature) {
+		features
 				.forEach {
 					it.dependencyManager.resolveOrError(activeFlags.keys)
 				}
@@ -49,15 +49,15 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * this is mildly expensive to do while an OpMode is running, especially if many listeners are registered
 	 */
-	fun deregisterListener(listener: Listener) {
+	fun deregisterListener(feature: Feature) {
 		registeredListeners.remove(
 				registeredListeners.first {
-					it.get() == listener
+					it.get() == feature
 				}
 		)
 		activeListeners.remove(
 				activeListeners.first {
-					it.get() == listener
+					it.get() == feature
 				}
 		)
 	}
