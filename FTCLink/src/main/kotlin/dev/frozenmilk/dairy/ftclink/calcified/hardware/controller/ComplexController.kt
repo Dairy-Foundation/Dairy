@@ -1,5 +1,30 @@
 package dev.frozenmilk.dairy.ftclink.calcified.hardware.controller
 
-//class ComplexController() {
-// todo work on allowing complex nestings / groupings of controllers
-//}
+import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
+import java.util.function.Supplier
+
+interface ComplexController<IN> {
+	var target: IN
+	val motors: Set<CalcifiedMotor>
+	val calculate: Supplier<Double>
+}
+
+@FunctionalInterface
+interface CalculationComponent<IN> {
+	fun calculate(input: IN): Double
+}
+
+class LambdaController<IN> private constructor(override var target: IN, override val motors: Set<CalcifiedMotor>, override val calculate: Supplier<Double>) : ComplexController<IN> {
+	init {
+		// todo register weakref with the marrow map
+	}
+
+	/**
+	 * constructs a new Controller that always outputs 0
+	 */
+	constructor(target: IN) : this(target, setOf(), { 0.0 })
+
+	fun addMotors(vararg motors: CalcifiedMotor): LambdaController<IN> = LambdaController(this.target, setOf(*motors), this.calculate)
+
+	fun <OUT> appendPController(errorSupplier: ErrorSupplier<IN, OUT>, calculationComponent: CalculationComponent<OUT>) = LambdaController(this.target, this.motors) { calculate.get() + calculationComponent.calculate(errorSupplier.getError(target)) }
+}

@@ -21,12 +21,13 @@ interface ErrorSupplier<IN, OUT> {
  */
 interface CompoundSupplier<UNIT, ERROR> : ErrorSupplier<UNIT, ERROR>, Supplier<UNIT>
 
+/**
+ * [clearCache] will be called once / cycle to allow this version of the compound supplier to cache results
+ *
+ * generally only the [CompoundSupplier] component should be made publicly available, as [clearCache] should be called by a [dev.frozenmilk.dairy.ftclink.apputil.Feature]
+ *
+ * @see[CompoundSupplier]
+ */
 interface CachedCompoundSupplier<UNIT, ERROR> : CompoundSupplier<UNIT, ERROR> {
 	fun clearCache()
 }
-
-//class VelocityPacket(val deltaSeconds: Double, val deltaPosition: Double) {
-//	val velocity = lazy {
-//		deltaPosition / deltaSeconds
-//	}
-//}
