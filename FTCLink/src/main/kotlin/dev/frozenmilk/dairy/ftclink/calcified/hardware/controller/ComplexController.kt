@@ -16,7 +16,7 @@ interface CalculationComponent<IN> {
 
 class LambdaController<IN> private constructor(override var target: IN, override val motors: Set<CalcifiedMotor>, override val calculate: Supplier<Double>) : ComplexController<IN> {
 	init {
-		// todo register weakref with the marrow map
+		TODO("register weakref of this with the marrowmap")
 	}
 
 	/**
@@ -26,5 +26,11 @@ class LambdaController<IN> private constructor(override var target: IN, override
 
 	fun addMotors(vararg motors: CalcifiedMotor): LambdaController<IN> = LambdaController(this.target, setOf(*motors), this.calculate)
 
-	fun <OUT> appendPController(errorSupplier: ErrorSupplier<IN, OUT>, calculationComponent: CalculationComponent<OUT>) = LambdaController(this.target, this.motors) { calculate.get() + calculationComponent.calculate(errorSupplier.getError(target)) }
+	fun <OUT> appendErrorBasedController(errorSupplier: ErrorSupplier<IN, OUT>, calculationComponent: CalculationComponent<OUT>) = LambdaController(this.target, this.motors) { calculate.get() + calculationComponent.calculate(errorSupplier.getError(target)) }
+
+	fun appendPController(errorSupplier: ErrorSupplier<IN, Double>, kP: Double) = appendErrorBasedController(errorSupplier, object : CalculationComponent<Double> {
+		override fun calculate(input: Double): Double {
+			return input * kP
+		}
+	})
 }
