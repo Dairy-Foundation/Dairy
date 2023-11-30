@@ -40,9 +40,9 @@ object EventRegistrar : OpModeManagerNotifier.Notifications {
 	 * an optional dependency resolution diagnostic tool
 	 */
 	fun checkFeatures(vararg listeners: Listener) {
-		activeListeners
+		listeners
 				.forEach {
-					it.get()?.dependencyManager?.resolveOrError(activeFlags.keys) ?: false
+					it.dependencyManager.resolveOrError(activeFlags.keys)
 				}
 	}
 
