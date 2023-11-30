@@ -1,14 +1,10 @@
 package dev.frozenmilk.dairy.ftclink.calcified.collections
 
 import com.qualcomm.hardware.lynx.LynxDcMotorController
+import com.qualcomm.hardware.lynx.LynxServoController
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.ftclink.calcified.CalcifiedModule
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedEncoder
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.DegreesEncoder
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.RadiansEncoder
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.TicksEncoder
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.UnitEncoder
+import dev.frozenmilk.dairy.ftclink.calcified.hardware.*
 
 abstract class CalcifiedDeviceMap<T> internal constructor(protected val module: CalcifiedModule, private val map: MutableMap<Byte, T> = mutableMapOf()) : MutableMap<Byte, T> by map
 
@@ -17,6 +13,14 @@ class Motors internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<
 		// checks to confirm that the motor port is validly in range
 		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxDcMotorController.apiMotorFirst}, ${LynxDcMotorController.apiMotorLast}")
 		this.putIfAbsent(port, CalcifiedMotor(module, port))
+		return this[port]!!
+	}
+}
+
+class Servos internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedServo>(module) {
+	fun getServo(port: Byte) : CalcifiedServo {
+		if (port !in LynxConstants.INITIAL_SERVO_PORT until LynxConstants.NUMBER_OF_SERVO_CHANNELS-1) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxServoController.apiServoFirst}, ${LynxServoController.apiServoLast}")
+		this.putIfAbsent(port, CalcifiedServo(module, port))
 		return this[port]!!
 	}
 }

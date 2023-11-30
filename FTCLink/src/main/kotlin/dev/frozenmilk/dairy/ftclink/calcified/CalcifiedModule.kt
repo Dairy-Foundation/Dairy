@@ -7,18 +7,17 @@ import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.ftclink.calcified.collections.Encoders
 import dev.frozenmilk.dairy.ftclink.calcified.collections.Motors
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedEncoder
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.RadiansEncoder
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.TicksEncoder
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.UnitEncoder
+import dev.frozenmilk.dairy.ftclink.calcified.collections.Servos
+import dev.frozenmilk.dairy.ftclink.calcified.hardware.*
 
 class CalcifiedModule(val lynxModule: LynxModule) {
 	val motors = Motors(this)
 	val encoders = Encoders(this)
+	val servos = Servos(this)
 	private var deviceMap: MutableMap<Class<*>, MutableMap<Byte, out Any>> = mapOf(
 			CalcifiedMotor::class.java to motors,
-			CalcifiedEncoder::class.java to encoders
+			CalcifiedEncoder::class.java to encoders,
+			CalcifiedServo::class.java to servos
 	).toMutableMap()
 
 	fun <T> unsafeGet(type: Class<out T>, port: Byte): T {
