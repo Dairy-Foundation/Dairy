@@ -31,11 +31,10 @@ open class CalcifiedMotor internal constructor(private val module: CalcifiedModu
 	var power = 0.0
 		get() = if (enabled) field * direction.multiplier else 0.0
 		set(value) {
-			value.coerceIn(-1.0, 1.0)
-			if (abs(field - value) >= cachingTolerance || (value >= 1.0 && field != 1.0) || (value <= -1.0 && field != -1.0)) {
-				val power = value * direction.multiplier
-				LynxSetMotorConstantPowerCommand(module.lynxModule, port.toInt(), (power * LynxSetMotorConstantPowerCommand.apiPowerLast).toInt()).send()
-				field = power
+			val correctedValue = value.coerceIn(-1.0, 1.0) * direction.multiplier
+			if (abs(field - correctedValue) >= cachingTolerance || (correctedValue >= 1.0 && field != 1.0) || (correctedValue <= -1.0 && field != -1.0)) {
+				LynxSetMotorConstantPowerCommand(module.lynxModule, port.toInt(), (correctedValue * LynxSetMotorConstantPowerCommand.apiPowerLast).toInt()).send()
+				field = correctedValue
 			}
 		}
 

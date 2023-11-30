@@ -11,15 +11,15 @@ abstract class CalcifiedDeviceMap<T> internal constructor(protected val module: 
 class Motors internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedMotor>(module) {
 	fun getMotor(port: Byte): CalcifiedMotor {
 		// checks to confirm that the motor port is validly in range
-		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxDcMotorController.apiMotorFirst}, ${LynxDcMotorController.apiMotorLast}")
+		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.INITIAL_MOTOR_PORT + LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_MOTOR_PORT}, ${LynxConstants.INITIAL_MOTOR_PORT + LynxConstants.NUMBER_OF_MOTORS - 1}]")
 		this.putIfAbsent(port, CalcifiedMotor(module, port))
 		return this[port]!!
 	}
 }
 
 class Servos internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedServo>(module) {
-	fun getServo(port: Byte) : CalcifiedServo {
-		if (port !in LynxConstants.INITIAL_SERVO_PORT until LynxConstants.NUMBER_OF_SERVO_CHANNELS-1) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxServoController.apiServoFirst}, ${LynxServoController.apiServoLast}")
+	fun getServo(port: Byte): CalcifiedServo {
+		if (port !in LynxConstants.INITIAL_SERVO_PORT until LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_SERVO_PORT}, ${LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1}]")
 		this.putIfAbsent(port, CalcifiedServo(module, port))
 		return this[port]!!
 	}
@@ -33,7 +33,7 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 	fun getTicksEncoder(port: Byte): TicksEncoder {
 		// this is pretty much the same as the motors, as the encoders match the motors
 		// checks to confirm that the encoder port is validly in range
-		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxDcMotorController.apiMotorFirst}, ${LynxDcMotorController.apiMotorLast}")
+		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.INITIAL_MOTOR_PORT + LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_MOTOR_PORT}, ${LynxConstants.INITIAL_MOTOR_PORT + LynxConstants.NUMBER_OF_MOTORS - 1}]")
 		this[port] = TicksEncoder(module, port)
 		return (this[port] as TicksEncoder?)!!
 	}
@@ -62,5 +62,4 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 	fun getDegreesEncoder(port: Byte, ticksPerRevolution: Double): DegreesEncoder {
 		return getEncoder(DegreesEncoder::class.java, port, ticksPerRevolution)
 	}
-
 }
