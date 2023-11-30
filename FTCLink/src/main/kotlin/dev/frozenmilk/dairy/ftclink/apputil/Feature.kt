@@ -14,52 +14,52 @@ interface Feature {
 	val dependencyManager: FeatureFlagDependencyManager
 
 	/**
-	 * provided by OpModeManagerNotifier.Notifications
+	 * provided by [OpModeManagerNotifier.Notifications]
 	 */
 	fun preUserInitHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeWrapper
+	 * provided by [OpModeWrapper]
 	 */
 	fun postUserInitHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeWrapper
+	 * provided by [OpModeWrapper]
 	 */
 	fun preUserInitLoopHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeWrapper
+	 * provided by [OpModeWrapper]
 	 */
 	fun postUserInitLoopHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeManagerNotifier.Notifications
+	 * provided by [OpModeManagerNotifier.Notifications]
 	 */
 	fun preUserStartHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeWrapper
+	 * provided by [OpModeWrapper]
 	 */
 	fun postUserStartHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeWrapper
+	 * provided by [OpModeWrapper]
 	 */
 	fun preUserLoopHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeWrapper
+	 * provided by [OpModeWrapper]
 	 */
 	fun postUserLoopHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeWrapper
+	 * provided by [OpModeWrapper]
 	 */
 	fun preUserStopHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by OpModeManagerNotifier.Notifications
+	 * provided by [OpModeManagerNotifier.Notifications]
 	 */
 	fun postUserStopHook(opMode: OpModeWrapper)
 }
