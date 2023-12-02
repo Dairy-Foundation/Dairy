@@ -1,19 +1,47 @@
 package dev.frozenmilk.dairy.ftclink.geometry.angle
 
+/**
+ * immutably represents a normalised angle in the domain of [0, 1] rotations.
+ *
+ * subclasses represent angles in specific mathematical units
+ *
+ * @see [AngleDegrees]
+ * @see [AngleRadians]
+ */
 abstract class Angle(theta: Double = 0.0) {
-	var theta: Double = this.absolute(theta)
-		protected set(value) {
-			field = absolute(value)
-		}
-		get() = absolute(field)
+	val theta: Double = this.normalise(theta)
+		get() = normalise(field)
 
-	abstract fun absolute(theta: Double): Double
+	protected abstract fun normalise(theta: Double): Double
 
+	/**
+	 * non-mutating
+	 */
 	abstract operator fun plus(other: Angle): Angle
-	abstract operator fun plus(other: Double): Angle
+
+	/**
+	 * non-mutating
+	 */
 	abstract operator fun minus(other: Angle): Angle
-	abstract operator fun minus(other: Double): Angle
+
+	/**
+	 * non-mutating, does nothing
+	 */
+	abstract operator fun unaryPlus(): Angle
+
+	/**
+	 * non-mutating, equal to the negative rotation of this
+	 */
+	abstract operator fun unaryMinus(): Angle
+
+	/**
+	 * non-mutating
+	 */
 	abstract fun intoRadians(): AngleRadians
+
+	/**
+	 * non-mutating
+	 */
 	abstract fun intoDegrees(): AngleDegrees
 
 	/**

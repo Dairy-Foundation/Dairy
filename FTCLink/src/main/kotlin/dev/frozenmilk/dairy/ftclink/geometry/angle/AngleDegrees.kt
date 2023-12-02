@@ -2,7 +2,7 @@ package dev.frozenmilk.dairy.ftclink.geometry.angle
 
 class AngleDegrees(theta: Double = 0.0) : Angle(theta) {
 	@Suppress("NAME_SHADOWING")
-	override fun absolute(theta: Double): Double {
+	override fun normalise(theta: Double): Double {
 		var theta = theta % 360.0
 		if (theta < 0.0) {
 			theta += 360.0
@@ -11,19 +11,19 @@ class AngleDegrees(theta: Double = 0.0) : Angle(theta) {
 	}
 
 	override fun plus(other: Angle): AngleDegrees {
-		return plus(other.intoDegrees().theta)
-	}
-
-	override fun plus(other: Double): AngleDegrees {
-		return AngleDegrees(theta + other)
+		return AngleDegrees(this.theta + other.intoDegrees().theta)
 	}
 
 	override fun minus(other: Angle): AngleDegrees {
-		return minus(other.theta)
+		return AngleDegrees(this.theta - other.intoDegrees().theta)
 	}
 
-	override fun minus(other: Double): AngleDegrees {
-		return plus(-other)
+	override fun unaryPlus(): AngleDegrees {
+		return this
+	}
+
+	override fun unaryMinus(): AngleDegrees {
+		return AngleDegrees(-this.theta)
 	}
 
 	override fun intoRadians(): AngleRadians {
