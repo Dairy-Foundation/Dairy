@@ -2,9 +2,12 @@ package dev.frozenmilk.dairy.ftclink.apputil
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerImpl.DefaultOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import java.lang.reflect.Field
+import java.util.Arrays
 
-class OpModeWrapper(private val opMode: OpMode, private val eventRegistrar: EventRegistrar) : OpMode() {
+class OpModeWrapper(private val opMode: OpMode, private val eventRegistrar: FeatureRegistrar) : OpMode() {
 	enum class OpModeType {
 		TELEOP,
 		AUTONOMOUS,
@@ -17,16 +20,35 @@ class OpModeWrapper(private val opMode: OpMode, private val eventRegistrar: Even
 		else OpModeType.NONE
 	}
 
-	init {
-		// may allow passthrough to these user accessed values
-		opMode.gamepad1 = this.gamepad1
-		opMode.gamepad2 = this.gamepad2
-		opMode.hardwareMap = this.hardwareMap
-		opMode.telemetry = this.telemetry
+	/**
+	 * moves things around, so that the irritating little fields that exist on each OpMode get remapped through this correctly
+	 *
+	 * since this wrapper gets made AFTER the OpMode gets made and has a bunch of info passed to it, its mainly just pulling things up into this
+	 */
+	private fun initialiseThings() {
+		this.gamepad1 = opMode.gamepad1
+		this.gamepad2 = opMode.gamepad2
+
+		val latest1 = OpMode::class.java.getDeclaredField("latestGamepad1Data")
+		val latest2 = OpMode::class.java.getDeclaredField("latestGamepad2Data")
+
+		latest1.isAccessible = true
+		latest2.isAccessible = true
+
+		latest1.set(this, latest1.get(opMode))
+		latest2.set(this, latest2.get(opMode))
+
+		//todo test these
+		this.hardwareMap = opMode.hardwareMap
+		this.telemetry = opMode.telemetry
+		//todo test above
+
 		opModeType // initialises the lazy property
 	}
 
 	override fun init() {
+		initialiseThings();
+
 		eventRegistrar.onOpModePreInit(this)
 		opMode.init()
 		eventRegistrar.onOpModePostInit(this)

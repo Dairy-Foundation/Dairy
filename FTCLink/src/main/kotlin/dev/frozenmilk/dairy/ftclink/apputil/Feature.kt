@@ -9,12 +9,12 @@ package dev.frozenmilk.dairy.ftclink.apputil
  */
 interface Feature {
 	/**
-	 * the feature flag that enables this for an OpMode
+	 * the dependencies required by this Feature for it to be successfully enabled
 	 */
-	val dependencyManager: FeatureFlagDependencyManager
+	val dependencies: Set<Dependency<*>>
 
 	/**
-	 * provided by [OpModeManagerNotifier.Notifications]
+	 * provided by [OpModeWrapper]
 	 */
 	fun preUserInitHook(opMode: OpModeWrapper)
 
@@ -34,7 +34,7 @@ interface Feature {
 	fun postUserInitLoopHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by [OpModeManagerNotifier.Notifications]
+	 * provided by [OpModeWrapper]
 	 */
 	fun preUserStartHook(opMode: OpModeWrapper)
 
@@ -59,7 +59,7 @@ interface Feature {
 	fun preUserStopHook(opMode: OpModeWrapper)
 
 	/**
-	 * provided by [OpModeManagerNotifier.Notifications]
+	 * provided by [OpModeWrapper]
 	 */
 	fun postUserStopHook(opMode: OpModeWrapper)
 }

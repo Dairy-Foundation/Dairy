@@ -3,23 +3,24 @@ package dev.frozenmilk.dairy.ftclink.calcified
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.ftclink.apputil.DairyCore
-import dev.frozenmilk.dairy.ftclink.apputil.EventRegistrar
-import dev.frozenmilk.dairy.ftclink.apputil.FeatureFlagDependencyManager
-import dev.frozenmilk.dairy.ftclink.apputil.IncludesAtLeastOneOf
+import dev.frozenmilk.dairy.ftclink.apputil.Dependency
+import dev.frozenmilk.dairy.ftclink.apputil.FeatureRegistrar
+import dev.frozenmilk.dairy.ftclink.apputil.DependencySet
 import dev.frozenmilk.dairy.ftclink.apputil.Feature
 import dev.frozenmilk.dairy.ftclink.apputil.OpModeWrapper
 
+/**
+ * enabled by having either @[DairyCore] or @[DairyCore.Calcify]
+ */
 object MarrowMap : Feature {
 	/**
-	 * enabled by having either @DairyCore or @DairyCore.Calcified
+	 * enabled by having either @[DairyCore] or @[DairyCore.Calcify]
 	 */
-	override val dependencyManager = FeatureFlagDependencyManager(
-			this,
-			IncludesAtLeastOneOf(DairyCore::class.java, DairyCore.Calcify::class.java)
-	)
+	override val dependencies: Set<Dependency<*>> = DependencySet(this)
+			.includesExactlyOneOf(DairyCore::class.java, DairyCore.Calcify::class.java)
 
 	init {
-		EventRegistrar.registerListener(this)
+		FeatureRegistrar.registerFeature(this)
 	}
 
 	lateinit var modules: Array<CalcifiedModule>

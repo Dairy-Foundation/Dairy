@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import dev.frozenmilk.dairy.ftclink.apputil.DairyCore
-import dev.frozenmilk.dairy.ftclink.apputil.EventRegistrar
+import dev.frozenmilk.dairy.ftclink.apputil.FeatureRegistrar
 import dev.frozenmilk.dairy.ftclink.calcified.MarrowMap
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
 import dev.frozenmilk.dairy.ftclink.calcified.hardware.MotorControllerGroup
@@ -32,7 +32,7 @@ class MotorOpMode : OpMode() {
 
 	override fun init() {
 		// ensures that the feature flags to enable the MarrowMap are present, otherwise throws a helpful error
-		EventRegistrar.checkFeatures(MarrowMap)
+		FeatureRegistrar.checkFeatures(MarrowMap)
 
 		motor.zeroPowerBehavior = ZeroPowerBehaviour.BRAKE
 
