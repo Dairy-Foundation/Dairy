@@ -23,22 +23,25 @@ object MarrowMap : Feature {
 		FeatureRegistrar.registerFeature(this)
 	}
 
-	lateinit var modules: Array<CalcifiedModule>
+	var modules: Array<CalcifiedModule> = emptyArray()
 		private set
 
-	lateinit var controlHub: CalcifiedModule
-		private set
-	lateinit var expansionHub: CalcifiedModule
-		private set
+	private var _controlHub: CalcifiedModule? = null
+	private var _expansionHub: CalcifiedModule? = null
 
+	val controlHub: CalcifiedModule
+		get() = _controlHub ?: throw IllegalStateException("The control hub was not found, this may be an electronics issue")
+
+	val expansionHub: CalcifiedModule
+		get() = _expansionHub ?: throw IllegalStateException("The expansion hub was not found, this may be an electronics issue")
 
 	override fun preUserInitHook(opMode: OpModeWrapper) {
 		modules = opMode.hardwareMap.getAll(LynxModule::class.java).map {
 			CalcifiedModule(it)
 		}.toTypedArray()
 
-		controlHub = modules.filter { it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber) }[0]
-		expansionHub = modules.filter { !(it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber)) }[0]
+		_controlHub = modules.filter { it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber) }.getOrNull(0)
+		_expansionHub = modules.filter { !(it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber)) }.getOrNull(0)
 
 		modules.forEach { it.refreshBulkCache() }
 	}
