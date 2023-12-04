@@ -16,6 +16,11 @@ import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
 @DairyCore
 @TeleOp
 class MotorOpMode : OpMode() {
+	init {
+		// ensures that the feature flags to enable the MarrowMap are present, otherwise throws a helpful error
+		FeatureRegistrar.checkFeatures(MarrowMap)
+	}
+
 	val motor: CalcifiedMotor by lazy {
 		MarrowMap.controlHub.motors.getMotor(0)
 	}
@@ -29,9 +34,6 @@ class MotorOpMode : OpMode() {
 	}
 
 	override fun init() {
-		// ensures that the feature flags to enable the MarrowMap are present, otherwise throws a helpful error
-		FeatureRegistrar.checkFeatures(MarrowMap)
-
 		motor.zeroPowerBehavior = ZeroPowerBehaviour.BRAKE
 
 
