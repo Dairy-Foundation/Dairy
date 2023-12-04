@@ -2,19 +2,17 @@ package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import dev.frozenmilk.dairy.ftclink.apputil.DairyCore
-import dev.frozenmilk.dairy.ftclink.apputil.FeatureRegistrar
-import dev.frozenmilk.dairy.ftclink.calcified.MarrowMap
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.CalcifiedMotor
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.MotorControllerGroup
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.ZeroPowerBehaviour
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.controller.Controller
-import dev.frozenmilk.dairy.ftclink.calcified.hardware.controller.PController
-import dev.frozenmilk.dairy.ftclink.geometry.angle.AngleRadians
+import dev.frozenmilk.dairy.core.DairyCore
+import dev.frozenmilk.dairy.core.FeatureRegistrar
+import dev.frozenmilk.dairy.calcified.MarrowMap
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor
+import dev.frozenmilk.dairy.calcified.hardware.MotorControllerGroup
+import dev.frozenmilk.dairy.calcified.hardware.ZeroPowerBehaviour
+import dev.frozenmilk.dairy.calcified.hardware.controller.Controller
+import dev.frozenmilk.dairy.calcified.hardware.controller.PController
+import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
 
-/**
- * enables all dairy features
- */
+// enables all dairy features
 @DairyCore
 @TeleOp
 class MotorOpMode : OpMode() {

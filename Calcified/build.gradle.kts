@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-	namespace = "dev.frozenmilk.dairy.core"
+	namespace = "dev.frozenmilk.dairy.calcified"
 	compileSdk = 29
 
 	defaultConfig {
@@ -35,6 +35,8 @@ dependencies {
 	//noinspection GradleDependency
 	implementation("androidx.appcompat:appcompat:1.2.0")
 	testImplementation("org.testng:testng:6.9.6")
+
+	compileOnly(project(":Core"))
 
 	compileOnly("org.firstinspires.ftc:RobotCore:9.0.1")
 	compileOnly("org.firstinspires.ftc:Hardware:9.0.1")

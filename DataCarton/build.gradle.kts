@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-	namespace = "dev.frozenmilk.dairy.core"
+	namespace = "dev.frozenmilk.dairy.datacarton"
 	compileSdk = 29
 
 	defaultConfig {
