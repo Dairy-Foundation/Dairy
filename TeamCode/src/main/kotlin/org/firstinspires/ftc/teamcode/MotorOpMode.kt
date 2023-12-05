@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import dev.frozenmilk.dairy.core.DairyCore
 import dev.frozenmilk.dairy.core.FeatureRegistrar
-import dev.frozenmilk.dairy.calcified.MarrowMap
+import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor
 import dev.frozenmilk.dairy.calcified.hardware.MotorControllerGroup
 import dev.frozenmilk.dairy.calcified.hardware.ZeroPowerBehaviour
@@ -18,17 +18,17 @@ import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
 class MotorOpMode : OpMode() {
 	init {
 		// ensures that the feature flags to enable the MarrowMap are present, otherwise throws a helpful error
-		FeatureRegistrar.checkFeatures(MarrowMap)
+		FeatureRegistrar.checkFeatures(Calcified)
 	}
 
 	val motor: CalcifiedMotor by lazy {
-		MarrowMap.controlHub.motors.getMotor(0)
+		Calcified.controlHub.motors.getMotor(0)
 	}
 
 	val motorController: Controller<AngleRadians> by lazy {
 		PController(
 				MotorControllerGroup(listOf(motor)),
-				MarrowMap.controlHub.encoders.getRadiansEncoder(0, 8192.0).positionSupplier,
+				Calcified.controlHub.encoders.getRadiansEncoder(0, 8192.0).positionSupplier,
 				0.1
 		)
 	}
@@ -41,7 +41,7 @@ class MotorOpMode : OpMode() {
 	}
 
 	override fun loop() {
-		MarrowMap.controlHub.refreshBulkCache()
+		Calcified.controlHub.refreshBulkCache()
 		if (gamepad1.a) motor.power = 1.0
 		else if (gamepad1.b) motor.power = -1.0
 		else motor.power = 0.0

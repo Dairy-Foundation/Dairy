@@ -12,7 +12,7 @@ import dev.frozenmilk.dairy.core.OpModeWrapper
 /**
  * enabled by having either @[DairyCore] or @[DairyCore.Calcify]
  */
-object MarrowMap : Feature {
+object Calcified : Feature {
 	/**
 	 * enabled by having either @[DairyCore] or @[DairyCore.Calcify]
 	 */
