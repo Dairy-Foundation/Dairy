@@ -1,43 +1,102 @@
 package datacarton
 
 import collections.annotatedtargets.*
+import datacarton.annotations.DataPackageProcessor
 import datacarton.annotations.Flatpack
 import datacarton.annotations.Pack
 import datacarton.annotations.PackageProcessor
 import datacarton.annotations.PublicationProcessor
+import datacarton.annotations.TelemetryPublicationProcessor
+import dev.frozenmilk.dairy.core.DairyCore
+import dev.frozenmilk.dairy.core.Dependency
+import dev.frozenmilk.dairy.core.DependencySet
+import dev.frozenmilk.dairy.core.Feature
+import dev.frozenmilk.dairy.core.OpModeWrapper
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import java.lang.reflect.AccessibleObject
-import java.lang.reflect.Field
-import java.util.*
 import java.util.function.Supplier
-import kotlin.collections.Collection
 import kotlin.collections.HashMap
 
-@Suppress("unused")
-class DataCarton private constructor(private val defaultRenderOrder: RenderOrder, private val publicationProcessors: Collection<PublicationProcessor>, private val packageProcessors: Collection<PackageProcessor>) {
+object DataCarton : Feature {
+	override val dependencies: Set<Dependency<*>> = DependencySet(this)
+			.includesExactlyOneOf(DairyCore::class.java, DairyCore.DataCarton::class.java)
 
-	//    private val output: Field = outputField
+	fun initFromTelemetry(telemetry: Telemetry, defaultRenderOrder: RenderOrder, vararg additionalPublicationProcessors: PublicationProcessor) {
+		telemetry.isAutoClear = false
+		telemetry.clearAll()
+		telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE)
+		telemetry.captionValueSeparator = ""
+		telemetry.itemSeparator = ""
+		this.defaultRenderOrder = defaultRenderOrder
+		packageProcessors.add(DataPackageProcessor)
+		publicationProcessors.add(TelemetryPublicationProcessor(telemetry.addLine()))
+		publicationProcessors.addAll(additionalPublicationProcessors)
+	}
+
+	fun initFromTelemetry(telemetry: Telemetry, defaultRenderOrder: RenderOrder = RenderOrder.DEFAULT_MAPPING) {
+		telemetry.isAutoClear = false
+		telemetry.clearAll()
+		telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE)
+		telemetry.captionValueSeparator = ""
+		telemetry.itemSeparator = ""
+		this.defaultRenderOrder = defaultRenderOrder
+		packageProcessors.add(DataPackageProcessor)
+		publicationProcessors.add(TelemetryPublicationProcessor(telemetry.addLine()))
+	}
+
+	override fun preUserInitHook(opMode: OpModeWrapper) {
+		startTime = System.nanoTime()
+	}
+
+	override fun postUserInitHook(opMode: OpModeWrapper) {
+		if (packageProcessors.isEmpty()) throw IllegalStateException("DataCarton had no attached package processors")
+		if (publicationProcessors.isEmpty()) throw IllegalStateException("DataCarton had no attached publication processors")
+		update()
+	}
+
+	override fun preUserInitLoopHook(opMode: OpModeWrapper) {
+	}
+
+	override fun postUserInitLoopHook(opMode: OpModeWrapper) {
+		update()
+	}
+
+	override fun preUserStartHook(opMode: OpModeWrapper) {
+	}
+
+	override fun postUserStartHook(opMode: OpModeWrapper) {
+		update()
+	}
+
+	override fun preUserLoopHook(opMode: OpModeWrapper) {
+	}
+
+	override fun postUserLoopHook(opMode: OpModeWrapper) {
+		update()
+	}
+
+	override fun preUserStopHook(opMode: OpModeWrapper) {
+	}
+
+	override fun postUserStopHook(opMode: OpModeWrapper) {
+		update()
+		defaultRenderOrder = RenderOrder.DEFAULT_MAPPING
+		publicationProcessors.clear()
+		packageProcessors.clear()
+		rendererHashMap.clear()
+		settingsMap.clear()
+	}
+
+	var defaultRenderOrder: RenderOrder = RenderOrder.DEFAULT_MAPPING
+	val publicationProcessors: MutableSet<PublicationProcessor> = mutableSetOf()
+	val packageProcessors: MutableSet<PackageProcessor> = mutableSetOf()
 	private val rendererHashMap: HashMap<String, CartonComponentRenderer> = HashMap()
 
 	//    private lateinit var instanceGroups: WeakHashMap<Any, Pair<Boolean, String>>
-	private val startTime: Long = System.nanoTime()
+	private var startTime: Long = System.nanoTime()
 	private val settingsMap = HashMap<String, RenderOrder>()
 
 //	constructor(telemetry: Telemetry, renderOrder: RenderOrder) {
-//		telemetry.isAutoClear = false
-//		telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE)
-//		telemetry.captionValueSeparator = ""
-//		telemetry.itemSeparator = ""
-//		try {
-//			outputHolder = telemetry.addLine("")
-//			output = outputHolder.javaClass.getField("lineCaption")
-//			output.isAccessible = true
-//		} catch (e: NoSuchFieldException) {
-//			throw RuntimeException(e)
-//		}
-//		traceComponents = HashMap()
-//		this.renderOrder = renderOrder
-//		startTime = System.nanoTime()
-//		onCalls = LinkedHashMap()
 //	}
 
 	fun update() {
@@ -99,7 +158,7 @@ class DataCarton private constructor(private val defaultRenderOrder: RenderOrder
 	}
 
 	/**
-	 * recursively finds the fields which contain traces in the blood stream
+	 * recursively finds the fields which contain traces in the opmode runtime tree
 	 *
 	 * @param root root object
 	 * @param targetClass      class of the root object
@@ -223,74 +282,14 @@ class DataCarton private constructor(private val defaultRenderOrder: RenderOrder
 		}
 	}
 
-	class Builder {
-		private var defaultRenderOrder: RenderOrder? = null;
-		private val publicationProcessors = emptySet<PublicationProcessor>().toMutableSet()
-		private val packageProcessors = emptySet<PackageProcessor>().toMutableSet()
-
-		fun renderWithByDefault(defaultRenderOrder: RenderOrder): Builder {
-			this.defaultRenderOrder = defaultRenderOrder
-			return this
-		}
-
-		fun addPublicationProcessors(vararg publicationProcessors: PublicationProcessor): Builder {
-			this.publicationProcessors.addAll(publicationProcessors)
-			return this
-		}
-
-		fun addPackageProcessors(vararg packageProcessors: PackageProcessor): Builder {
-			this.packageProcessors.addAll(packageProcessors)
-			return this
-		}
-
-		fun buildIntoInstance(): DataCarton {
-			if (defaultRenderOrder == null) throw RuntimeException("RenderOrder left unconfigured")
-			if (publicationProcessors.isEmpty()) throw RuntimeException("PublicationProcessors empty")
-			if (packageProcessors.isEmpty()) throw RuntimeException("PackageProcessors empty")
-			instance = DataCarton(defaultRenderOrder!!, publicationProcessors, packageProcessors)
-			return instance!!
-		}
+	fun publishMessage(group: String, label: String, contents: String) {
+		rendererHashMap.putIfAbsent(group, CartonComponentRenderer.Builder(settingsMap[group]
+				?: defaultRenderOrder).add(MessageBoard::class.java).build(group))
+		val renderer = rendererHashMap[group] ?: return
+		renderer.add(MessageBoard::class.java, TimedDataLine(startTime, label, contents))
 	}
 
-	companion object {
-		private var instance: DataCarton? = null
-
-		/**
-		 * sets the instance to be null
-		 */
-		fun drop() {
-			instance = null
-		}
-
-		fun publishMessage(group: String, label: String, contents: String) {
-			if (instance == null) return;
-			instance!!.rendererHashMap.putIfAbsent(group, CartonComponentRenderer.Builder(instance!!.settingsMap[group]
-					?: instance!!.defaultRenderOrder).add(MessageBoard::class.java).build(group))
-			val renderer = instance!!.rendererHashMap[group] ?: return
-			renderer.add(MessageBoard::class.java, TimedDataLine(instance!!.startTime, label, contents))
-		}
-
-		fun publishMessage(group: String, contents: String) {
-			publishMessage(group, "", contents)
-		}
-
-//        fun publishMessage(instance: Any, flatten: Boolean, label: String, contents: String) {
-//            val pair = this.instance?.instanceGroups?.get(instance) ?: return
-//            if ((pair.first && !flatten)) return
-//            val group = pair.second
-//            publishMessage(group, label, contents)
-//        }
-//
-//        fun publishMessage(instance: Any, flatten: Boolean, contents: String) {
-//            publishMessage(instance, flatten, "", contents)
-//        }
-//
-//        fun publishMessage(instance: Any, label: String, contents: String) {
-//            publishMessage(instance, false, label, contents)
-//        }
-//
-//        fun publishMessage(instance: Any, contents: String) {
-//            publishMessage(instance, false, contents)
-//        }
+	fun publishMessage(group: String, contents: String) {
+		publishMessage(group, "", contents)
 	}
 }

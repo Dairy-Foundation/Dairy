@@ -1,6 +1,7 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -18,5 +19,7 @@ dependencies {
     runtimeOnly 'org.tensorflow:tensorflow-lite:2.12.0'
     //noinspection GradleDependency
     implementation 'androidx.appcompat:appcompat:1.2.0'
+
+//    implementation 'com.github.Dairy-Foundation:Dairy:Core:master-SNAPSHOT'
 }
 

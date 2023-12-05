@@ -6,7 +6,6 @@ import datacarton.MessageBoardRender
 import datacarton.RenderOrder
 import datacarton.annotations.Data
 import datacarton.annotations.DataPackageProcessor
-import datacarton.annotations.DriverStationPublicationProcessor
 import datacarton.annotations.Flatpack
 import datacarton.annotations.Flatten
 import datacarton.annotations.Pack
@@ -27,22 +26,22 @@ class DataCartonTest : GroupedData {
             minLen = 10
             reversed = true
         }
-        val dataCarton = DataCarton.Builder()
-                .renderWithByDefault(RenderOrder.DEFAULT_MAPPING)
-                .addPublicationProcessors(DriverStationPublicationProcessor(output, Output::class.java.getDeclaredField("output")))
-                .addPackageProcessors(DataPackageProcessor)
-                .buildIntoInstance()
+//        val dataCarton = DataCarton.Builder()
+//                .renderWithByDefault(RenderOrder.DEFAULT_MAPPING)
+//                .addPublicationProcessors(DriverStationPublicationProcessor(output, Output::class.java.getDeclaredField("output")))
+//                .addPackageProcessors(DataPackageProcessor)
+//                .buildIntoInstance()
 
 //        val dataCarton = DataCarton.new(output, Output::class.java.getDeclaredField("output"), RenderOrder.DEFAULT_MAPPING);
-        dataCarton.mapSettings {
-            setFor("MessageOut") {
-//                with(DataBlockRender()) {}
-                with(MessageBoardRender()) {
-                    minLen = 3
-                    reversed = true
-                }
-            }
-        }
+//        dataCarton.mapSettings {
+//            setFor("MessageOut") {
+////                with(DataBlockRender()) {}
+//                with(MessageBoardRender()) {
+//                    minLen = 3
+//                    reversed = true
+//                }
+//            }
+//        }
 //        dataCarton.setFor("MessageOut") {
 //            RenderOrder(
 //                    RenderOrder.Render.DATA_BLOCK(),
@@ -50,19 +49,19 @@ class DataCartonTest : GroupedData {
 //            )
 //        }
 
-        dataCarton.packageData(this);
-
-        parent1.childCell.get().call()
-
-        dataCarton.update();
-        println(output);
-
-        parent1.childCell.accept(Child(false))
-        parent1.childCell.get().call()
-        parent1.childCell.get().call()
-
-        dataCarton.update();
-        println(output);
+//        dataCarton.packageData(this);
+//
+//        parent1.childCell.get().call()
+//
+//        dataCarton.update();
+//        println(output);
+//
+//        parent1.childCell.accept(Child(false))
+//        parent1.childCell.get().call()
+//        parent1.childCell.get().call()
+//
+//        dataCarton.update();
+//        println(output);
     }
 }
 

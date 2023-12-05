@@ -11,7 +11,7 @@ interface Feature {
 	/**
 	 * the dependencies required by this Feature for it to be successfully enabled
 	 */
-	val dependencies: Set<Dependency<*>>
+	val dependencies: Set<Dependency<*, *>>
 
 	/**
 	 * provided by [OpModeWrapper]

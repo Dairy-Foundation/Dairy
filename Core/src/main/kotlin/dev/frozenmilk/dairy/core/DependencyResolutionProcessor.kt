@@ -39,6 +39,10 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 				unresolvedFeatures.remove(feature)
 				// clear the issues found, as feature dependencies may have caused a feature to fail the first round, but pass in a later one
 				resolved[feature] = mutableSetOf()
+//				feature.dependencies.forEach {
+//					// todo return the features and flags to the dependencies
+//					it.acceptResolutionOutput()
+//				}
 			}
 		}
 

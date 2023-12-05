@@ -2,6 +2,7 @@ plugins {
 	id("com.android.library")
 	id("kotlin-android")
 	id("org.jetbrains.dokka") version "1.9.10"
+	id("maven-publish")
 }
 
 android {
@@ -39,4 +40,24 @@ dependencies {
 	compileOnly("org.firstinspires.ftc:RobotCore:9.0.1")
 	compileOnly("org.firstinspires.ftc:Hardware:9.0.1")
 	compileOnly("org.firstinspires.ftc:FtcCommon:9.0.1")
+}
+
+publishing {
+	publications {
+		register<MavenPublication>("release") {
+			groupId = "dev.frozenmilk.dairy"
+			artifactId = "dairycore"
+			version = "v0.0.0"
+
+			afterEvaluate {
+				from(components["release"])
+			}
+		}
+	}
+	repositories {
+		maven {
+			name = "DairyCore"
+			url = uri("${project.buildDir}/release")
+		}
+	}
 }

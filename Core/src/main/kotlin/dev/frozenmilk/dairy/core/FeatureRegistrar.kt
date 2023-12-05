@@ -84,16 +84,14 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		}
 
 		resolveDependencies(
-				registeredFeatures.map { it.get() }.filterNotNullTo(mutableSetOf()), // makes a copy of the set || todo test
-				setOf(), // todo this may not be empty
+				registeredFeatures.map { it.get() }.filterNotNullTo(mutableSetOf()), // makes a copy of the set
+				setOf(),
 				activeFlags
 		).forEach { // todo do something with the exceptions, they probably need to be stored
 			activeFeatures.add(WeakReference(it.key))
 		}
 
 		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
-		// todo may cause issues, should be good though
-
 		val activeOpMode = OpModeManagerImpl::class.java.getDeclaredField("activeOpMode")
 
 		activeOpMode.isAccessible = true

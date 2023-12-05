@@ -12,4 +12,11 @@ annotation class DairyCore {
 	@Retention(AnnotationRetention.RUNTIME)
 	@Target(AnnotationTarget.CLASS)
 	annotation class Calcify
+
+	/**
+	 * enables only DataCarton from DairyCore
+	 */
+	@Retention(AnnotationRetention.RUNTIME)
+	@Target(AnnotationTarget.CLASS)
+	annotation class DataCarton
 }

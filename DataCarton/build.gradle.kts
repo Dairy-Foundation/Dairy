@@ -36,6 +36,9 @@ dependencies {
 	implementation("androidx.appcompat:appcompat:1.2.0")
 	testImplementation("org.testng:testng:6.9.6")
 
+	compileOnly(project(":Core"))
+	testImplementation(project(":Core"))
+
 	compileOnly("org.firstinspires.ftc:RobotCore:9.0.1")
 	compileOnly("org.firstinspires.ftc:Hardware:9.0.1")
 	compileOnly("org.firstinspires.ftc:FtcCommon:9.0.1")

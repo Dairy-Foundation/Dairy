@@ -1,15 +1,17 @@
 package dev.frozenmilk.dairy.core
 
+import android.icu.util.Output
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import dev.frozenmilk.dairy.core.cell.RefCell
 
 /**
  * stores a set of dependency resolution rules for a feature
  *
  * a feature is enabled if all of its dependencies resolve
  */
-class DependencySet private constructor(private val feature: Feature, dependencies: Set<Dependency<*>>) : Set<Dependency<*>> by dependencies {
+open class DependencySet internal constructor(private val feature: Feature, dependencies: Set<Dependency<*, *>>) : Set<Dependency<*, *>> by dependencies {
 	constructor(feature: Feature) : this(feature, setOf())
 
 	/**
@@ -21,7 +23,7 @@ class DependencySet private constructor(private val feature: Feature, dependenci
 	 * @see [dependsOn]
 	 * @see [mutuallyExclusiveWith]
 	 */
-	fun withDependency(dependency: Dependency<*>): DependencySet {
+	fun <T> withDependency(dependency: Dependency<T, *>): DependencySet {
 		if (dependency.feature != this.feature) throw IllegalArgumentException("attempted to add a dependency that does not share the same feature as the others")
 		return DependencySet(feature, this.plus(dependency))
 	}
@@ -31,8 +33,8 @@ class DependencySet private constructor(private val feature: Feature, dependenci
 	 *
 	 * @see [IncludesAtLeastOneOf]
 	 */
-	fun includesAtLeastOneOf(vararg flags: Class<out Annotation>): DependencySet {
-		return withDependency(IncludesAtLeastOneOf(feature, *flags));
+	fun includesAtLeastOneOf(vararg flags: Class<out Annotation>): FlagBoundDependencySet {
+		return withDependency(IncludesAtLeastOneOf(feature, *flags)) as FlagBoundDependencySet
 	}
 
 	/**
@@ -40,8 +42,8 @@ class DependencySet private constructor(private val feature: Feature, dependenci
 	 *
 	 * @see [IncludesExactlyOneOf]
 	 */
-	fun includesExactlyOneOf(vararg flags: Class<out Annotation>): DependencySet {
-		return withDependency(IncludesExactlyOneOf(feature, *flags));
+	fun includesExactlyOneOf(vararg flags: Class<out Annotation>): FlagBoundDependencySet {
+		return withDependency(IncludesExactlyOneOf(feature, *flags)) as FlagBoundDependencySet
 	}
 
 	/**
@@ -49,8 +51,8 @@ class DependencySet private constructor(private val feature: Feature, dependenci
 	 *
 	 * @see [ExcludesFlags]
 	 */
-	fun excludesFlags(vararg flags: Class<out Annotation>): DependencySet {
-		return withDependency(ExcludesFlags(feature, *flags));
+	fun excludesFlags(vararg flags: Class<out Annotation>): FlagBoundDependencySet {
+		return withDependency(ExcludesFlags(feature, *flags)) as FlagBoundDependencySet
 	}
 
 	/**
@@ -58,8 +60,8 @@ class DependencySet private constructor(private val feature: Feature, dependenci
 	 *
 	 * @see [DependsOn]
 	 */
-	fun dependsOn(vararg features: Feature): DependencySet {
-		return withDependency(DependsOn(feature, *features));
+	fun dependsOn(vararg features: Feature): FeatureBoundDependencySet {
+		return withDependency(DependsOn(feature, *features)) as FeatureBoundDependencySet
 	}
 
 	/**
@@ -67,8 +69,20 @@ class DependencySet private constructor(private val feature: Feature, dependenci
 	 *
 	 * @see [DependsOn]
 	 */
-	fun mutuallyExclusiveWith(vararg features: Feature): DependencySet {
-		return withDependency(MutuallyExclusiveWith(feature, *features));
+	fun mutuallyExclusiveWith(vararg features: Feature): FeatureBoundDependencySet {
+		return withDependency(MutuallyExclusiveWith(feature, *features)) as FeatureBoundDependencySet
+	}
+}
+
+class FlagBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
+	fun bindOutputTo(outputCell: RefCell<Set<Class<out Annotation>>>) {
+		(last() as FlagDependency).bindOutput(outputCell)
+	}
+}
+
+class FeatureBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
+	fun bindOutputTo(outputCell: RefCell<Set<Feature>>) {
+		(last() as FeatureDependency).bindOutput(outputCell)
 	}
 }
 
@@ -83,7 +97,7 @@ class DependencyResolutionFailureException(private val feature: Feature, message
 	}
 }
 
-sealed interface Dependency<ARGS> {
+sealed interface Dependency<OUTPUT, ARGS> {
 	/**
 	 * the feature which this resolves to
 	 */
@@ -109,9 +123,18 @@ sealed interface Dependency<ARGS> {
 	 * validates arguments, can be expensive to run
 	 */
 	fun validateContents()
+
+	fun bindOutput(output: RefCell<OUTPUT>) {
+		outputRef = output
+	}
+
+	var outputRef: RefCell<OUTPUT>?
+	fun acceptResolutionOutput(output: OUTPUT) {
+		outputRef?.accept(output)
+	}
 }
 
-sealed class FlagDependency(override val feature: Feature, protected vararg val flags: Class<out Annotation>) : Dependency<Set<Class<out Annotation>>> {
+abstract class FlagDependency(override val feature: Feature, protected vararg val flags: Class<out Annotation>) : Dependency<Set<Class<out Annotation>>, Set<Class<out Annotation>>> {
 	final override fun validateContents() {
 		if (
 				TeleOp::class.java in flags ||
@@ -120,9 +143,11 @@ sealed class FlagDependency(override val feature: Feature, protected vararg val 
 		)
 			throw IllegalArgumentException("${feature.javaClass.simpleName} has an illegal dependency set: annotations that are used as part of the base sdk are illegal flag dependency arguments")
 	}
+
+	override var outputRef: RefCell<Set<Class<out Annotation>>>? = null
 }
 
-sealed class FeatureDependency(override val feature: Feature, protected vararg val features: Feature) : Dependency<Set<Feature>> {
+abstract class FeatureDependency(override val feature: Feature, protected vararg val features: Feature) : Dependency<Set<Feature>, Set<Feature>> {
 	final override fun validateContents() {
 		if (feature in features) throw IllegalArgumentException("${feature.javaClass.simpleName} has an illegal dependency set: it is self dependant/exclusive")
 		if (features.any { dependency ->
@@ -130,6 +155,8 @@ sealed class FeatureDependency(override val feature: Feature, protected vararg v
 							.all { it.features.contains(feature) }
 				}) throw IllegalArgumentException("${feature.javaClass.simpleName} has an illegal dependency set: it depends/is mutually exclusive with a feature that depends on it")
 	}
+
+	override var outputRef: RefCell<Set<Feature>>? = null
 }
 
 /**

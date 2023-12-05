@@ -1,20 +1,18 @@
 package datacarton.annotations
 
 import datacarton.CartonComponentRenderer
+import org.firstinspires.ftc.robotcore.external.Telemetry.Line
 import java.lang.reflect.Field
 import java.util.function.Consumer
 
 interface PublicationProcessor : Consumer<CartonComponentRenderer> {
 	fun initPublication()
-	val annotation: Class<out Annotation>
+	val annotation: Class<out Annotation> // todo use this
 	fun updatePublication()
 }
 
-class DriverStationPublicationProcessor(private val output: Any, private val field: Field) : PublicationProcessor {
-	override val annotation: Class<out Annotation> = ExportToDriverStation::class.java
+sealed class ReflectionPublicationProcessor(private val output: Any, private val field: Field) : PublicationProcessor {
 	private var outputBuilder = StringBuilder()
-
-//	constructor() TODO("telemetry")
 
 	init {
 		field.isAccessible = true
@@ -31,6 +29,10 @@ class DriverStationPublicationProcessor(private val output: Any, private val fie
 	override fun updatePublication() {
 		this.field.set(output, outputBuilder.toString())
 	}
+}
+
+class TelemetryPublicationProcessor(telemetryLine: Line) : ReflectionPublicationProcessor(telemetryLine, Line::class.java.getDeclaredField("lineCaption")) {
+	override val annotation: Class<out Annotation> = ExportToDriverStation::class.java
 }
 
 class LogPublicationProcessor() : PublicationProcessor {

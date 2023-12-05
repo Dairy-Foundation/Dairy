@@ -27,6 +27,8 @@ android {
 dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+
     implementation project(':Core')
     implementation project(':Calcified')
+    implementation project(':DataCarton')
 }
