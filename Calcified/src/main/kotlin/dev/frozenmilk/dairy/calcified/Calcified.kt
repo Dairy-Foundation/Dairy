@@ -3,10 +3,9 @@ package dev.frozenmilk.dairy.calcified
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.core.DairyCore
-import dev.frozenmilk.dairy.core.Dependency
-import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.DependencySet
 import dev.frozenmilk.dairy.core.Feature
+import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.OpModeWrapper
 
 /**
@@ -16,7 +15,7 @@ object Calcified : Feature {
 	/**
 	 * enabled by having either @[DairyCore] or @[DairyCore.Calcify]
 	 */
-	override val dependencies: Set<Dependency<*>> = DependencySet(this)
+	override val dependencies = DependencySet(this)
 			.includesExactlyOneOf(DairyCore::class.java, DairyCore.Calcify::class.java)
 
 	init {

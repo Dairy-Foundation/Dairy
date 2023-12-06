@@ -6,6 +6,7 @@ import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerImpl
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier
+import dev.frozenmilk.dairy.core.collections.cell.MirroredCell
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
 import java.lang.ref.WeakReference
 
@@ -23,7 +24,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * the feature flag annotations of the active OpMode
 	 */
-	private val activeFlags: LinkedHashMap<Class<out Annotation>, Annotation> = linkedMapOf()
+	private val activeFlags: LinkedHashSet<Annotation> = linkedSetOf()
 
 	/**
 	 * this is mildly expensive to do while an OpMode is running, especially if many features are registered
@@ -72,16 +73,14 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 			/**
 			 * registers this instance against the event loop, automatically called by the FtcEventLoop, should not be called by the user
 			 */
-	fun registerSelf(context: Context, ftcEventLoop: FtcEventLoop) {
+	fun registerSelf(@Suppress("UNUSED_PARAMETER") context: Context, ftcEventLoop: FtcEventLoop) {
 		ftcEventLoop.opModeManager.registerListener(this)
 		opModeManager = ftcEventLoop.opModeManager
 	}
 
 	override fun onOpModePreInit(opMode: OpMode) {
 		// locate feature flags, and then populate active listeners
-		opMode.javaClass.annotations.forEach {
-			activeFlags[it::class.java] = it
-		}
+		activeFlags.addAll(opMode.javaClass.annotations)
 
 		resolveDependencies(
 				registeredFeatures.map { it.get() }.filterNotNullTo(mutableSetOf()), // makes a copy of the set
@@ -92,12 +91,10 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		}
 
 		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
-		val activeOpMode = OpModeManagerImpl::class.java.getDeclaredField("activeOpMode")
-
-		activeOpMode.isAccessible = true
+		val activeOpMode = MirroredCell<OpMode>(opModeManager, "activeOpMode")
 
 		val wrapped = OpModeWrapper(opMode, this)
-		activeOpMode.set(opModeManager, wrapped)
+		activeOpMode.accept(wrapped)
 	}
 
 	fun onOpModePreInit(opMode: OpModeWrapper) {

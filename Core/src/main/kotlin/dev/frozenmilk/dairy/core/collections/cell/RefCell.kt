@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.core.cell
+package dev.frozenmilk.dairy.core.collections.cell
 
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -6,10 +6,9 @@ import java.util.function.Supplier
 /**
  * a transparent cell
  *
- * @see [SafeCell]
- * @see [dev.frozenmilk.dairy.core.cell.reinitialisable.MirroredRefCell]
+ * @see [Cell]
  */
-open class RefCell<T>(private var ref: T) : Supplier<T>, Consumer<T> {
+open class RefCell<T>(private var ref: T) : Cell<T> {
 	override fun get(): T {
 		return ref
 	}
@@ -28,3 +27,9 @@ open class RefCell<T>(private var ref: T) : Supplier<T>, Consumer<T> {
 		return get()?.equals(other) ?: false
 	}
 }
+fun <T> cellOf(ref: T) = RefCell(ref)
+
+/**
+ * non-mutating
+ */
+fun <T> Cell<T>.toRefCell(): RefCell<T> = RefCell(this.get())

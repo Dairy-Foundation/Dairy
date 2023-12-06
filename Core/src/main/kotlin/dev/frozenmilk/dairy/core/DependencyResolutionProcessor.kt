@@ -3,7 +3,7 @@ package dev.frozenmilk.dairy.core
 /**
  * internal
  */
-fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActiveFeatures: Set<Feature>, featureFlags: Map<Class<out Annotation>, Annotation>): Map<Feature, Set<DependencyResolutionFailureException>> {
+fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActiveFeatures: Set<Feature>, featureFlags: Set<Annotation>): Map<Feature, Set<DependencyResolutionFailureException>> {
 	val resolved = mutableMapOf<Feature, MutableSet<DependencyResolutionFailureException>>()
 	var notLocked = true
 
@@ -16,7 +16,9 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 				resolves = when (it) {
 					is FlagDependency -> {
 						try {
-							resolves and it.resolvesOrError(featureFlags.keys)
+							val resolutionResult = it.resolvesOrError(featureFlags)
+							if(resolutionResult.first) it.acceptResolutionOutput(resolutionResult.second)
+							resolves and resolutionResult.first
 						} catch (e: DependencyResolutionFailureException) {
 							exceptions.add(e)
 							false
@@ -25,7 +27,22 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 
 					is FeatureDependency -> {
 						try {
-							resolves and (it.resolvesOrError(resolved.keys) or it.resolvesOrError(currentlyActiveFeatures))
+							val newResolutionResult = it.resolvesOrError(resolved.keys)
+							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
+							if(newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second));
+							resolves and (newResolutionResult.first or currentResolutionResult.first)
+						} catch (e: DependencyResolutionFailureException) {
+							exceptions.add(e)
+							false
+						}
+					}
+
+					is DependsOnOneOf -> {
+						try {
+							val newResolutionResult = it.resolvesOrError(resolved.keys)
+							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
+							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second).firstOrNull());
+							resolves and (newResolutionResult.first or currentResolutionResult.first)
 						} catch (e: DependencyResolutionFailureException) {
 							exceptions.add(e)
 							false
@@ -52,7 +69,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 
 	// the remaining features caused a deadlock, so we'll add a one off exception for them
 	unresolvedFeatures.forEach {
-		resolved[it]!!.add(DependencyResolutionFailureException(it, "attempts to resolve this dependency resulted in a deadlock"))
+		resolved[it]!!.add(DependencyResolutionFailureException(it, "attempts to resolve this dependency resulted in a deadlock", emptySet()))
 	}
 
 	unresolvedFeatures.clear()
