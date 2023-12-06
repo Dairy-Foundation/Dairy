@@ -20,6 +20,5 @@ dependencies {
     //noinspection GradleDependency
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
-//    implementation 'com.github.Dairy-Foundation:Dairy:Core:master-SNAPSHOT'
 }
 
