@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.core.collections.cell
+package dev.frozenmilk.util.cell
 
 /**
  * a nullable version of [RefCell], that makes an assertion that a value must not be null before it is retrieved, but its contents could be null

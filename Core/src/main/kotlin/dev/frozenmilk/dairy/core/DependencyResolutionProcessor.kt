@@ -3,15 +3,15 @@ package dev.frozenmilk.dairy.core
 /**
  * internal
  */
-fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActiveFeatures: Set<Feature>, featureFlags: Set<Annotation>): Map<Feature, Set<DependencyResolutionFailureException>> {
-	val resolved = mutableMapOf<Feature, MutableSet<DependencyResolutionFailureException>>()
+fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActiveFeatures: Set<Feature>, featureFlags: Set<Annotation>): Map<Feature, Set<FeatureDependencyResolutionFailureException>> {
+	val resolved = mutableMapOf<Feature, MutableSet<FeatureDependencyResolutionFailureException>>()
 	var notLocked = true
 
 	while (notLocked) {
 		val unresolvedSize = unresolvedFeatures.size
 		unresolvedFeatures.forEach { feature ->
 			var resolves = feature.dependencies.isNotEmpty() // if there are no dependencies, it won't be allowed to mount
-			val exceptions = mutableSetOf<DependencyResolutionFailureException>()
+			val exceptions = mutableSetOf<FeatureDependencyResolutionFailureException>()
 			feature.dependencies.forEach {
 				resolves = when (it) {
 					is FlagDependency -> {
@@ -19,7 +19,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 							val resolutionResult = it.resolvesOrError(featureFlags)
 							if(resolutionResult.first) it.acceptResolutionOutput(resolutionResult.second)
 							resolves and resolutionResult.first
-						} catch (e: DependencyResolutionFailureException) {
+						} catch (e: FeatureDependencyResolutionFailureException) {
 							exceptions.add(e)
 							false
 						}
@@ -31,7 +31,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
 							if(newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second));
 							resolves and (newResolutionResult.first or currentResolutionResult.first)
-						} catch (e: DependencyResolutionFailureException) {
+						} catch (e: FeatureDependencyResolutionFailureException) {
 							exceptions.add(e)
 							false
 						}
@@ -43,7 +43,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
 							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second).firstOrNull());
 							resolves and (newResolutionResult.first or currentResolutionResult.first)
-						} catch (e: DependencyResolutionFailureException) {
+						} catch (e: FeatureDependencyResolutionFailureException) {
 							exceptions.add(e)
 							false
 						}
@@ -69,7 +69,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 
 	// the remaining features caused a deadlock, so we'll add a one off exception for them
 	unresolvedFeatures.forEach {
-		resolved[it]!!.add(DependencyResolutionFailureException(it, "attempts to resolve this dependency resulted in a deadlock", emptySet()))
+		resolved[it]!!.add(FeatureDependencyResolutionFailureException(it, "attempts to resolve this dependency resulted in a deadlock", emptySet()))
 	}
 
 	unresolvedFeatures.clear()

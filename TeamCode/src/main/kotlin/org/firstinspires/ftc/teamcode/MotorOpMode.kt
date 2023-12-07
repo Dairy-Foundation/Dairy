@@ -11,6 +11,10 @@ import dev.frozenmilk.dairy.calcified.hardware.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.calcified.hardware.controller.Controller
 import dev.frozenmilk.dairy.calcified.hardware.controller.PController
 import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
+import dev.frozenmilk.util.cell.LazyCell
+import dev.frozenmilk.util.cell.OpModeLazyCell
+import dev.frozenmilk.util.cell.RefCell
+import dev.frozenmilk.util.cell.getValue
 
 // enables all dairy features
 @DairyCore
@@ -21,8 +25,12 @@ class MotorOpMode : OpMode() {
 		FeatureRegistrar.checkFeatures(Calcified)
 	}
 
-	val motor: CalcifiedMotor by lazy {
+	val motor: CalcifiedMotor by dev.frozenmilk.util.cell.LazyCell {
 		Calcified.controlHub.motors.getMotor(0)
+	}
+
+	val motor1: CalcifiedMotor by dev.frozenmilk.util.cell.OpModeLazyCell {
+		Calcified.controlHub.motors.getMotor(1)
 	}
 
 	val motorController: Controller<AngleRadians> by lazy {
@@ -35,7 +43,6 @@ class MotorOpMode : OpMode() {
 
 	override fun init() {
 		motor.zeroPowerBehavior = ZeroPowerBehaviour.BRAKE
-
 
 		motorController.update(AngleRadians())
 	}

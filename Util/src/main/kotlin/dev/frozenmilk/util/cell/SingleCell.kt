@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.core.collections.cell
+package dev.frozenmilk.util.cell
 
 /**
  * a cell that acts like a collection that could potentially contain a single element

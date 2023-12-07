@@ -6,7 +6,6 @@ import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerImpl
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier
-import dev.frozenmilk.dairy.core.collections.cell.MirroredCell
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
 import java.lang.ref.WeakReference
 
@@ -43,16 +42,18 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	 */
 	fun checkFeatures(vararg features: Feature) {
 		val resolved = resolveDependencies(mutableSetOf(*features), activeFeatures.map { it.get() }.filterNotNullTo(mutableSetOf()), activeFlags)
-		// throws all the exceptions it came across! (this will actually only throw the first one it finds, but none-the-less)
-		resolved.forEach {
-			it.value.forEach { exception -> throw exception }
-		}
+		// throws all the exceptions it came across in one giant message
+		throw DependencyResolutionFailureException(resolved.values.fold(Exception("")) { exception: Exception, featureDependencyResolutionFailureExceptions: Set<FeatureDependencyResolutionFailureException> ->
+			exception + featureDependencyResolutionFailureExceptions.fold(Exception("")) { failureException: Exception, featureDependencyResolutionFailureException: FeatureDependencyResolutionFailureException ->
+				failureException + featureDependencyResolutionFailureException
+			}
+		}.message!!)
 	}
 
 	/**
 	 * this is mildly expensive to do while an OpMode is running, especially if many listeners are registered
 	 */
-	fun deregisterListener(feature: Feature) {
+	fun deregisterFeature(feature: Feature) {
 		registeredFeatures.remove(
 				registeredFeatures.first {
 					it.get() == feature
@@ -91,7 +92,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		}
 
 		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
-		val activeOpMode = MirroredCell<OpMode>(opModeManager, "activeOpMode")
+		val activeOpMode = dev.frozenmilk.util.cell.MirroredCell<OpMode>(opModeManager, "activeOpMode")
 
 		val wrapped = OpModeWrapper(opMode, this)
 		activeOpMode.accept(wrapped)

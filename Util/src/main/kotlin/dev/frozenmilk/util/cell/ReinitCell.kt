@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.core.collections.cell
+package dev.frozenmilk.util.cell
 
 import java.lang.reflect.Field
 

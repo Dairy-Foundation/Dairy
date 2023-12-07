@@ -3,7 +3,7 @@ package dev.frozenmilk.dairy.core
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import dev.frozenmilk.dairy.core.collections.cell.SingleCell
+import dev.frozenmilk.util.cell.SingleCell
 import java.util.Objects
 import java.util.function.Consumer
 
@@ -21,7 +21,7 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	 * @see [includesAtLeastOneOf]
 	 * @see [includesExactlyOneOf]
 	 * @see [excludesFlags]
-	 * @see [dependsOn]
+	 * @see [dependsOnOneOf]
 	 * @see [mutuallyExclusiveWith]
 	 */
 	fun <T> withDependency(dependency: Dependency<T, *>): DependencySet {
@@ -80,7 +80,6 @@ class FlagBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *
 		(last() as FlagDependency).bindOutput(outputConsumer)
 		return this
 	}
-
 }
 
 class FeatureBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
@@ -97,7 +96,7 @@ class SingleFeatureDependencySet(feature: Feature, dependencies: Set<Dependency<
 	}
 }
 
-class DependencyResolutionFailureException(private val feature: Feature, message: String, reasons: Collection<String>) : RuntimeException(buildString {
+class FeatureDependencyResolutionFailureException(private val feature: Feature, message: String, reasons: Collection<String>) : RuntimeException(buildString {
 	append("Failed to resolve dependencies for ${feature.javaClass.simpleName} as ")
 	append(message)
 	append(": ")
@@ -109,7 +108,7 @@ class DependencyResolutionFailureException(private val feature: Feature, message
 	}
 }) {
 	override fun equals(other: Any?): Boolean {
-		if (other !is DependencyResolutionFailureException) return false
+		if (other !is FeatureDependencyResolutionFailureException) return false
 		return this.feature == other.feature && this.message == other.message
 	}
 
@@ -117,6 +116,11 @@ class DependencyResolutionFailureException(private val feature: Feature, message
 		return Objects.hash(feature, message)
 	}
 }
+
+operator fun Exception.plus(other: Exception): Exception {
+	return Exception(if(message?.isBlank() == true) this.message + "\n" + other.message else other.message)
+}
+class DependencyResolutionFailureException(message: String) : Exception(message)
 
 sealed interface Dependency<OUTPUT, ARGS : Collection<*>> {
 	/**
@@ -132,11 +136,11 @@ sealed interface Dependency<OUTPUT, ARGS : Collection<*>> {
 
 	/**
 	 * throws an error if the dependency doesn't resolve that contains some helpful diagnostic information
-	 * @see[DependencyResolutionFailureException]
+	 * @see[FeatureDependencyResolutionFailureException]
 	 */
 	fun resolvesOrError(args: ARGS): Pair<Boolean, ARGS> {
 		val resolution = resolves(args)
-		if (!resolution.first) throw DependencyResolutionFailureException(feature, dependencyResolutionFailureMessage, failures)
+		if (!resolution.first) throw FeatureDependencyResolutionFailureException(feature, dependencyResolutionFailureMessage, failures)
 		return resolution
 	}
 
