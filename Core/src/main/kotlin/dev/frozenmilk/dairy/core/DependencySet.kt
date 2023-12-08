@@ -73,6 +73,15 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	fun mutuallyExclusiveWith(vararg features: Class<out Feature>): FeatureBoundDependencySet {
 		return withDependency(MutuallyExclusiveWith(feature, *features)) as FeatureBoundDependencySet
 	}
+
+	/**
+	 * non-mutating
+	 *
+	 * @see [Yields]
+	 */
+	fun yields(): DependencySet {
+		return withDependency(Yields(feature))
+	}
 }
 
 class FlagBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
@@ -160,6 +169,19 @@ sealed interface Dependency<OUTPUT, ARGS : Collection<*>> {
 	fun acceptResolutionOutput(output: OUTPUT) {
 		outputRef?.accept(output)
 	}
+}
+
+/**
+ * causes a dependency to try to mount after others
+ */
+class Yields(override val feature: Feature) : Dependency<Nothing, SingleCell<Boolean>> {
+	override fun resolves(args: SingleCell<Boolean>): Pair<Boolean, SingleCell<Boolean>> = Pair(args.isNotEmpty() && args.get(), args)
+
+	override val failures: Collection<String> = emptyList();
+	override val dependencyResolutionFailureMessage: String = "failed to yield";
+	override fun validateContents() {}
+
+	override var outputRef: Consumer<Nothing>? = null
 }
 
 abstract class FlagDependency(override val feature: Feature, protected vararg val flags: Class<out Annotation>) : Dependency<Collection<Annotation>, Collection<Annotation>> {

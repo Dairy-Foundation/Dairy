@@ -7,7 +7,7 @@ import dev.frozenmilk.dairy.calcified.Calcified;
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor;
 import dev.frozenmilk.dairy.calcified.hardware.ZeroPowerBehaviour;
 import dev.frozenmilk.dairy.core.DairyCore;
-import dev.frozenmilk.dairy.core.collections.cell.OpModeLazyCell;
+import dev.frozenmilk.dairy.core.OpModeLazyCell;
 
 @DairyCore
 @TeleOp

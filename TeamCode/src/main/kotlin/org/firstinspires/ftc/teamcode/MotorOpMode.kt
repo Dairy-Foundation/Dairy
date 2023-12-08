@@ -11,9 +11,7 @@ import dev.frozenmilk.dairy.calcified.hardware.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.calcified.hardware.controller.Controller
 import dev.frozenmilk.dairy.calcified.hardware.controller.PController
 import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
-import dev.frozenmilk.util.cell.LazyCell
-import dev.frozenmilk.util.cell.OpModeLazyCell
-import dev.frozenmilk.util.cell.RefCell
+import dev.frozenmilk.dairy.core.OpModeLazyCell
 import dev.frozenmilk.util.cell.getValue
 
 // enables all dairy features
@@ -29,7 +27,7 @@ class MotorOpMode : OpMode() {
 		Calcified.controlHub.motors.getMotor(0)
 	}
 
-	val motor1: CalcifiedMotor by dev.frozenmilk.util.cell.OpModeLazyCell {
+	val motor1: CalcifiedMotor by OpModeLazyCell {
 		Calcified.controlHub.motors.getMotor(1)
 	}
 

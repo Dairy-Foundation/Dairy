@@ -1,11 +1,6 @@
-package dev.frozenmilk.util.cell
+package dev.frozenmilk.dairy.core
 
-import dev.frozenmilk.dairy.core.DairyCore
-import dev.frozenmilk.dairy.core.Dependency
-import dev.frozenmilk.dairy.core.DependencySet
-import dev.frozenmilk.dairy.core.Feature
-import dev.frozenmilk.dairy.core.FeatureRegistrar
-import dev.frozenmilk.dairy.core.OpModeWrapper
+import dev.frozenmilk.util.cell.LazyCell
 import java.util.function.Supplier
 
 /**
@@ -17,7 +12,7 @@ class OpModeLazyCell<T>(supplier: Supplier<T>) : LazyCell<T>(supplier) , Feature
 	}
 
 	override val dependencies: Set<Dependency<*, *>> = DependencySet(this)
-			.includesAtLeastOneOf(DairyCore::class.java)
+			.yields()
 
 	override fun preUserInitHook(opMode: OpModeWrapper) {
 		get()

@@ -1,14 +1,18 @@
 package dev.frozenmilk.dairy.core
 
+import dev.frozenmilk.util.cell.SingleCell
+
 /**
  * internal
  */
 fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActiveFeatures: Set<Feature>, featureFlags: Set<Annotation>): Map<Feature, Set<FeatureDependencyResolutionFailureException>> {
 	val resolved = mutableMapOf<Feature, MutableSet<FeatureDependencyResolutionFailureException>>()
 	var notLocked = true
+	val yieldingCell = SingleCell(false)
 
-	while (notLocked) {
+	while (notLocked && !yieldingCell.get()) {
 		val unresolvedSize = unresolvedFeatures.size
+		val yields = yieldingCell.get()
 		unresolvedFeatures.forEach { feature ->
 			var resolves = feature.dependencies.isNotEmpty() // if there are no dependencies, it won't be allowed to mount
 			val exceptions = mutableSetOf<FeatureDependencyResolutionFailureException>()
@@ -48,6 +52,17 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 							false
 						}
 					}
+
+					is Yields -> {
+						try {
+							val resolutionResult = it.resolvesOrError(yieldingCell)
+							resolves and resolutionResult.first
+						}
+						catch (e: FeatureDependencyResolutionFailureException) {
+							exceptions.add(e)
+							false
+						}
+					}
 				}
 			}
 			resolved.putIfAbsent(feature, mutableSetOf())
@@ -56,15 +71,12 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 				unresolvedFeatures.remove(feature)
 				// clear the issues found, as feature dependencies may have caused a feature to fail the first round, but pass in a later one
 				resolved[feature] = mutableSetOf()
-//				feature.dependencies.forEach {
-//					// todo return the features and flags to the dependencies
-//					it.acceptResolutionOutput()
-//				}
 			}
 		}
 
 		// if we didn't manage to resolve anything new, we have a deadlock, and we should give up, and move on
 		notLocked = unresolvedFeatures.size != unresolvedSize
+		yieldingCell.accept(!notLocked && !yields)
 	}
 
 	// the remaining features caused a deadlock, so we'll add a one off exception for them
