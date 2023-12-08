@@ -42,7 +42,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 						try {
 							val newResolutionResult = it.resolvesOrError(resolved.keys)
 							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
-							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second).firstOrNull());
+							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(currentResolutionResult.second ?: newResolutionResult.second);
 							resolves and (newResolutionResult.first or currentResolutionResult.first)
 						} catch (e: FeatureDependencyResolutionFailureException) {
 							exceptions.add(e)
@@ -54,6 +54,19 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 						try {
 							val resolutionResult = it.resolvesOrError(yielding)
 							resolves and resolutionResult.first
+						}
+						catch (e: FeatureDependencyResolutionFailureException) {
+							exceptions.add(e)
+							false
+						}
+					}
+
+					is YieldsTo -> {
+						try {
+							val newResolutionResult = it.resolvesOrError(yielding to resolved.keys)
+							val currentResolutionResult = it.resolvesOrError(yielding to currentlyActiveFeatures)
+							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second));
+							resolves and (newResolutionResult.first or currentResolutionResult.first)
 						}
 						catch (e: FeatureDependencyResolutionFailureException) {
 							exceptions.add(e)

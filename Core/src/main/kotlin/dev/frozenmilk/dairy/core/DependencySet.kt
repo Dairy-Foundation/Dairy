@@ -82,6 +82,15 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	fun yields(): DependencySet {
 		return withDependency(Yields(feature))
 	}
+
+	/**
+	 * non-mutating
+	 *
+	 * @see [YieldsTo]
+	 */
+	fun yieldsTo(vararg features: Class<out Feature>): YieldsToFeatureBoundDependencySet {
+		return withDependency(YieldsTo(feature, *features)) as YieldsToFeatureBoundDependencySet
+	}
 }
 
 class FlagBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
@@ -91,6 +100,12 @@ class FlagBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *
 	}
 }
 
+class YieldsToFeatureBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
+	fun bindOutputTo(outputConsumer: Consumer<Collection<Feature>>) : DependencySet {
+		(last() as YieldsTo).bindOutput(outputConsumer)
+		return this
+	}
+}
 class FeatureBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
 	fun bindOutputTo(outputConsumer: Consumer<Collection<Feature>>): DependencySet{
 		(last() as FeatureDependency).bindOutput(outputConsumer)
@@ -141,13 +156,13 @@ sealed interface Dependency<OUTPUT, ARGS> {
 	 * returns <true, resolving arguments> if this resolves against the found arguments
 	 * returns <false, empty()> if this fails to resolve against the found arguments
 	 */
-	fun resolves(args: ARGS): Pair<Boolean, ARGS>
+	fun resolves(args: ARGS): Pair<Boolean, OUTPUT>
 
 	/**
 	 * throws an error if the dependency doesn't resolve that contains some helpful diagnostic information
 	 * @see[FeatureDependencyResolutionFailureException]
 	 */
-	fun resolvesOrError(args: ARGS): Pair<Boolean, ARGS> {
+	fun resolvesOrError(args: ARGS): Pair<Boolean, OUTPUT> {
 		val resolution = resolves(args)
 		if (!resolution.first) throw FeatureDependencyResolutionFailureException(feature, dependencyResolutionFailureMessage, failures)
 		return resolution
@@ -174,16 +189,47 @@ sealed interface Dependency<OUTPUT, ARGS> {
 /**
  * causes a dependency to try to mount after others
  */
-class Yields(override val feature: Feature) : Dependency<Nothing, Boolean> {
-	override fun resolves(args: Boolean): Pair<Boolean, Boolean> = Pair(args, args)
+class Yields(override val feature: Feature) : Dependency<Any?, Boolean> {
+	override fun resolves(args: Boolean): Pair<Boolean, Any?> = Pair(args, null)
 
 	override val failures: Collection<String> = emptyList();
 	override val dependencyResolutionFailureMessage: String = "failed to yield";
 	override fun validateContents() {}
 
-	override var outputRef: Consumer<Nothing>? = null
+	override var outputRef: Consumer<Any?>? = null
 }
 
+/**
+ * Resolves if this successfully yields to at least one of all [features], returns all features which are of the specified classes
+ */
+class YieldsTo(override val feature: Feature, private vararg val features: Class<out Feature>) : Dependency<Collection<Feature>, Pair<Boolean, Collection<Feature>>> {
+	override fun resolves(args: Pair<Boolean, Collection<Feature>>): Pair<Boolean, Collection<Feature>> {
+		if (args.first) {
+			val result = mutableSetOf<Feature>()
+			args.second.forEach {
+				if (it::class.java in features) result.add(it)
+			}
+			val classResult = result.map { it::class.java }.toSet()
+			var output = true
+			features.forEach {
+				val found = it in classResult
+				output = output and found
+				if (!found) failures.add(it.simpleName)
+			}
+			return output to result
+		}
+		return false to emptySet()
+	}
+
+	override val failures: MutableList<String> = mutableListOf()
+
+	override val dependencyResolutionFailureMessage: String = "failed to yield to"
+	override fun validateContents() {
+		if (feature::class.java in features) throw IllegalArgumentException("${feature.javaClass.simpleName} has an illegal dependency set: it is self dependant/exclusive")
+	}
+
+	override var outputRef: Consumer<Collection<Feature>>? = null
+}
 
 abstract class FlagDependency(override val feature: Feature, protected vararg val flags: Class<out Annotation>) : Dependency<Collection<Annotation>, Collection<Annotation>> {
 	final override fun validateContents() {
@@ -219,8 +265,8 @@ class IncludesAtLeastOneOf(feature: Feature, vararg flags: Class<out Annotation>
 				result.add(it)
 			}
 		}
-		if (outcome) return Pair(true, result)
-		return Pair(false, args.toSet())
+		if (outcome) return true to result
+		return false to args.toSet()
 	}
 
 	override val failures: Collection<String> = flags.map { it.simpleName }
@@ -240,7 +286,7 @@ class ExcludesFlags(feature: Feature, vararg flags: Class<out Annotation>) : Fla
 				failures.add(it::class.java.simpleName)
 			}
 		}
-		return Pair(outcome, emptySet())
+		return outcome to emptySet()
 	}
 
 	override val failures: MutableSet<String> = mutableSetOf()
@@ -267,7 +313,7 @@ class IncludesExactlyOneOf(feature: Feature, vararg flags: Class<out Annotation>
 				}
 			}
 		}
-		return Pair(outcome, result)
+		return outcome to result
 	}
 
 	override val failures: MutableSet<String> = mutableSetOf();
@@ -282,21 +328,19 @@ class IncludesExactlyOneOf(feature: Feature, vararg flags: Class<out Annotation>
 }
 
 /**
- * ensures one of the arguments are attached and processed first before this, otherwise doesn't attach it
+ * ensures one of the arguments are attached and processed first before this, otherwise doesn't attach it, returns the first one found
  */
 class DependsOnOneOf(override val feature: Feature, private vararg val features: Class<out Feature>) : Dependency<Feature?, Collection<Feature>> {
-	override fun resolves(args: Collection<Feature>): Pair<Boolean, SingleCell<Feature>> {
-		// returns true if at least one feature of this type is attached, returns all found features that satisfy this
-		val result = SingleCell<Feature>()
+	override fun resolves(args: Collection<Feature>): Pair<Boolean, Feature?> {
 		args.forEach {
-			if (it::class.java in features) result.accept(it)
+			if (it::class.java in features) return true to it
 		}
-		return Pair(result.isNotEmpty(), result)
+		return false to null
 	}
 
 	override val failures: Collection<String> = features.map { it.simpleName }
 	override val dependencyResolutionFailureMessage = "found features did not include at least one of the following types"
-	final override fun validateContents() {
+	override fun validateContents() {
 		if (feature::class.java in features) throw IllegalArgumentException("${feature.javaClass.simpleName} has an illegal dependency set: it is self dependant/exclusive")
 	}
 
@@ -316,7 +360,7 @@ class MutuallyExclusiveWith(feature: Feature, vararg features: Class<out Feature
 				failures.add(it::class.java.simpleName)
 			}
 		}
-		return Pair(outcome, emptySet())
+		return outcome to emptySet()
 	}
 
 	override val failures: MutableSet<String> = mutableSetOf()
