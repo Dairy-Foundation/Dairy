@@ -1,18 +1,15 @@
 package dev.frozenmilk.dairy.core
 
-import dev.frozenmilk.util.cell.SingleCell
-
 /**
  * internal
  */
 fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActiveFeatures: Set<Feature>, featureFlags: Set<Annotation>): Map<Feature, Set<FeatureDependencyResolutionFailureException>> {
 	val resolved = mutableMapOf<Feature, MutableSet<FeatureDependencyResolutionFailureException>>()
 	var notLocked = true
-	val yieldingCell = SingleCell(false)
+	var yielding = false
 
-	while (notLocked && !yieldingCell.get()) {
+	while (notLocked || yielding) {
 		val unresolvedSize = unresolvedFeatures.size
-		val yields = yieldingCell.get()
 		unresolvedFeatures.forEach { feature ->
 			var resolves = feature.dependencies.isNotEmpty() // if there are no dependencies, it won't be allowed to mount
 			val exceptions = mutableSetOf<FeatureDependencyResolutionFailureException>()
@@ -55,7 +52,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 
 					is Yields -> {
 						try {
-							val resolutionResult = it.resolvesOrError(yieldingCell)
+							val resolutionResult = it.resolvesOrError(yielding)
 							resolves and resolutionResult.first
 						}
 						catch (e: FeatureDependencyResolutionFailureException) {
@@ -76,7 +73,7 @@ fun resolveDependencies(unresolvedFeatures: MutableSet<Feature>, currentlyActive
 
 		// if we didn't manage to resolve anything new, we have a deadlock, and we should give up, and move on
 		notLocked = unresolvedFeatures.size != unresolvedSize
-		yieldingCell.accept(!notLocked && !yields)
+		yielding = (!notLocked && !yielding)
 	}
 
 	// the remaining features caused a deadlock, so we'll add a one off exception for them

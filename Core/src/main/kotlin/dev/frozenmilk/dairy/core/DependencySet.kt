@@ -131,7 +131,7 @@ operator fun Exception.plus(other: Exception): Exception {
 }
 class DependencyResolutionFailureException(message: String) : Exception(message)
 
-sealed interface Dependency<OUTPUT, ARGS : Collection<*>> {
+sealed interface Dependency<OUTPUT, ARGS> {
 	/**
 	 * the feature which this resolves to
 	 */
@@ -174,8 +174,8 @@ sealed interface Dependency<OUTPUT, ARGS : Collection<*>> {
 /**
  * causes a dependency to try to mount after others
  */
-class Yields(override val feature: Feature) : Dependency<Nothing, SingleCell<Boolean>> {
-	override fun resolves(args: SingleCell<Boolean>): Pair<Boolean, SingleCell<Boolean>> = Pair(args.isNotEmpty() && args.get(), args)
+class Yields(override val feature: Feature) : Dependency<Nothing, Boolean> {
+	override fun resolves(args: Boolean): Pair<Boolean, Boolean> = Pair(args, args)
 
 	override val failures: Collection<String> = emptyList();
 	override val dependencyResolutionFailureMessage: String = "failed to yield";
@@ -183,6 +183,7 @@ class Yields(override val feature: Feature) : Dependency<Nothing, SingleCell<Boo
 
 	override var outputRef: Consumer<Nothing>? = null
 }
+
 
 abstract class FlagDependency(override val feature: Feature, protected vararg val flags: Class<out Annotation>) : Dependency<Collection<Annotation>, Collection<Annotation>> {
 	final override fun validateContents() {
