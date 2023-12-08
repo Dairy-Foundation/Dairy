@@ -10,15 +10,13 @@ android {
 	compileSdk = 29
 
 	defaultConfig {
-		minSdk = 24
+		minSdk = 26 // todo remember in docs that this is upgraded from 24 -> 26
 		//noinspection ExpiredTargetSdkVersion
 		targetSdk = 28
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		consumerProguardFiles("consumer-rules.pro")
 	}
-
-	compileSdk = 29
 
 	buildTypes {
 		release {
