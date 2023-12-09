@@ -6,13 +6,17 @@ import java.util.function.Supplier
 /**
  * A [LazyCell] that is initialised on the init of an OpMode
  */
-class OpModeLazyCell<T>(supplier: Supplier<T>) : LazyCell<T>(supplier) , Feature{
+class OpModeLazyCell<T>(supplier: Supplier<T>) : LazyCell<T>(supplier), Feature {
+	override val dependencies: Set<Dependency<*, *>> = DependencySet(this)
+			.yields()
+	override fun get(): T {
+		if(!FeatureRegistrar.opmodeActive) throw IllegalStateException("Attempted to access contents of OpModeLazyCell while no opmode active")
+		return super.get()
+	}
+
 	init {
 		FeatureRegistrar.registerFeature(this)
 	}
-
-	override val dependencies: Set<Dependency<*, *>> = DependencySet(this)
-			.yields()
 
 	override fun preUserInitHook(opMode: OpModeWrapper) {
 		get()

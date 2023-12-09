@@ -1,7 +1,6 @@
 package dev.frozenmilk.util.cell
 
-import java.util.function.Consumer
-import java.util.function.Supplier
+import kotlin.reflect.KProperty
 
 /**
  * a transparent cell
@@ -22,6 +21,10 @@ open class RefCell<T>(private var ref: T) : Cell<T> {
 	override fun hashCode(): Int {
 		return get().hashCode()
 	}
+
+	override fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
+
+	override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) = accept(value)
 
 	override fun equals(other: Any?): Boolean {
 		return get()?.equals(other) ?: false

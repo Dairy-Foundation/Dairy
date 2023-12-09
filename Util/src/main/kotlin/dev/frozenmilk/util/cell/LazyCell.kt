@@ -5,20 +5,32 @@ import java.util.function.Supplier
 /**
  * lazily loads a value when contents are null
  */
-open class LazyCell<T>(private val supplier: Supplier<T>) : LateInitCell<T>("Attempted to obtain a null value from a LazyCell"), Lazy<T> {
-	private var inited = false
-	final override fun get(): T {
-		if(!inited) accept(supplier.get())
-		inited = true
+open class LazyCell<T>(private val supplier: Supplier<T>) : LateInitCell<T>("Attempted to obtain a null value from a LazyCell") {
+	private var initialised = false
+	override fun get(): T {
+		if(!initialised) accept(supplier.get())
+		initialised = true
 		return super.get()
 	}
 
-	final override fun accept(p0: T) {
-		if (p0 == null) inited = false
+	override fun accept(p0: T) {
+		if (p0 == null) initialised = false
 		super.accept(p0)
 	}
 
-	final override val value: T = get()
+	/**
+	 * causes the next attempt to get the contents of the cell to recalculate from the [supplier]
+	 */
+	fun invalidate() {
+		initialised = false
+	}
+}
 
-	final override fun isInitialized(): Boolean = inited
+/**
+ * causes the next attempt to get the contents of the cell to recalculate from the [LazyCell.supplier]
+ *
+ * also sets the contents to null
+ */
+fun <T> LazyCell<T?>.cleanse() {
+	accept(null)
 }

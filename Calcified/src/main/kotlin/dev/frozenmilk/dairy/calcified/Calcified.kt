@@ -6,7 +6,9 @@ import dev.frozenmilk.dairy.core.DairyCore
 import dev.frozenmilk.dairy.core.DependencySet
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.FeatureRegistrar
+import dev.frozenmilk.dairy.core.OpModeLazyCell
 import dev.frozenmilk.dairy.core.OpModeWrapper
+import dev.frozenmilk.util.cell.LazyCell
 
 /**
  * enabled by having either @[DairyCore] or @[DairyCore.Calcify]
@@ -25,22 +27,21 @@ object Calcified : Feature {
 	var modules: Array<CalcifiedModule> = emptyArray()
 		private set
 
-	private var _controlHub: CalcifiedModule? = null
-	private var _expansionHub: CalcifiedModule? = null
+	val controlHub: CalcifiedModule by LazyCell {
+		if (!FeatureRegistrar.opmodeActive) throw IllegalStateException("OpMode not inited, cannot yet access the control hub")
+		modules.filter { it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber) }.getOrNull(0) ?:throw IllegalStateException(("The control hub was not found, this may be an electronics issue"))
+	}
 
-	val controlHub: CalcifiedModule
-		get() = _controlHub ?: throw IllegalStateException("The control hub was not found, this may be an electronics issue")
-
-	val expansionHub: CalcifiedModule
-		get() = _expansionHub ?: throw IllegalStateException("The expansion hub was not found, this may be an electronics issue")
+	val expansionHub: CalcifiedModule by LazyCell {
+		if (!FeatureRegistrar.opmodeActive) throw IllegalStateException("OpMode not inited, cannot yet access the expansion hub")
+		modules.filter { !(it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber)) }.getOrNull(0) ?: throw IllegalStateException(("The expansion hub was not found, this may be an electronics issue"))
+	}
 
 	override fun preUserInitHook(opMode: OpModeWrapper) {
 		modules = opMode.hardwareMap.getAll(LynxModule::class.java).map {
 			CalcifiedModule(it)
 		}.toTypedArray()
 
-		_controlHub = modules.filter { it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber) }.getOrNull(0)
-		_expansionHub = modules.filter { !(it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber)) }.getOrNull(0)
 
 		modules.forEach { it.refreshBulkCache() }
 	}

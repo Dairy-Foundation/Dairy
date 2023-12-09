@@ -1,5 +1,7 @@
 package dev.frozenmilk.util.cell
 
+import kotlin.reflect.KProperty
+
 /**
  * a cell that starts with no value, but can be given one, throws an error if an attempt to access its contents are made but [lateInitRef] is null
  *
@@ -14,6 +16,10 @@ open class LateInitCell<T>(private val error: String = "Attempted to obtain a nu
 	override fun get(): T {
 		return lateInitRef ?: throw IllegalStateException(error)
 	}
+
+	override fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
+
+	override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) = accept(value)
 
 	override fun equals(other: Any?): Boolean {
 		return super.equals(other)

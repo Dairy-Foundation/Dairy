@@ -7,7 +7,7 @@ import kotlin.reflect.KProperty
 /**
  * a top level cell interface, cells act like pointers, and recreate many features of them
  */
-interface Cell<T> : Consumer<T>, Supplier<T>
-
-operator fun <T> Cell<T>.getValue(thisRef: Any?, property: KProperty<*>): T = get()
-operator fun <T> Cell<T>.setValue(thisRef: Any?, property: KProperty<*>, value: T) = accept(value)
+interface Cell<T> : Consumer<T>, Supplier<T> {
+	operator fun getValue(thisRef: Any?, property: KProperty<*>): T
+	operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T)
+}

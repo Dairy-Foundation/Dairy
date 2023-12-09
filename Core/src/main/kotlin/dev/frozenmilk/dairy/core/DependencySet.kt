@@ -12,7 +12,7 @@ import java.util.function.Consumer
  *
  * a feature is enabled if all of its dependencies resolve
  */
-open class DependencySet internal constructor(private val feature: Feature, dependencies: Set<Dependency<*, *>>) : Set<Dependency<*, *>> by dependencies {
+open class DependencySet internal constructor(internal val feature: Feature, dependencies: Set<Dependency<*, *>>) : Set<Dependency<*, *>> by dependencies {
 	constructor(feature: Feature) : this(feature, setOf())
 
 	/**
@@ -35,7 +35,7 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	 * @see [IncludesAtLeastOneOf]
 	 */
 	fun includesAtLeastOneOf(vararg flags: Class<out Annotation>): FlagBoundDependencySet {
-		return withDependency(IncludesAtLeastOneOf(feature, *flags)) as FlagBoundDependencySet
+		return FlagBoundDependencySet(withDependency(IncludesAtLeastOneOf(feature, *flags)))
 	}
 
 	/**
@@ -43,8 +43,8 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	 *
 	 * @see [IncludesExactlyOneOf]
 	 */
-	fun includesExactlyOneOf(vararg flags: Class<out Annotation>): FlagBoundDependencySet {
-		return withDependency(IncludesExactlyOneOf(feature, *flags)) as FlagBoundDependencySet
+	fun includesExactlyOneOf(vararg flags: Class<out Annotation>): IndividualFlagBoundDependencySet {
+		return IndividualFlagBoundDependencySet(withDependency(IncludesExactlyOneOf(feature, *flags)))
 	}
 
 	/**
@@ -53,7 +53,7 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	 * @see [ExcludesFlags]
 	 */
 	fun excludesFlags(vararg flags: Class<out Annotation>): FlagBoundDependencySet {
-		return withDependency(ExcludesFlags(feature, *flags)) as FlagBoundDependencySet
+		return FlagBoundDependencySet(withDependency(ExcludesFlags(feature, *flags)))
 	}
 
 	/**
@@ -62,7 +62,7 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	 * @see [DependsOnOneOf]
 	 */
 	fun dependsOnOneOf(vararg features: Class<out Feature>): SingleFeatureDependencySet {
-		return withDependency(DependsOnOneOf(feature, *features)) as SingleFeatureDependencySet
+		return SingleFeatureDependencySet(withDependency(DependsOnOneOf(feature, *features)))
 	}
 
 	/**
@@ -71,7 +71,7 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	 * @see [DependsOnOneOf]
 	 */
 	fun mutuallyExclusiveWith(vararg features: Class<out Feature>): FeatureBoundDependencySet {
-		return withDependency(MutuallyExclusiveWith(feature, *features)) as FeatureBoundDependencySet
+		return FeatureBoundDependencySet(withDependency(MutuallyExclusiveWith(feature, *features)))
 	}
 
 	/**
@@ -89,31 +89,36 @@ open class DependencySet internal constructor(private val feature: Feature, depe
 	 * @see [YieldsTo]
 	 */
 	fun yieldsTo(vararg features: Class<out Feature>): YieldsToFeatureBoundDependencySet {
-		return withDependency(YieldsTo(feature, *features)) as YieldsToFeatureBoundDependencySet
+		return YieldsToFeatureBoundDependencySet(withDependency(YieldsTo(feature, *features)))
 	}
 }
 
-class FlagBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
+class FlagBoundDependencySet(dependencySet: DependencySet) : DependencySet(dependencySet.feature, dependencySet) {
 	fun bindOutputTo(outputConsumer: Consumer<Collection<Annotation>>): DependencySet {
 		(last() as FlagDependency).bindOutput(outputConsumer)
 		return this
 	}
 }
-
-class YieldsToFeatureBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
+class IndividualFlagBoundDependencySet(dependencySet: DependencySet) : DependencySet(dependencySet.feature, dependencySet) {
+	fun bindOutputTo(outputConsumer: Consumer<Annotation?>) : DependencySet {
+		(last() as IncludesExactlyOneOf).bindOutput(outputConsumer)
+		return this
+	}
+}
+class YieldsToFeatureBoundDependencySet(dependencySet: DependencySet) : DependencySet(dependencySet.feature, dependencySet) {
 	fun bindOutputTo(outputConsumer: Consumer<Collection<Feature>>) : DependencySet {
 		(last() as YieldsTo).bindOutput(outputConsumer)
 		return this
 	}
 }
-class FeatureBoundDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
+class FeatureBoundDependencySet(dependencySet: DependencySet) : DependencySet(dependencySet.feature, dependencySet) {
 	fun bindOutputTo(outputConsumer: Consumer<Collection<Feature>>): DependencySet{
 		(last() as FeatureDependency).bindOutput(outputConsumer)
 		return this
 	}
 }
 
-class SingleFeatureDependencySet(feature: Feature, dependencies: Set<Dependency<*, *>>) : DependencySet(feature, dependencies) {
+class SingleFeatureDependencySet(dependencySet: DependencySet) : DependencySet(dependencySet.feature, dependencySet) {
 	fun bindOutputTo(outputConsumer: Consumer<Feature?>): DependencySet{
 		(last() as DependsOnOneOf).bindOutput(outputConsumer)
 		return this
@@ -190,7 +195,7 @@ sealed interface Dependency<OUTPUT, ARGS> {
  * causes a dependency to try to mount after others
  */
 class Yields(override val feature: Feature) : Dependency<Any?, Boolean> {
-	override fun resolves(args: Boolean): Pair<Boolean, Any?> = Pair(args, null)
+	override fun resolves(args: Boolean): Pair<Boolean, Any?> = args to null
 
 	override val failures: Collection<String> = emptyList();
 	override val dependencyResolutionFailureMessage: String = "failed to yield";
@@ -260,7 +265,7 @@ class IncludesAtLeastOneOf(feature: Feature, vararg flags: Class<out Annotation>
 		var outcome = false
 		val result = mutableSetOf<Annotation>()
 		args.forEach {
-			if(it::class.java in flags)  {
+			if(it.annotationClass.java in flags)  {
 				outcome = true
 				result.add(it)
 			}
@@ -281,9 +286,9 @@ class ExcludesFlags(feature: Feature, vararg flags: Class<out Annotation>) : Fla
 		failures.clear()
 		var outcome = true
 		args.forEach {
-			if(it::class.java in flags)  {
+			if(it.annotationClass.java in flags)  {
 				outcome = false
-				failures.add(it::class.java.simpleName)
+				failures.add(it.annotationClass.java.simpleName)
 			}
 		}
 		return outcome to emptySet()
@@ -296,20 +301,19 @@ class ExcludesFlags(feature: Feature, vararg flags: Class<out Annotation>) : Fla
 /**
  * resolves if the flags on the OpMode contain exactly one of these Flags
  */
-class IncludesExactlyOneOf(feature: Feature, vararg flags: Class<out Annotation>) : FlagDependency(feature, *flags) {
-	override fun resolves(args: Collection<Annotation>): Pair<Boolean, List<Annotation>> {
+class IncludesExactlyOneOf(override val feature: Feature, vararg val flags: Class<out Annotation>) : Dependency<Annotation?, Collection<Annotation>> {
+	override fun resolves(args: Collection<Annotation>): Pair<Boolean, Annotation?> {
 		failures.clear()
-		val result = mutableListOf<Annotation>()
+		var result: Annotation? = null
 		var outcome = false
 		args.forEach {
-			if(it::class.java in flags) {
-				if(result.getOrNull(0) == null) {
+			if(it.annotationClass.java in flags) {
+				if(!outcome) {
 					outcome = true
-					result[0] = it
+					result = it
 				}
 				else {
-					outcome = false
-					failures.add(it::class.java.simpleName)
+					failures.add(it.annotationClass.java.simpleName)
 				}
 			}
 		}
@@ -325,6 +329,17 @@ class IncludesExactlyOneOf(feature: Feature, vararg flags: Class<out Annotation>
 			}
 			return "found excess flags"
 		}
+
+	override fun validateContents() {
+		if (
+				TeleOp::class.java in flags ||
+				Autonomous::class.java in flags ||
+				Disabled::class.java in flags
+		)
+			throw IllegalArgumentException("${feature.javaClass.simpleName} has an illegal dependency set: annotations that are used as part of the base sdk are illegal flag dependency arguments")
+	}
+
+	override var outputRef: Consumer<Annotation?>? = null
 }
 
 /**
