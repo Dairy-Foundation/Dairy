@@ -51,8 +51,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 				registrationQueue.mapNotNull { it.get() }, // makes a copy of the set
 				activeFeatures.mapNotNull { it.get() },
 				activeFlags
-		)
-		resolved.filter { it.second.isEmpty() }.forEach {
+		).filter { it.second.isEmpty() }.forEach {
 			activeFeatures.add(WeakReference(it.first))
 		}
 		registrationQueue.clear()
@@ -123,28 +122,28 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	}
 
 	fun onOpModePreInit(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.preUserInitHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.preUserInitHook(opMode) }
 	}
 
 	fun onOpModePostInit(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.postUserInitHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.postUserInitHook(opMode) }
 	}
 
 	fun onOpModePreInitLoop(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.preUserInitLoopHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.preUserInitLoopHook(opMode) }
 	}
 
 	fun onOpModePostInitLoop(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.postUserInitLoopHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.postUserInitLoopHook(opMode) }
 	}
 
 	fun onOpModePreStart(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.preUserStartHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.preUserStartHook(opMode) }
 	}
 
 	override fun onOpModePreStart(opMode: OpMode) {
@@ -152,28 +151,28 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	}
 
 	fun onOpModePostStart(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.postUserStartHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.postUserStartHook(opMode) }
 	}
 
 	fun onOpModePreLoop(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.preUserLoopHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.preUserLoopHook(opMode) }
 	}
 
 	fun onOpModePostLoop(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.postUserLoopHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.postUserLoopHook(opMode) }
 	}
 
 	fun onOpModePreStop(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.preUserStopHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.preUserStopHook(opMode) }
 	}
 
 	fun onOpModePostStop(opMode: OpModeWrapper) {
-		activeFeatures.forEach { it.get()?.postUserStopHook(opMode) }
 		resolveRegistrationQueue()
+		activeFeatures.forEach { it.get()?.postUserStopHook(opMode) }
 	}
 
 	override fun onOpModePostStop(opMode: OpMode) {
