@@ -230,7 +230,7 @@ class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, pr
 	/**
 	 * non-mutating
 	 */
-	fun debounce(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, debounce, debounce)
+	fun debounce(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, (debounce * 1E9).toLong(), (debounce * 1E9).toLong())
 
 	/**
 	 * non-mutating
@@ -240,12 +240,12 @@ class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, pr
 	/**
 	 * non-mutating
 	 */
-	fun debounceLeadingEdge(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, debounce, this.trailingDebounce)
+	fun debounceLeadingEdge(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, (debounce * 1E9).toLong(), this.trailingDebounce)
 
 	/**
 	 * non-mutating
 	 */
-	fun debounceTrailingEdge(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, this.leadingDebounce, debounce)
+	fun debounceTrailingEdge(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, this.leadingDebounce, (debounce * 1E9).toLong())
 
 	override val dependencies: Set<Dependency<*, *>> = DependencySet(this).yields()
 
