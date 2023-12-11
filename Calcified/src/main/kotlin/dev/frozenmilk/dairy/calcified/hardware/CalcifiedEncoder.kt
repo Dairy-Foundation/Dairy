@@ -1,7 +1,6 @@
 package dev.frozenmilk.dairy.calcified.hardware
 
 import com.qualcomm.hardware.lynx.commands.core.LynxResetMotorEncoderCommand
-import dev.frozenmilk.dairy.calcified.CalcifiedModule
 import dev.frozenmilk.dairy.calcified.hardware.controller.CachedCompoundSupplier
 import dev.frozenmilk.dairy.calcified.hardware.controller.CompoundSupplier
 import dev.frozenmilk.dairy.calcified.geometry.angle.AngleDegrees

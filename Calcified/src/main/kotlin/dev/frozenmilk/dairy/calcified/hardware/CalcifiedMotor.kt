@@ -4,7 +4,6 @@ import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorChannelEnableCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorChannelModeCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorConstantPowerCommand
 import com.qualcomm.robotcore.hardware.DcMotor
-import dev.frozenmilk.dairy.calcified.CalcifiedModule
 import kotlin.math.abs
 
 open class CalcifiedMotor internal constructor(private val module: CalcifiedModule, private val port: Byte) {

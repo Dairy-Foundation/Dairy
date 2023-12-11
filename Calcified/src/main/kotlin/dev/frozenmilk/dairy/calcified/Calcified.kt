@@ -1,12 +1,16 @@
 package dev.frozenmilk.dairy.calcified
 
 import com.qualcomm.hardware.lynx.LynxModule
+import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
+import dev.frozenmilk.dairy.calcified.gamepad.CalcifiedGamepad
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
 import dev.frozenmilk.dairy.core.DairyCore
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.OpModeWrapper
+import dev.frozenmilk.util.cell.LateInitCell
 import dev.frozenmilk.util.cell.LazyCell
 
 /**
@@ -26,6 +30,12 @@ object Calcified : Feature {
 	var modules: Array<CalcifiedModule> = emptyArray()
 		private set
 
+	private var boringGamepad1: Gamepad by LateInitCell()
+	private var boringGamepad2: Gamepad by LateInitCell()
+
+	val gamepad1: CalcifiedGamepad by LazyCell { CalcifiedGamepad(boringGamepad1) }
+	val gamepad2: CalcifiedGamepad by LazyCell { CalcifiedGamepad(boringGamepad2) }
+
 	val controlHub: CalcifiedModule by LazyCell {
 		if (!FeatureRegistrar.opmodeActive) throw IllegalStateException("OpMode not inited, cannot yet access the control hub")
 		modules.filter { it.lynxModule.isParent && LynxConstants.isEmbeddedSerialNumber(it.lynxModule.serialNumber) }.getOrNull(0) ?:throw IllegalStateException(("The control hub was not found, this may be an electronics issue"))
@@ -41,6 +51,8 @@ object Calcified : Feature {
 			CalcifiedModule(it)
 		}.toTypedArray()
 
+		boringGamepad1 = opMode.gamepad1
+		boringGamepad2 = opMode.gamepad2
 
 		modules.forEach { it.refreshBulkCache() }
 	}

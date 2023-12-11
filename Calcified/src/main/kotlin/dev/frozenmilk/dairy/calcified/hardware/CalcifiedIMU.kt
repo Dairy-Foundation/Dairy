@@ -1,11 +1,15 @@
 package dev.frozenmilk.dairy.calcified.hardware
 
 import com.qualcomm.hardware.bosch.BHI260IMU
+import com.qualcomm.hardware.bosch.BNO055IMU
+import com.qualcomm.hardware.bosch.BNO055IMU.Register
+import com.qualcomm.hardware.bosch.BNO055IMUImpl.VectorData
 import com.qualcomm.hardware.lynx.LynxI2cDeviceSynch
 import com.qualcomm.robotcore.hardware.I2cAddr
 import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.LynxModuleImuType.*
 import com.qualcomm.robotcore.hardware.QuaternionBasedImuHelper.FailedToRetrieveQuaternionException
+import com.qualcomm.robotcore.hardware.TimestampedData
 import dev.frozenmilk.dairy.calcified.geometry.angle.Angle
 import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
@@ -26,7 +30,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	init {
 		when (imuType) {
 			NONE, UNKNOWN -> throw IllegalStateException("Attempted to access IMU, but no accessible IMU found")
-			BNO055 -> TODO()
+			BNO055 -> device.i2cAddr = BNO055IMU.I2CADDR_DEFAULT
 			BHI260 -> device.i2cAddr = I2cAddr.create7bit(0x28)
 		}
 	}
@@ -67,7 +71,25 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 		return when (imuType) {
 			NONE, UNKNOWN -> throw IllegalStateException("Attempted to access IMU, but no accessible IMU found")
 
-			BNO055 -> TODO("")
+			BNO055 -> {
+				val data: TimestampedData = device.readTimeStamped(Register.QUA_DATA_W_LSB.bVal.toInt(), 8)
+
+				var receivedAllZeros = true
+				for (b in data.data) {
+					if (b != 0.toByte()) {
+						receivedAllZeros = false
+						break
+					}
+				}
+
+				if (receivedAllZeros) {
+					// All zeros is not a valid quaternion.
+					throw FailedToRetrieveQuaternionException()
+				}
+
+				val buffer = ByteBuffer.wrap(data.data).order(ByteOrder.LITTLE_ENDIAN)
+				AngleBasedRobotOrientation(Quaternion(buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, data.nanoTime))
+			}
 
 			BHI260 -> {
 				if (gameRVRequestGpio !is GpioPin) {
@@ -104,7 +126,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 				val y = (yInt * QUATERNION_SCALE_FACTOR).toFloat()
 				val z = (zInt * QUATERNION_SCALE_FACTOR).toFloat()
 				val w = (wInt * QUATERNION_SCALE_FACTOR).toFloat()
-				return AngleBasedRobotOrientation(Quaternion(w, x, y, z, timestamp))
+				AngleBasedRobotOrientation(Quaternion(w, x, y, z, timestamp))
 			}
 		}
 	}
@@ -119,6 +141,11 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 		// We want these fields to get initialized even if initialization ends up failing
 		val gameRVRequestGpio = AndroidBoard.getInstance().bhi260Gpio5
 
+		/*
+		constant values from the BNO055 IMU
+		 */
+
+		val scale: Float = (1 shl 14).toFloat()
 	}
 }
 

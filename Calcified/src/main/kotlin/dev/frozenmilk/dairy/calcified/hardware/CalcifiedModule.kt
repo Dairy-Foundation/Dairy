@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.calcified
+package dev.frozenmilk.dairy.calcified.hardware
 
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand
@@ -6,9 +6,6 @@ import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse
 import dev.frozenmilk.dairy.calcified.collections.Encoders
 import dev.frozenmilk.dairy.calcified.collections.Motors
 import dev.frozenmilk.dairy.calcified.collections.Servos
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedEncoder
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedServo
 
 class CalcifiedModule(val lynxModule: LynxModule) {
 	val motors = Motors(this)

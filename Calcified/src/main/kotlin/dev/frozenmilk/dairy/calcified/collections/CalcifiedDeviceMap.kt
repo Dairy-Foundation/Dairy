@@ -1,14 +1,19 @@
 package dev.frozenmilk.dairy.calcified.collections
 
+import com.qualcomm.hardware.lynx.commands.core.LynxFirmwareVersionManager
+import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
-import dev.frozenmilk.dairy.calcified.CalcifiedModule
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
+import dev.frozenmilk.dairy.calcified.hardware.AngleBasedRobotOrientation
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedEncoder
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedIMU
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedServo
 import dev.frozenmilk.dairy.calcified.hardware.DegreesEncoder
 import dev.frozenmilk.dairy.calcified.hardware.RadiansEncoder
 import dev.frozenmilk.dairy.calcified.hardware.TicksEncoder
 import dev.frozenmilk.dairy.calcified.hardware.UnitEncoder
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 
 abstract class CalcifiedDeviceMap<T> internal constructor(protected val module: CalcifiedModule, private val map: MutableMap<Byte, T> = mutableMapOf()) : MutableMap<Byte, T> by map
 
@@ -66,4 +71,15 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 	fun getDegreesEncoder(port: Byte, ticksPerRevolution: Double): DegreesEncoder {
 		return getEncoder(DegreesEncoder::class.java, port, ticksPerRevolution)
 	}
+}
+
+class IMUs internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedIMU>(module){
+	fun getIMU(port: Byte, imuType: LynxModuleImuType, angleBasedRobotOrientation: AngleBasedRobotOrientation): CalcifiedIMU {
+		this.putIfAbsent(port, CalcifiedIMU(imuType, LynxFirmwareVersionManager.createLynxI2cDeviceSynch(AppUtil.getDefContext(), module.lynxModule, port.toInt()), angleBasedRobotOrientation))
+		return this[port]!!
+	}
+
+	fun getIMU_BHI260(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()) = this.getIMU(port, LynxModuleImuType.BHI260, angleBasedRobotOrientation)
+
+	fun getIMU_BNO055(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()) = this.getIMU(port, LynxModuleImuType.BNO055, angleBasedRobotOrientation)
 }

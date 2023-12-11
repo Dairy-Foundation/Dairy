@@ -4,7 +4,6 @@ import com.qualcomm.hardware.lynx.commands.core.LynxSetServoEnableCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetServoPulseWidthCommand
 import com.qualcomm.robotcore.hardware.PwmControl.PwmRange
 import com.qualcomm.robotcore.util.Range
-import dev.frozenmilk.dairy.calcified.CalcifiedModule
 import kotlin.math.abs
 
 class CalcifiedServo internal constructor(private val module: CalcifiedModule, private val port: Byte) {
