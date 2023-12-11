@@ -1,5 +1,7 @@
 package dev.frozenmilk.dairy.core
 
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.util.cell.LazyCell
 import java.util.function.Supplier
 

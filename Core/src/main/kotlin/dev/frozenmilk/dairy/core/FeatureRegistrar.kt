@@ -6,6 +6,11 @@ import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerImpl
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier
+import dev.frozenmilk.dairy.core.dependencyresolution.DependencyResolutionFailureException
+import dev.frozenmilk.dairy.core.dependencyresolution.FeatureDependencyResolutionFailureException
+import dev.frozenmilk.dairy.core.dependencyresolution.plus
+import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependenciesMap
+import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependenciesOrderedList
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
 import java.lang.ref.WeakReference
 import java.util.ArrayDeque

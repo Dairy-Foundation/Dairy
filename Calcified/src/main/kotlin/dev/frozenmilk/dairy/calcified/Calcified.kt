@@ -3,10 +3,9 @@ package dev.frozenmilk.dairy.calcified
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.core.DairyCore
-import dev.frozenmilk.dairy.core.DependencySet
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.FeatureRegistrar
-import dev.frozenmilk.dairy.core.OpModeLazyCell
 import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.util.cell.LazyCell
 

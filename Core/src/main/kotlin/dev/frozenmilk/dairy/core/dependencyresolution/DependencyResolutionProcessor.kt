@@ -1,4 +1,12 @@
-package dev.frozenmilk.dairy.core
+package dev.frozenmilk.dairy.core.dependencyresolution
+
+import dev.frozenmilk.dairy.core.Feature
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.DependsOnOneOf
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.FeatureDependency
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.FlagDependency
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.IncludesExactlyOneOf
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Yields
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.YieldsTo
 
 /**
  * todo

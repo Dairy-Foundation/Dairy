@@ -1,5 +1,7 @@
 package dev.frozenmilk.dairy.core
 
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
+
 /**
  * Objects which implement this can run actions against a wide range of hooks into all OpModes
  *
