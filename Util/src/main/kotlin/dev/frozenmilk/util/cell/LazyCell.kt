@@ -24,6 +24,14 @@ open class LazyCell<T>(private val supplier: Supplier<T>) : LateInitCell<T>("Att
 	fun invalidate() {
 		initialised = false
 	}
+
+	/**
+	 * applies the function and returns the result if the internals are already initialised, else return null
+	 */
+	fun <R> safeApply(apply: (T) -> R): R? {
+		if(initialised) return apply(get())
+		return null
+	}
 }
 
 /**
