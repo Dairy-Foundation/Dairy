@@ -7,6 +7,7 @@ import dev.frozenmilk.dairy.calcified.collections.Encoders
 import dev.frozenmilk.dairy.calcified.collections.IMUs
 import dev.frozenmilk.dairy.calcified.collections.Motors
 import dev.frozenmilk.dairy.calcified.collections.Servos
+import dev.frozenmilk.util.cell.LateInitCell
 
 class CalcifiedModule(val lynxModule: LynxModule) {
 	val motors = Motors(this)
@@ -32,8 +33,7 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 	var cachedTime: Double = System.nanoTime() / 1E9
 		private set
 	var previousCachedTime: Double = cachedTime
-	lateinit var bulkData: LynxGetBulkInputDataResponse
-		private set
+	var bulkData: LynxGetBulkInputDataResponse by LateInitCell()
 
 	init {
 		refreshBulkCache()
