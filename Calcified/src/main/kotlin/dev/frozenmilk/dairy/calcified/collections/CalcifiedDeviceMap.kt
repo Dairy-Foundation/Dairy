@@ -5,11 +5,13 @@ import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
 import dev.frozenmilk.dairy.calcified.hardware.AngleBasedRobotOrientation
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedContinuousServo
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedEncoder
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedIMU
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedServo
 import dev.frozenmilk.dairy.calcified.hardware.DegreesEncoder
+import dev.frozenmilk.dairy.calcified.hardware.PWMDevice
 import dev.frozenmilk.dairy.calcified.hardware.RadiansEncoder
 import dev.frozenmilk.dairy.calcified.hardware.TicksEncoder
 import dev.frozenmilk.dairy.calcified.hardware.UnitEncoder
@@ -26,11 +28,21 @@ class Motors internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<
 	}
 }
 
-class Servos internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedServo>(module) {
+class Servos internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<PWMDevice>(module) {
 	fun getServo(port: Byte): CalcifiedServo {
 		if (port !in LynxConstants.INITIAL_SERVO_PORT until LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_SERVO_PORT}, ${LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1}]")
-		this.putIfAbsent(port, CalcifiedServo(module, port))
-		return this[port]!!
+		if (this.containsKey(port) && this[port] !is CalcifiedServo) {
+			this[port] = CalcifiedServo(module, port)
+		}
+		return (this[port] as CalcifiedServo)
+	}
+
+	fun getContinuousServo(port: Byte): CalcifiedContinuousServo {
+		if (port !in LynxConstants.INITIAL_SERVO_PORT until LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_SERVO_PORT}, ${LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1}]")
+		if (this.containsKey(port) && this[port] !is CalcifiedContinuousServo) {
+			this[port] = CalcifiedContinuousServo(module, port)
+		}
+		return (this[port] as CalcifiedContinuousServo)
 	}
 }
 
