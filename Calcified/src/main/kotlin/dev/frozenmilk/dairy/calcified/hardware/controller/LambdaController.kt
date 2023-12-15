@@ -10,7 +10,7 @@ import dev.frozenmilk.util.angle.Angle
 import java.util.function.Supplier
 import kotlin.math.cos
 
-class LambdaController<IN> private constructor(override var target: IN, override val motors: SimpleMotor, override val calculate: Supplier<Double>) : ComplexController<IN> {
+class LambdaController<IN> internal constructor(override var target: IN, override val motors: SimpleMotor, override val calculate: Supplier<Double>) : ComplexController<IN> {
     override val dependencies: Set<Dependency<*, *>> = DependencySet(this).yieldsTo(Calcified::class.java)
 
     init {
