@@ -103,7 +103,11 @@ object Calcified : Feature {
 		// if cross pollination is enabled, and the OpMode type is Teleop, then we want to keep our pre-existing modules and hubs
 		// however, if we have no modules (like after a teleop or at the very start) then we want to find new modules too
 		// if cross pollination is disabled, we only want to find new stuff if the modules are empty
-		if(modules.isEmpty() || (crossPollinate && opMode.opModeType != OpModeWrapper.OpModeType.TELEOP)) {
+		if(modules.isEmpty() || (crossPollinate && when(opMode.opModeType) {
+					OpModeWrapper.OpModeType.TELEOP -> false
+					OpModeWrapper.OpModeType.AUTONOMOUS -> true
+					OpModeWrapper.OpModeType.NONE -> false
+				})) {
 			modules = opMode.hardwareMap.getAll(LynxModule::class.java).map {
 				CalcifiedModule(it)
 			}.toTypedArray()
