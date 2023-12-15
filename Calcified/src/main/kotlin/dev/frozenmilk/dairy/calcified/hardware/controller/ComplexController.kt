@@ -1,16 +1,9 @@
 package dev.frozenmilk.dairy.calcified.hardware.controller
 
-import dev.frozenmilk.dairy.calcified.Calcified
-import dev.frozenmilk.dairy.calcified.hardware.MotorControllerGroup
-import dev.frozenmilk.dairy.calcified.hardware.SimpleMotor
+import dev.frozenmilk.dairy.calcified.hardware.motor.SimpleMotor
 import dev.frozenmilk.dairy.core.Feature
-import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.OpModeWrapper
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
-import dev.frozenmilk.util.angle.Angle
 import java.util.function.Supplier
-import kotlin.math.cos
 
 interface ComplexController<IN> : Feature {
 	var target: IN

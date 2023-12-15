@@ -1,9 +1,10 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.sensor
 
 import com.qualcomm.hardware.lynx.commands.core.LynxSetDIODirectionCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetSingleDIOOutputCommand
 import com.qualcomm.robotcore.hardware.DigitalChannel
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedBooleanSupplier
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
 import java.util.function.Consumer
 import java.util.function.Supplier
 

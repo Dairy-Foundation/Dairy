@@ -5,18 +5,18 @@ import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
 import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedContinuousServo
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedEncoder
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedIMU
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedServo
-import dev.frozenmilk.dairy.calcified.hardware.DegreesEncoder
-import dev.frozenmilk.dairy.calcified.hardware.DigitalInput
-import dev.frozenmilk.dairy.calcified.hardware.DigitalOutput
-import dev.frozenmilk.dairy.calcified.hardware.PWMDevice
-import dev.frozenmilk.dairy.calcified.hardware.RadiansEncoder
-import dev.frozenmilk.dairy.calcified.hardware.TicksEncoder
-import dev.frozenmilk.dairy.calcified.hardware.UnitEncoder
+import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedContinuousServo
+import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedEncoder
+import dev.frozenmilk.dairy.calcified.hardware.sensor.CalcifiedIMU
+import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor
+import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedServo
+import dev.frozenmilk.dairy.calcified.hardware.motor.DegreesEncoder
+import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalInput
+import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalOutput
+import dev.frozenmilk.dairy.calcified.hardware.servo.PWMDevice
+import dev.frozenmilk.dairy.calcified.hardware.motor.RadiansEncoder
+import dev.frozenmilk.dairy.calcified.hardware.motor.TicksEncoder
+import dev.frozenmilk.dairy.calcified.hardware.motor.UnitEncoder
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 
 abstract class CalcifiedDeviceMap<T> internal constructor(protected val module: CalcifiedModule, private val map: MutableMap<Byte, T> = mutableMapOf()) : MutableMap<Byte, T> by map

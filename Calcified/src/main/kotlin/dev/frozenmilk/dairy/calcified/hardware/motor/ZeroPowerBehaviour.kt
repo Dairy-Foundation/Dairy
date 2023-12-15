@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.motor
 
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior
 

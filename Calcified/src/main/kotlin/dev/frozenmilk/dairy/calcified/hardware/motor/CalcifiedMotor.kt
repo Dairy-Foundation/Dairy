@@ -1,10 +1,11 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.motor
 
 import com.qualcomm.hardware.lynx.commands.core.LynxGetADCCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorChannelEnableCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorChannelModeCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorConstantPowerCommand
 import com.qualcomm.robotcore.hardware.DcMotor
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import kotlin.math.abs
 

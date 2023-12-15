@@ -1,7 +1,8 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.sensor
 
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedBooleanSupplier
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedDoubleSupplier
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
 import java.util.function.Supplier
 
 class AnalogInput(private val module: CalcifiedModule, private val port: Byte) : Supplier<Double> {

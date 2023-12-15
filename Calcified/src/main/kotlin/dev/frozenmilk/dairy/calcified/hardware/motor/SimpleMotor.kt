@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.motor
 
 interface SimpleMotor {
 	var direction: Direction

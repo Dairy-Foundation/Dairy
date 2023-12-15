@@ -1,6 +1,5 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.motor
 
-import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorConstantPowerCommand
 import kotlin.math.abs
 
 class MotorControllerGroup(motors: Collection<SimpleMotor>) : Collection<SimpleMotor> by motors, SimpleMotor {

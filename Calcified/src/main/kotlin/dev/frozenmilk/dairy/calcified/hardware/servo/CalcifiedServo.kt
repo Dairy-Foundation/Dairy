@@ -1,10 +1,12 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.servo
 
 import com.qualcomm.hardware.lynx.commands.core.LynxSetPWMConfigurationCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetServoEnableCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetServoPulseWidthCommand
 import com.qualcomm.robotcore.hardware.PwmControl.PwmRange
 import com.qualcomm.robotcore.util.Range
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
+import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
 import kotlin.math.abs
 
 class CalcifiedServo internal constructor(private val module: CalcifiedModule, private val port: Byte) : PWMDevice {

@@ -8,6 +8,11 @@ import dev.frozenmilk.dairy.calcified.collections.Encoders
 import dev.frozenmilk.dairy.calcified.collections.IMUs
 import dev.frozenmilk.dairy.calcified.collections.Motors
 import dev.frozenmilk.dairy.calcified.collections.PWMDevices
+import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedEncoder
+import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor
+import dev.frozenmilk.dairy.calcified.hardware.sensor.CalcifiedIMU
+import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalInput
+import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedServo
 import dev.frozenmilk.util.cell.LateInitCell
 
 class CalcifiedModule(val lynxModule: LynxModule) {

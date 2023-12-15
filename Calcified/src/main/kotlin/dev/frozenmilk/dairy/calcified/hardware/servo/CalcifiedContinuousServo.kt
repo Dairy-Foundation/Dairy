@@ -1,14 +1,17 @@
-package dev.frozenmilk.dairy.calcified.hardware
+package dev.frozenmilk.dairy.calcified.hardware.servo
 
-import com.qualcomm.hardware.lynx.commands.core.LynxSetMotorConstantPowerCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetPWMConfigurationCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetServoEnableCommand
 import com.qualcomm.hardware.lynx.commands.core.LynxSetServoPulseWidthCommand
 import com.qualcomm.robotcore.hardware.PwmControl
 import com.qualcomm.robotcore.util.Range
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
+import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
+import dev.frozenmilk.dairy.calcified.hardware.motor.SimpleMotor
 import kotlin.math.abs
 
-class CalcifiedContinuousServo internal constructor(private val module: CalcifiedModule, private val port: Byte) : SimpleMotor, PWMDevice {
+class CalcifiedContinuousServo internal constructor(private val module: CalcifiedModule, private val port: Byte) : SimpleMotor,
+	PWMDevice {
 	override var direction: Direction = Direction.FORWARD
 	override var pwmRange: PwmControl.PwmRange = PwmControl.PwmRange(600.0, 2400.0)
 		set(value) {
