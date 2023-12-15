@@ -3,6 +3,7 @@ package dev.frozenmilk.util.profile
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
+import dev.frozenmilk.util.profile.ProfileStateComponent.*
 
 class AsymmetricMotionProfile(initial: Double, final: Double, val constraints: ProfileConstraints) {
     val totalTime: Double
@@ -65,6 +66,12 @@ class AsymmetricMotionProfile(initial: Double, final: Double, val constraints: P
         }
 
         totalTime = t1 + t2 + t3
+    }
+
+    fun calculate(time: Double, component: ProfileStateComponent) = when (component) {
+        Position -> calculate(time).x
+        Velocity -> calculate(time).v
+        Acceleration -> calculate(time).a
     }
 
     fun calculate(time: Double): ProfileState {
