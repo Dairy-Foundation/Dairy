@@ -235,7 +235,7 @@ class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, pr
 	/**
 	 * non-mutating
 	 */
-	fun debounce(leading: Long, trailing: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, leadingDebounce, trailingDebounce)
+	fun debounce(leading: Long, trailing: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, leading, trailing)
 
 	/**
 	 * non-mutating
@@ -284,10 +284,11 @@ class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, pr
 	override fun postUserStopHook(opMode: OpModeWrapper) {}
 }
 
-class EnhancedDoubleSupplier(private val doubleSupplier: DoubleSupplier, private val modify: (Double) -> Double = { x -> x }, private val lowerDeadzone: Double = 0.0, private val upperDeadzone: Double = 0.0) : DoubleSupplier {
-	constructor(doubleSupplier: DoubleSupplier) : this(doubleSupplier, { x -> x })
-	override fun getAsDouble(): Double {
-		val result = modify(doubleSupplier.asDouble)
+class EnhancedDoubleSupplier(private val doubleSupplier: Supplier<Double>, private val modify: (Double) -> Double = { x -> x }, private val lowerDeadzone: Double = 0.0, private val upperDeadzone: Double = 0.0) : Supplier<Double> {
+	constructor(doubleSupplier: Supplier<Double>) : this(doubleSupplier, { x -> x })
+
+	override fun get(): Double {
+		val result = modify(doubleSupplier.get())
 		if (result < 0.0 && result >= lowerDeadzone) return 0.0
 		if (result > 0.0 && result <= upperDeadzone) return 0.0
 		return result
@@ -296,7 +297,7 @@ class EnhancedDoubleSupplier(private val doubleSupplier: DoubleSupplier, private
 	/**
 	 * non-mutating
 	 */
-	fun invert(): EnhancedDoubleSupplier = EnhancedDoubleSupplier({ -this.doubleSupplier.asDouble }, this.modify, this.lowerDeadzone, this.upperDeadzone)
+	fun invert(): EnhancedDoubleSupplier = EnhancedDoubleSupplier({ -this.doubleSupplier.get() }, this.modify, this.lowerDeadzone, this.upperDeadzone)
 
 	/**
 	 * non-mutating

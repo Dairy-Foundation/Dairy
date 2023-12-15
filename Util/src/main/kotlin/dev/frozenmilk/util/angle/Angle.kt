@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.calcified.geometry.angle
+package dev.frozenmilk.util.angle
 
 /**
  * immutably represents a normalised angle in the domain of [0, 1] rotations.

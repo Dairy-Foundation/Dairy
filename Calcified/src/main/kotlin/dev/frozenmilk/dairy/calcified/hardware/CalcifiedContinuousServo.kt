@@ -30,6 +30,7 @@ class CalcifiedContinuousServo internal constructor(private val module: Calcifie
 	override var power: Double = 0.0
 		get() = if (enabled) field * direction.multiplier else 0.0
 		set(value) {
+			if (!enabled) return
 			val correctedValue = value.coerceIn(-1.0, 1.0) * direction.multiplier
 			if (abs(field - correctedValue) >= cachingTolerance || (correctedValue >= 1.0 && field != 1.0) || (correctedValue <= -1.0 && field != -1.0)) {
 				val pwm = Range

@@ -4,14 +4,14 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 
-class OpModeWrapper(private val opMode: OpMode, private val eventRegistrar: FeatureRegistrar) : OpMode() {
+class OpModeWrapper(private val opMode: OpMode) : OpMode() {
 	enum class OpModeType {
 		TELEOP,
 		AUTONOMOUS,
 		NONE
 	}
 
-	private val opModeType: OpModeType by lazy {
+	val opModeType: OpModeType by lazy {
 		if (opMode.javaClass.isAnnotationPresent(TeleOp::class.java)) OpModeType.TELEOP
 		else if (opMode.javaClass.isAnnotationPresent(Autonomous::class.java)) OpModeType.AUTONOMOUS
 		else OpModeType.NONE

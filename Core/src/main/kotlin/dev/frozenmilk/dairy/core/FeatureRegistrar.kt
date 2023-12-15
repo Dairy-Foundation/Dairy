@@ -20,7 +20,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * features that are registered to potentially become active
 	 */
-	private val registeredFeatures: MutableSet<WeakReference<Feature>> = mutableSetOf()
+	private var registeredFeatures: MutableList<WeakReference<Feature>> = mutableListOf()
 
 	/**
 	 * intermediary collection of features that need to be checked to be added to the active pool
@@ -37,7 +37,10 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	 */
 	private val activeFlags: MutableSet<Annotation> = mutableSetOf()
 
-	var opmodeActive: Boolean = false
+	/**
+	 * if there is currently an [OpMode] active on the robot, should be true almost all of the time
+	 */
+	var opModeActive: Boolean = false
 		private set
 
 	/**
@@ -46,13 +49,13 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	fun registerFeature(feature: Feature) {
 		val weakRef = WeakReference(feature)
 		registeredFeatures.add(weakRef)
-		if (!opmodeActive) return
+		if (!opModeActive) return
 		registrationQueue.add(weakRef)
 	}
 
 	private fun resolveRegistrationQueue() {
 		if (registrationQueue.isEmpty()) return
-		val resolved = resolveDependenciesOrderedList(
+		resolveDependenciesOrderedList(
 				registrationQueue.mapNotNull { it.get() }, // makes a copy of the set
 				activeFeatures.mapNotNull { it.get() },
 				activeFlags
@@ -108,7 +111,13 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		opModeManager.registerListener(this)
 	}
 
+	private fun cleanFeatures() {
+		registeredFeatures = registeredFeatures.filter { it.get() != null }.toMutableList()
+	}
+
 	override fun onOpModePreInit(opMode: OpMode) {
+		cleanFeatures()
+
 		// locate feature flags, and then populate active listeners
 		activeFlags.addAll(opMode.javaClass.annotations)
 
@@ -118,9 +127,9 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
 		val activeOpMode = dev.frozenmilk.util.cell.MirroredCell<OpMode>(opModeManager, "activeOpMode")
 
-		val wrapped = OpModeWrapper(opMode, this)
+		val wrapped = OpModeWrapper(opMode)
 		activeOpMode.accept(wrapped)
-		opmodeActive = true
+		opModeActive = true
 
 		// resolves the queue of anything that was registered later
 		resolveRegistrationQueue()
@@ -186,6 +195,6 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		// empty active listeners and active flags
 		activeFeatures.clear()
 		activeFlags.clear()
-		opmodeActive = false
+		opModeActive = false
 	}
 }

@@ -4,13 +4,15 @@ import com.qualcomm.hardware.lynx.commands.core.LynxFirmwareVersionManager
 import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule
-import dev.frozenmilk.dairy.calcified.hardware.AngleBasedRobotOrientation
+import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedContinuousServo
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedEncoder
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedIMU
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedMotor
 import dev.frozenmilk.dairy.calcified.hardware.CalcifiedServo
 import dev.frozenmilk.dairy.calcified.hardware.DegreesEncoder
+import dev.frozenmilk.dairy.calcified.hardware.DigitalInput
+import dev.frozenmilk.dairy.calcified.hardware.DigitalOutput
 import dev.frozenmilk.dairy.calcified.hardware.PWMDevice
 import dev.frozenmilk.dairy.calcified.hardware.RadiansEncoder
 import dev.frozenmilk.dairy.calcified.hardware.TicksEncoder
@@ -28,7 +30,7 @@ class Motors internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<
 	}
 }
 
-class Servos internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<PWMDevice>(module) {
+class PWMDevices internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<PWMDevice>(module) {
 	fun getServo(port: Byte): CalcifiedServo {
 		if (port !in LynxConstants.INITIAL_SERVO_PORT until LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_SERVO_PORT}, ${LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1}]")
 		if (this.containsKey(port) && this[port] !is CalcifiedServo) {
@@ -94,4 +96,21 @@ class IMUs internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<Ca
 	fun getIMU_BHI260(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()) = this.getIMU(port, LynxModuleImuType.BHI260, angleBasedRobotOrientation)
 
 	fun getIMU_BNO055(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()) = this.getIMU(port, LynxModuleImuType.BNO055, angleBasedRobotOrientation)
+}
+
+class DigitalChannels internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<Any>(module) {
+	fun getInput(port: Byte): DigitalInput {
+		if (port !in 0 until LynxConstants.NUMBER_OF_DIGITAL_IOS) throw IllegalArgumentException("$port is not in the acceptable port range [0, ${LynxConstants.NUMBER_OF_DIGITAL_IOS - 1}]")
+		if (this.containsKey(port) && this[port] !is DigitalInput) {
+			this[port] = DigitalInput(module, port)
+		}
+		return (this[port] as DigitalInput)
+	}
+	fun getOutput(port: Byte): DigitalOutput {
+		if (port !in 0 until LynxConstants.NUMBER_OF_DIGITAL_IOS) throw IllegalArgumentException("$port is not in the acceptable port range [0, ${LynxConstants.NUMBER_OF_DIGITAL_IOS - 1}]")
+		if (this.containsKey(port) && this[port] !is DigitalOutput) {
+			this[port] = DigitalInput(module, port)
+		}
+		return (this[port] as DigitalOutput)
+	}
 }

@@ -29,6 +29,7 @@ class CalcifiedServo internal constructor(private val module: CalcifiedModule, p
 
 	var position = 0.0
 		set(value) {
+			if (!enabled) return
 			var correctedValue = value.coerceIn(0.0, 1.0)
 			if (direction == Direction.REVERSE) correctedValue = 1 - correctedValue
 			if (abs(field - correctedValue) >= cachingTolerance || correctedValue == 0.0 && field != 0.0 || correctedValue == 1.0 && field != 1.0) {

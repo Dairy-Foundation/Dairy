@@ -32,6 +32,7 @@ class CalcifiedMotor internal constructor(private val module: CalcifiedModule, p
 	override var power = 0.0
 		get() = if (enabled) field * direction.multiplier else 0.0
 		set(value) {
+			if (!enabled) return
 			val correctedValue = value.coerceIn(-1.0, 1.0) * direction.multiplier
 			if (abs(field - correctedValue) >= cachingTolerance || (correctedValue >= 1.0 && field != 1.0) || (correctedValue <= -1.0 && field != -1.0)) {
 				LynxSetMotorConstantPowerCommand(module.lynxModule, port.toInt(), (correctedValue * LynxSetMotorConstantPowerCommand.apiPowerLast).toInt()).send()

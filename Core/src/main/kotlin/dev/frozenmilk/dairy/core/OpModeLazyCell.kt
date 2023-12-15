@@ -12,7 +12,7 @@ class OpModeLazyCell<T>(supplier: Supplier<T>) : LazyCell<T>(supplier), Feature 
 	override val dependencies: Set<Dependency<*, *>> = DependencySet(this)
 			.yields()
 	override fun get(): T {
-		if(!FeatureRegistrar.opmodeActive) throw IllegalStateException("Attempted to access contents of OpModeLazyCell while no opmode active")
+		if(!FeatureRegistrar.opModeActive) throw IllegalStateException("Attempted to access contents of OpModeLazyCell while no opmode active")
 		return super.get()
 	}
 

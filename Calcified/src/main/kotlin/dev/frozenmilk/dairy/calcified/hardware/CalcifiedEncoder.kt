@@ -2,34 +2,28 @@ package dev.frozenmilk.dairy.calcified.hardware
 
 import com.qualcomm.hardware.lynx.commands.core.LynxResetMotorEncoderCommand
 import dev.frozenmilk.dairy.calcified.hardware.controller.CachedCompoundSupplier
-import dev.frozenmilk.dairy.calcified.hardware.controller.CompoundSupplier
-import dev.frozenmilk.dairy.calcified.geometry.angle.AngleDegrees
-import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
+import dev.frozenmilk.util.angle.AngleDegrees
+import dev.frozenmilk.util.angle.AngleRadians
 
 abstract class CalcifiedEncoder<T> internal constructor(internal val module: CalcifiedModule, internal val port: Byte) {
 	var direction = Direction.FORWARD
-	protected abstract val _positionSupplier: CachedCompoundSupplier<T, Double>
-	protected abstract val _velocitySupplier: CachedCompoundSupplier<Double, Double>
-	val positionSupplier: CompoundSupplier<T, Double>
-		get() = _positionSupplier
-
-	val velocitySupplier: CompoundSupplier<Double, Double>
-		get() = _velocitySupplier
+	abstract val positionSupplier: CachedCompoundSupplier<T, Double>
+	abstract val velocitySupplier: CachedCompoundSupplier<Double, Double>
 
 	/**
 	 * ensures that the velocity cache is cleared first, so it can store the previous position
 	 */
-	internal open fun clearCache() {
-		_velocitySupplier.clearCache()
-		_positionSupplier.clearCache()
+	open fun clearCache() {
+		velocitySupplier.clearCache()
+		positionSupplier.clearCache()
 	}
 
 	fun getPosition(): T {
-		return _positionSupplier.get()
+		return positionSupplier.get()
 	}
 
 	fun getVelocity(): Double {
-		return _velocitySupplier.get()
+		return velocitySupplier.get()
 	}
 
 	fun reset() {
@@ -38,7 +32,7 @@ abstract class CalcifiedEncoder<T> internal constructor(internal val module: Cal
 }
 
 class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : CalcifiedEncoder<Int>(module, port) {
-	override val _positionSupplier: CachedCompoundSupplier<Int, Double> = object : CachedCompoundSupplier<Int, Double> {
+	override val positionSupplier: CachedCompoundSupplier<Int, Double> = object : CachedCompoundSupplier<Int, Double> {
 		private var cachedPosition: Int? = null
 		private var cachedError: Double? = null
 
@@ -61,10 +55,10 @@ class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : C
 		}
 	}
 
-	override val _velocitySupplier: CachedCompoundSupplier<Double, Double> = object : CachedCompoundSupplier<Double, Double> {
+	override val velocitySupplier: CachedCompoundSupplier<Double, Double> = object : CachedCompoundSupplier<Double, Double> {
 		private var cachedVelocity: Double? = null
 		private var cachedError: Double? = null
-		private var previousPosition = _positionSupplier.get()
+		private var previousPosition = positionSupplier.get()
 
 		override fun getError(target: Double): Double {
 			if (cachedError == null) cachedError = target - get()
@@ -72,7 +66,7 @@ class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : C
 		}
 
 		override fun clearCache() {
-			previousPosition = _positionSupplier.get()
+			previousPosition = positionSupplier.get()
 			cachedError = null
 			cachedVelocity = null
 		}
@@ -82,7 +76,7 @@ class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : C
 		 */
 		override fun get(): Double {
 			if (cachedVelocity == null) {
-				cachedVelocity = (_positionSupplier.get() - previousPosition).toDouble() / (module.cachedTime - module.previousCachedTime)
+				cachedVelocity = (positionSupplier.get() - previousPosition).toDouble() / (module.cachedTime - module.previousCachedTime)
 			}
 			return cachedVelocity!!
 		}
@@ -100,7 +94,7 @@ abstract class UnitEncoder<T>(private val ticksEncoder: TicksEncoder, protected 
 }
 
 class RadiansEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRevolution: Double) : UnitEncoder<AngleRadians>(ticksEncoder, ticksPerRevolution) {
-	override val _positionSupplier: CachedCompoundSupplier<AngleRadians, Double> = object : CachedCompoundSupplier<AngleRadians, Double> {
+	override val positionSupplier: CachedCompoundSupplier<AngleRadians, Double> = object : CachedCompoundSupplier<AngleRadians, Double> {
 		private var cachedAngle: AngleRadians? = null
 		private var cachedError: Double? = null
 
@@ -120,10 +114,10 @@ class RadiansEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		}
 	}
 
-	override val _velocitySupplier: CachedCompoundSupplier<Double, Double> = object : CachedCompoundSupplier<Double, Double> {
+	override val velocitySupplier: CachedCompoundSupplier<Double, Double> = object : CachedCompoundSupplier<Double, Double> {
 		private var cachedVelocity: Double? = null
 		private var cachedError: Double? = null
-		private var previousPosition = _positionSupplier.get()
+		private var previousPosition = positionSupplier.get()
 
 		override fun getError(target: Double): Double {
 			if (cachedError == null) cachedError = target - get()
@@ -131,20 +125,20 @@ class RadiansEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		}
 
 		override fun clearCache() {
-			previousPosition = _positionSupplier.get()
+			previousPosition = positionSupplier.get()
 			cachedVelocity = null
 			cachedError = null
 		}
 
 		override fun get(): Double {
-			if (cachedVelocity == null) cachedVelocity = (_positionSupplier.get() - previousPosition).theta / (module.cachedTime - module.previousCachedTime)
+			if (cachedVelocity == null) cachedVelocity = (positionSupplier.get() - previousPosition).theta / (module.cachedTime - module.previousCachedTime)
 			return cachedVelocity!!
 		}
 	}
 }
 
 class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRevolution: Double) : UnitEncoder<AngleDegrees>(ticksEncoder, ticksPerRevolution) {
-	override val _positionSupplier: CachedCompoundSupplier<AngleDegrees, Double> = object : CachedCompoundSupplier<AngleDegrees, Double> {
+	override val positionSupplier: CachedCompoundSupplier<AngleDegrees, Double> = object : CachedCompoundSupplier<AngleDegrees, Double> {
 		private var cachedAngle: AngleDegrees? = null
 		private var cachedError: Double? = null
 
@@ -164,10 +158,10 @@ class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		}
 	}
 
-	override val _velocitySupplier: CachedCompoundSupplier<Double, Double> = object : CachedCompoundSupplier<Double, Double> {
+	override val velocitySupplier: CachedCompoundSupplier<Double, Double> = object : CachedCompoundSupplier<Double, Double> {
 		private var cachedVelocity: Double? = null
 		private var cachedError: Double? = null
-		private var previousPosition = _positionSupplier.get()
+		private var previousPosition = positionSupplier.get()
 
 		override fun getError(target: Double): Double {
 			if (cachedError == null) cachedError = target - get()
@@ -175,13 +169,13 @@ class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		}
 
 		override fun clearCache() {
-			previousPosition = _positionSupplier.get()
+			previousPosition = positionSupplier.get()
 			cachedVelocity = null
 			cachedError = null
 		}
 
 		override fun get(): Double {
-			if (cachedVelocity == null) cachedVelocity = (_positionSupplier.get() - previousPosition).theta / (module.cachedTime - module.previousCachedTime)
+			if (cachedVelocity == null) cachedVelocity = (positionSupplier.get() - previousPosition).theta / (module.cachedTime - module.previousCachedTime)
 			return cachedVelocity!!
 		}
 	}

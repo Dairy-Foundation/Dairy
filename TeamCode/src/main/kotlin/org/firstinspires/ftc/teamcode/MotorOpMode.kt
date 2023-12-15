@@ -27,6 +27,7 @@ class MotorOpMode : OpMode() {
 	}
 
 	override fun loop() {
+		Calcified.controlHub.encoders.getTicksEncoder(0).clearCache()
 		motor.power = sin(runtime)
 	}
 }

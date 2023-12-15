@@ -5,18 +5,4 @@ package dev.frozenmilk.dairy.core
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.CLASS)
-annotation class DairyCore {
-	/**
-	 * enables only calcification from DairyCore
-	 */
-	@Retention(AnnotationRetention.RUNTIME)
-	@Target(AnnotationTarget.CLASS)
-	annotation class Calcify
-
-	/**
-	 * enables only DataCarton from DairyCore
-	 */
-	@Retention(AnnotationRetention.RUNTIME)
-	@Target(AnnotationTarget.CLASS)
-	annotation class DataCarton
-}
+annotation class DairyCore

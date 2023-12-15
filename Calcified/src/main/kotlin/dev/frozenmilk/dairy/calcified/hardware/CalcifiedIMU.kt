@@ -3,15 +3,21 @@ package dev.frozenmilk.dairy.calcified.hardware
 import com.qualcomm.hardware.bosch.BHI260IMU
 import com.qualcomm.hardware.bosch.BNO055IMU
 import com.qualcomm.hardware.bosch.BNO055IMU.Register
-import com.qualcomm.hardware.bosch.BNO055IMUImpl.VectorData
 import com.qualcomm.hardware.lynx.LynxI2cDeviceSynch
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.I2cAddr
+import com.qualcomm.robotcore.hardware.ImuOrientationOnRobot
 import com.qualcomm.robotcore.hardware.LynxModuleImuType
-import com.qualcomm.robotcore.hardware.LynxModuleImuType.*
+import com.qualcomm.robotcore.hardware.LynxModuleImuType.BHI260
+import com.qualcomm.robotcore.hardware.LynxModuleImuType.BNO055
+import com.qualcomm.robotcore.hardware.LynxModuleImuType.NONE
+import com.qualcomm.robotcore.hardware.LynxModuleImuType.UNKNOWN
 import com.qualcomm.robotcore.hardware.QuaternionBasedImuHelper.FailedToRetrieveQuaternionException
 import com.qualcomm.robotcore.hardware.TimestampedData
-import dev.frozenmilk.dairy.calcified.geometry.angle.Angle
-import dev.frozenmilk.dairy.calcified.geometry.angle.AngleRadians
+import dev.frozenmilk.dairy.calcified.hardware.controller.CompoundSupplier
+import dev.frozenmilk.util.angle.Angle
+import dev.frozenmilk.util.angle.AngleRadians
+import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
@@ -23,10 +29,6 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, private val device: LynxI2cDeviceSynch, initialAngles: AngleBasedRobotOrientation) {
-	// todo move these elsewhere
-//	constructor(initialHeading: Angle) : this(AngleBasedRobotOrientation(zRot = initialHeading))
-//	constructor(initialOrientation: Orientation) : this(AngleBasedRobotOrientation(initialOrientation))
-//	constructor(initialQuaternion: Quaternion) : this(AngleBasedRobotOrientation(initialQuaternion))
 	init {
 		when (imuType) {
 			NONE, UNKNOWN -> throw IllegalStateException("Attempted to access IMU, but no accessible IMU found")
@@ -38,6 +40,12 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	private var offsetOrientation = -initialAngles // todo check, but should be good, as this never gets accessed
 	private var previousOrientation = initialAngles
 	private var cached = true
+	private var cachedTime = System.nanoTime()
+	private var previousTime = cachedTime
+
+	/**
+	 * the current orientation of the robot
+	 */
 	var orientation: AngleBasedRobotOrientation = initialAngles
 		get() {
 			if (!cached) {
@@ -52,6 +60,9 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 			field = value
 		}
 
+	/**
+	 * the heading of the robot, perfectly equivalent to the z axis of the robots rotation
+	 */
 	var heading: Angle
 		get() {
 			return orientation.zRot
@@ -60,7 +71,141 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 			orientation = AngleBasedRobotOrientation(orientation.xRot, orientation.yRot, value)
 		}
 
-	internal fun clearCache() {
+	/**
+	 * a supplier that can be used in more complex applications of control loops
+	 *
+	 * supplies the robot's heading
+	 */
+	val headingSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
+		override fun getError(target: Angle): Double {
+			return get().findShortestDistance(target)
+		}
+		override fun get(): Angle {
+			return heading
+		}
+	}
+
+	/**
+	 * same as [headingSupplier]
+	 */
+	val zRotSupplier = headingSupplier
+
+	/**
+	 * a supplier that can be used in more complex applications of control loops
+	 *
+	 * supplies the angle of the robot around the positive x-axis of the field
+	 */
+	val xRotSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
+		override fun getError(target: Angle): Double {
+			return get().findShortestDistance(target)
+		}
+		override fun get(): Angle {
+			return orientation.xRot
+		}
+	}
+
+	/**
+	 * a supplier that can be used in more complex applications of control loops
+	 *
+	 * supplies the angle of the robot around the positive y-axis of the field
+	 */
+	val yRotSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
+		override fun getError(target: Angle): Double {
+			return get().findShortestDistance(target)
+		}
+		override fun get(): Angle {
+			return orientation.yRot
+		}
+	}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val headingVelocity: Double
+		get() {
+			return previousOrientation.zRot.intoRadians().findShortestDistance(heading) / (cachedTime - previousTime) / 1E9
+		}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val headingVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
+		override fun getError(target: Double): Double {
+			return target - get()
+		}
+
+		override fun get(): Double {
+			return headingVelocity
+		}
+	}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val zRotVelocity: Double
+		get() {
+			return headingVelocity
+		}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val zRotVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
+		override fun getError(target: Double): Double {
+			return headingVelocitySupplier.getError(target)
+		}
+
+		override fun get(): Double {
+			return headingVelocitySupplier.get()
+		}
+	}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val xRotVelocity: Double
+		get() {
+			return previousOrientation.xRot.intoRadians().findShortestDistance(orientation.xRot) / (cachedTime - previousTime) / 1E9
+		}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val xRotVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
+		override fun getError(target: Double): Double {
+			return target - get()
+		}
+
+		override fun get(): Double {
+			return xRotVelocity
+		}
+	}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val yRotVelocity: Double
+		get() {
+			return previousOrientation.yRot.intoRadians().findShortestDistance(orientation.yRot) / (cachedTime - previousTime) / 1E9
+		}
+
+	/**
+	 * velocity in radians / second
+	 */
+	val yRotVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
+		override fun getError(target: Double): Double {
+			return target - get()
+		}
+
+		override fun get(): Double {
+			return yRotVelocity
+		}
+	}
+
+	/**
+	 * lets the imu know to perform a read next time it is queried
+	 */
+	fun clearCache() {
 		cached = false
 	}
 
@@ -68,6 +213,8 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * performs the actual read of the imu
 	 */
 	private fun readIMU(): AngleBasedRobotOrientation {
+		previousTime = cachedTime
+		cachedTime = System.nanoTime()
 		return when (imuType) {
 			NONE, UNKNOWN -> throw IllegalStateException("Attempted to access IMU, but no accessible IMU found")
 
@@ -88,7 +235,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 				}
 
 				val buffer = ByteBuffer.wrap(data.data).order(ByteOrder.LITTLE_ENDIAN)
-				AngleBasedRobotOrientation(Quaternion(buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, data.nanoTime))
+				fromQuaternion(Quaternion(buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, data.nanoTime))
 			}
 
 			BHI260 -> {
@@ -126,7 +273,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 				val y = (yInt * QUATERNION_SCALE_FACTOR).toFloat()
 				val z = (zInt * QUATERNION_SCALE_FACTOR).toFloat()
 				val w = (wInt * QUATERNION_SCALE_FACTOR).toFloat()
-				AngleBasedRobotOrientation(Quaternion(w, x, y, z, timestamp))
+				fromQuaternion(Quaternion(w, x, y, z, timestamp))
 			}
 		}
 	}
@@ -145,71 +292,39 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 		constant values from the BNO055 IMU
 		 */
 
-		val scale: Float = (1 shl 14).toFloat()
+		const val scale: Float = (1 shl 14).toFloat()
 	}
 }
 
 /**
- * see [rotations using the right hand rule](https://en.wikipedia.org/wiki/Right-hand_rule#Rotations)
- *
- * @property xRot the rotation of the robot about the positive x-axis of the field
- * @property yRot the rotation of the robot about the positive y-axis of the field
- * @property zRot the rotation of the robot about the positive z-axis of the field
+ * makes an [AngleBasedRobotOrientation] from an [Orientation]
  */
-class AngleBasedRobotOrientation(val xRot: Angle = AngleRadians(), val yRot: Angle = AngleRadians(), val zRot: Angle = AngleRadians()) {
-	constructor(orientation: Orientation) : this(fromOrientation(orientation))
-
-	constructor(quaternion: Quaternion) : this(fromQuaternion(quaternion))
-
-	/**
-	 * used by the helper
-	 */
-	private constructor(o: AngleBasedRobotOrientation) : this(o.xRot, o.yRot, o.zRot)
-
-	/**
-	 * non-mutating
-	 */
-	operator fun plus(other: AngleBasedRobotOrientation): AngleBasedRobotOrientation {
-		return AngleBasedRobotOrientation(this.xRot + other.xRot, this.yRot + other.yRot, this.zRot + other.zRot)
-	}
-
-	/**
-	 * non-mutating
-	 */
-	operator fun minus(other: AngleBasedRobotOrientation): AngleBasedRobotOrientation {
-		return AngleBasedRobotOrientation(this.xRot - other.xRot, this.yRot - other.yRot, this.zRot - other.zRot)
-	}
-
-	/**
-	 * non-mutating, has no effect
-	 */
-	operator fun unaryPlus(): AngleBasedRobotOrientation {
-		return this
-	}
-
-	/**
-	 * non-mutating, equal to the inverse rotation about all axis
-	 */
-	operator fun unaryMinus(): AngleBasedRobotOrientation {
-		return AngleBasedRobotOrientation(-this.xRot, -this.yRot, -this.zRot)
-	}
-
-	private companion object {
-		fun fromOrientation(orientation: Orientation): AngleBasedRobotOrientation {
-			val formattedOrientation = orientation
-					.toAxesReference(AxesReference.EXTRINSIC)
-					.toAxesOrder(AxesOrder.XYZ)
-					.toAngleUnit(AngleUnit.RADIANS)
-			return AngleBasedRobotOrientation(
-					AngleRadians(formattedOrientation.firstAngle.toDouble()),
-					AngleRadians(formattedOrientation.secondAngle.toDouble()),
-					AngleRadians(formattedOrientation.thirdAngle.toDouble())
-			)
-		}
-
-		fun fromQuaternion(quaternion: Quaternion): AngleBasedRobotOrientation {
-			// this probably sucks and is slow but eh, can't really be that bad, and saves me from quaternion hell
-			return fromOrientation(quaternion.toOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS))
-		}
-	}
+fun fromOrientation(orientation: Orientation): AngleBasedRobotOrientation {
+	val formattedOrientation = orientation
+			.toAxesReference(AxesReference.EXTRINSIC)
+			.toAxesOrder(AxesOrder.XYZ)
+			.toAngleUnit(AngleUnit.RADIANS)
+	return AngleBasedRobotOrientation(
+			AngleRadians(formattedOrientation.firstAngle.toDouble()),
+			AngleRadians(formattedOrientation.secondAngle.toDouble()),
+			AngleRadians(formattedOrientation.thirdAngle.toDouble())
+	)
 }
+
+/**
+ * makes an [AngleBasedRobotOrientation] from an [ImuOrientationOnRobot]
+ *
+ * useful when defining an imu from a [RevHubOrientationOnRobot]
+ */
+fun fromImuOrientationOnRobot(imuOrientationOnRobot: ImuOrientationOnRobot): AngleBasedRobotOrientation {
+	return fromQuaternion(imuOrientationOnRobot.imuCoordinateSystemOrientationFromPerspectiveOfRobot())
+}
+
+/**
+ * makes an [AngleBasedRobotOrientation] from a [Quaternion]
+ */
+fun fromQuaternion(quaternion: Quaternion): AngleBasedRobotOrientation {
+	// this probably sucks and is slow but eh, can't really be that bad, and saves me from quaternion hell
+	return fromOrientation(quaternion.toOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS))
+}
+

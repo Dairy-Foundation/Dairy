@@ -1,4 +1,4 @@
-package dev.frozenmilk.dairy.calcified.geometry.angle
+package dev.frozenmilk.util.angle
 
 class AngleDegrees(theta: Double = 0.0) : Angle(theta) {
 	@Suppress("NAME_SHADOWING")

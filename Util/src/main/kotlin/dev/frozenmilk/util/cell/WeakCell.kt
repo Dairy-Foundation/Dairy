@@ -4,12 +4,17 @@ import java.lang.ref.WeakReference
 import kotlin.reflect.KProperty
 
 /**
- * a cell that contains a weak reference, which gets automatically dropped by the
+ * a cell that contains a weak reference, which gets automatically dropped by the garbage collector
  */
 class WeakCell<T>(ref: T) : Cell<T> {
 	private var weakRef = WeakReference(ref)
+
 	override fun get(): T {
-		return weakRef.get()!!
+		return weakRef.get() ?: throw IllegalStateException("access attempt failed as contents of the cell were dropped")
+	}
+
+	fun safeGet(): T? {
+		return weakRef.get()
 	}
 
 	override fun accept(p0: T) {
@@ -28,6 +33,10 @@ class WeakCell<T>(ref: T) : Cell<T> {
 
 	override fun equals(other: Any?): Boolean {
 		return get()?.equals(other) ?: false
+	}
+
+	fun <R> safeApply(apply: (T) -> R): R? {
+		return weakRef.get()?.let { apply(it) }
 	}
 }
 
