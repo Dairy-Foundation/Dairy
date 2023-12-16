@@ -3,17 +3,14 @@ package dev.frozenmilk.dairy.calcified.hardware.controller
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.calcified.hardware.motor.MotorControllerGroup
 import dev.frozenmilk.dairy.calcified.hardware.motor.SimpleMotor
-import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
-import dev.frozenmilk.util.angle.Angle
 import dev.frozenmilk.util.cell.LateInitCell
 import dev.frozenmilk.util.profile.AsymmetricMotionProfile
 import dev.frozenmilk.util.profile.ProfileConstraints
 import dev.frozenmilk.util.profile.ProfileStateComponent
 import java.util.function.Supplier
-import kotlin.math.cos
 
 class LambdaController<IN> internal constructor(override var target: IN,
                                                 override val motors: SimpleMotor,
