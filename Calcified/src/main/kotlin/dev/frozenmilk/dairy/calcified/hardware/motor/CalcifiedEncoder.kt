@@ -10,6 +10,7 @@ abstract class CalcifiedEncoder<T> internal constructor(internal val module: Cal
 	var direction = Direction.FORWARD
 	abstract val positionSupplier: CachedCompoundSupplier<T, Double>
 	abstract val velocitySupplier: CachedCompoundSupplier<Double, Double>
+	protected abstract var offset: T
 
 	/**
 	 * ensures that the velocity cache is cleared first, so it can store the previous position
@@ -19,13 +20,12 @@ abstract class CalcifiedEncoder<T> internal constructor(internal val module: Cal
 		positionSupplier.clearCache()
 	}
 
-	fun getPosition(): T {
-		return positionSupplier.get()
-	}
+	abstract var position: T
 
-	fun getVelocity(): Double {
-		return velocitySupplier.get()
-	}
+	val velocity: Double
+		get() {
+			return velocitySupplier.get()
+		}
 
 	fun reset() {
 		LynxResetMotorEncoderCommand(module.lynxModule, port.toInt()).send()
@@ -52,7 +52,7 @@ class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : C
 
 		override fun get(): Int {
 			if (cachedPosition == null) cachedPosition = module.bulkData.getEncoder(port.toInt()) * direction.multiplier
-			return cachedPosition!!
+			return cachedPosition!! - offset
 		}
 	}
 
@@ -82,6 +82,14 @@ class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : C
 			return cachedVelocity!!
 		}
 	}
+	override var offset: Int = 0
+	override var position: Int
+		get() {
+			return positionSupplier.get()
+		}
+		set(value) {
+			offset = value - positionSupplier.get()
+		}
 }
 
 abstract class UnitEncoder<T>(private val ticksEncoder: TicksEncoder, protected val ticksPerUnit: Double) : CalcifiedEncoder<T>(ticksEncoder.module, ticksEncoder.port) {
@@ -111,7 +119,7 @@ class RadiansEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 
 		override fun get(): AngleRadians {
 			if (cachedAngle == null) cachedAngle = AngleRadians(Math.PI * 2 * (ticksEncoder.positionSupplier.get() / ticksPerRevolution) * direction.multiplier)
-			return cachedAngle!!
+			return cachedAngle!! - offset
 		}
 	}
 
@@ -136,6 +144,14 @@ class RadiansEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 			return cachedVelocity!!
 		}
 	}
+	override var offset: AngleRadians = AngleRadians()
+	override var position: AngleRadians
+		get() {
+			return positionSupplier.get()
+		}
+		set(value) {
+			offset = value - positionSupplier.get()
+		}
 }
 
 class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRevolution: Double) : UnitEncoder<AngleDegrees>(ticksEncoder, ticksPerRevolution) {
@@ -155,7 +171,7 @@ class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 
 		override fun get(): AngleDegrees {
 			if (cachedAngle == null) cachedAngle = AngleDegrees(360 * (ticksEncoder.positionSupplier.get() / ticksPerRevolution) * direction.multiplier)
-			return cachedAngle!!
+			return cachedAngle!! - offset
 		}
 	}
 
@@ -180,4 +196,12 @@ class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 			return cachedVelocity!!
 		}
 	}
+	override var offset: AngleDegrees = AngleDegrees()
+	override var position: AngleDegrees
+		get() {
+			return positionSupplier.get()
+		}
+		set(value) {
+			offset = value - positionSupplier.get()
+		}
 }

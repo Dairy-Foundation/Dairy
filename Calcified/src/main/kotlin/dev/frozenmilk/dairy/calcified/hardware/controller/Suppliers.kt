@@ -1,5 +1,8 @@
 package dev.frozenmilk.dairy.calcified.hardware.controller
 
+import dev.frozenmilk.util.angle.Angle
+import dev.frozenmilk.util.angle.AngleDegrees
+import dev.frozenmilk.util.angle.AngleRadians
 import java.util.function.Supplier
 
 interface ErrorSupplier<IN, OUT> {
@@ -20,4 +23,15 @@ interface CompoundSupplier<UNIT, ERROR> : ErrorSupplier<UNIT, ERROR>, Supplier<U
  */
 interface CachedCompoundSupplier<UNIT, ERROR> : CompoundSupplier<UNIT, ERROR> {
 	fun clearCache()
+}
+
+fun Supplier<out Angle>.intoDegrees() : Supplier<AngleDegrees> {
+	return Supplier { get().intoDegrees() }
+}
+fun Supplier<out Angle>.intoRadians() : Supplier<AngleRadians> {
+	return Supplier { get().intoRadians() }
+}
+
+fun Supplier<out Angle>.intoGeneric() : Supplier<Angle> {
+	return Supplier { get() }
 }

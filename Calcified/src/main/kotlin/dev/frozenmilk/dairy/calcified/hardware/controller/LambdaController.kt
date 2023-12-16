@@ -6,6 +6,7 @@ import dev.frozenmilk.dairy.calcified.hardware.motor.SimpleMotor
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
+import dev.frozenmilk.util.angle.Angle
 import dev.frozenmilk.util.cell.LateInitCell
 import dev.frozenmilk.util.profile.AsymmetricMotionProfile
 import dev.frozenmilk.util.profile.ProfileConstraints
@@ -40,16 +41,30 @@ class LambdaController<IN> internal constructor(override var target: IN,
         autoUpdate = true
     }
 
+    /**
+     * non-mutating
+     *
+     * attaches the motors to the controller
+     */
     fun addMotors(vararg motors: SimpleMotor): LambdaController<IN> {
         return LambdaController(this.target, MotorControllerGroup(*motors), this.calculators, lastErrorSupplier, lastPositionSupplier)
     }
 
-//    fun <OUT> appendErrorBasedController(errorSupplier: ErrorSupplier<IN, OUT>, calculationComponent: (OUT) -> Double) : LambdaController<IN> {
-//        return LambdaController(this.target, this.motors, this.calculators.plus { calculationComponent(errorSupplier.getError(target)) })
-//    }
-//    fun <OUT> appendPositionBasedController(positionSupplier: Supplier<OUT>, calculationComponent: (OUT) -> Double) : LambdaController<IN> {
-//        return LambdaController(this.target, this.motors, this.errorCalculators, this.positionalCalculators.plus { calculationComponent(positionSupplier.get()) })
-//    }
+    /**
+     * uses this error supplier for future error based controllers, until a new one is supplied
+     */
+    fun withErrorSupplier(errorSupplier: ErrorSupplier<IN, Double>): LambdaController<IN> {
+        lastErrorSupplier.accept(errorSupplier)
+        return this
+    }
+
+    /**
+     * uses this position supplier for future position based controllers, until a new one is supplied
+     */
+    fun withPositionSupplier(positionSupplier: Supplier<IN>): LambdaController<IN> {
+        lastPositionSupplier.accept(positionSupplier)
+        return this
+    }
 
     fun appendController(calculatorComponent: CalculatorComponent<IN>): LambdaController<IN> {
         when (calculatorComponent) {
@@ -69,20 +84,12 @@ class LambdaController<IN> internal constructor(override var target: IN,
     fun appendDController(dController: DController<IN>) = appendController(dController)
     fun appendDController(kD: Double) = appendDController(DController(lastErrorSupplier.get(), kD))
 
-//    fun appendPController(errorSupplier: ErrorSupplier<IN, Double>, kP: Double) = appendErrorBasedController(errorSupplier) { input: Double -> input * kP }
-//
-//    fun appendDController(errorSupplier: ErrorSupplier<IN, Double>, kP: Double) = appendErrorBasedController(errorSupplier) { input: Double -> input * kP }
-//
-//    fun appendFFController(positionSupplier: Supplier<Double>, kFF: Double) = appendPositionBasedController(positionSupplier) { input: Double -> input * kFF }
-//
-//    fun appendAngleFFController(positionSupplier: Supplier<Angle>, kFF: Double) = appendPositionBasedController(positionSupplier) { input: Angle -> kFF * cos(input.intoRadians().theta) }
-
 }
-fun LambdaController<Double>.profiledController(target: Double, positionSupplier: Supplier<Double>, constraints: ProfileConstraints, component: ProfileStateComponent)
-        = appendController(object : CalculatorComponent<Double> {
+fun LambdaController<Int>.appendProfiledController(positionSupplier: Supplier<Int>, constraints: ProfileConstraints, component: ProfileStateComponent)
+        = appendController(object : CalculatorComponent<Int> {
     private var profile = AsymmetricMotionProfile(positionSupplier.get(), target, constraints)
     private var startTime = System.nanoTime()
-    override fun calculate(target: Double, deltaTime: Double): Double {
+    override fun calculate(target: Int, deltaTime: Double): Double {
         if(target != profile.final) {
             profile = AsymmetricMotionProfile(positionSupplier.get(), target, constraints)
             startTime = System.nanoTime()
@@ -91,5 +98,7 @@ fun LambdaController<Double>.profiledController(target: Double, positionSupplier
     }
 })
 
-fun LambdaController<Double>.profiledController(target: Double, constraints: ProfileConstraints, component: ProfileStateComponent)
-        = profiledController(target, lastPositionSupplier.get(), constraints, component)
+fun LambdaController<Int>.appendProfiledController(constraints: ProfileConstraints, component: ProfileStateComponent)
+        = appendProfiledController(lastPositionSupplier.get(), constraints, component)
+fun <A : Angle> LambdaController<A>.appendArmFFController(armFFController: ArmFFController<A>) = appendController(armFFController)
+fun <A : Angle> LambdaController<A>.appendArmFFController(kF: Double) = appendArmFFController(ArmFFController(lastPositionSupplier.get(), kF))

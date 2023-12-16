@@ -6,29 +6,28 @@ import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
-import java.util.function.DoubleSupplier
 import java.util.function.Supplier
 
 class CalcifiedGamepad(private val gamepad: Gamepad) {
 	/**
 	 * left analog stick horizontal axis
 	 */
-	var leftStickX = EnhancedDoubleSupplier { gamepad.left_stick_x.toDouble() }
+	var leftStickX = EnhancedNumberSupplier { gamepad.left_stick_x.toDouble() }
 
 	/**
 	 * left analog stick vertical axis
 	 */
-	var leftStickY = EnhancedDoubleSupplier { gamepad.left_stick_y.toDouble() }
+	var leftStickY = EnhancedNumberSupplier { gamepad.left_stick_y.toDouble() }
 
 	/**
 	 * right analog stick horizontal axis
 	 */
-	var rightStickX = EnhancedDoubleSupplier { gamepad.right_stick_x.toDouble() }
+	var rightStickX = EnhancedNumberSupplier { gamepad.right_stick_x.toDouble() }
 
 	/**
 	 * right analog stick vertical axis
 	 */
-	var rightStickY = EnhancedDoubleSupplier { gamepad.right_stick_y.toDouble() }
+	var rightStickY = EnhancedNumberSupplier { gamepad.right_stick_y.toDouble() }
 
 	/**
 	 * dpad up
@@ -110,12 +109,12 @@ class CalcifiedGamepad(private val gamepad: Gamepad) {
 	/**
 	 * left trigger
 	 */
-	var leftTrigger = EnhancedDoubleSupplier { gamepad.left_trigger.toDouble() }
+	var leftTrigger = EnhancedNumberSupplier { gamepad.left_trigger.toDouble() }
 
 	/**
 	 * right trigger
 	 */
-	var rightTrigger = EnhancedDoubleSupplier { gamepad.right_trigger.toDouble() }
+	var rightTrigger = EnhancedNumberSupplier { gamepad.right_trigger.toDouble() }
 
 	/**
 	 * PS4 Support - Circle
@@ -180,13 +179,13 @@ class CalcifiedGamepad(private val gamepad: Gamepad) {
 
 	var touchpadFinger2 = EnhancedBooleanSupplier { gamepad.touchpad_finger_2 }
 
-	var touchpadFinger1X = EnhancedDoubleSupplier { gamepad.touchpad_finger_1_x.toDouble() }
+	var touchpadFinger1X = EnhancedNumberSupplier { gamepad.touchpad_finger_1_x.toDouble() }
 
-	var touchpadFinger1Y = EnhancedDoubleSupplier { gamepad.touchpad_finger_1_y.toDouble() }
+	var touchpadFinger1Y = EnhancedNumberSupplier { gamepad.touchpad_finger_1_y.toDouble() }
 
-	var touchpadFinger2X = EnhancedDoubleSupplier { gamepad.touchpad_finger_2_x.toDouble() }
+	var touchpadFinger2X = EnhancedNumberSupplier { gamepad.touchpad_finger_2_x.toDouble() }
 
-	var touchpadFinger2Y = EnhancedDoubleSupplier { gamepad.touchpad_finger_2_y.toDouble() }
+	var touchpadFinger2Y = EnhancedNumberSupplier { gamepad.touchpad_finger_2_y.toDouble() }
 
 	/**
 	 * PS4 Support - PS Button
@@ -198,7 +197,7 @@ class CalcifiedGamepad(private val gamepad: Gamepad) {
 		}
 }
 
-class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, private val leadingDebounce: Long, private val trailingDebounce: Long) : Supplier<Boolean>, Feature {
+class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, private val risingDebounce: Long, private val fallingDebounce: Long) : Supplier<Boolean>, Feature {
 	constructor(booleanSupplier: Supplier<Boolean>) : this(booleanSupplier, 0, 0)
 	private var previous = booleanSupplier.get()
 	private var current = booleanSupplier.get()
@@ -209,13 +208,13 @@ class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, pr
 	private var timeMarker = 0L
 	fun update() {
 		val time = System.nanoTime()
-		if(!current && booleanSupplier.get() && time - timeMarker > leadingDebounce){
+		if(!current && booleanSupplier.get() && time - timeMarker > risingDebounce){
 			previous = false
 			current = true
 			timeMarker = time
 			toggleTrue = !toggleTrue
 		}
-		else if (current && !booleanSupplier.get() && time - timeMarker > trailingDebounce) {
+		else if (current && !booleanSupplier.get() && time - timeMarker > fallingDebounce) {
 			previous = true
 			current = false
 			timeMarker = time
@@ -229,24 +228,64 @@ class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, pr
 
 	/**
 	 * non-mutating
+	 *
+	 * @param debounce is applied to both the rising and falling edges
 	 */
-	fun debounce(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, (debounce * 1E9).toLong(), (debounce * 1E9).toLong())
+	fun debounce(debounce: Double) = EnhancedBooleanSupplier(this.booleanSupplier, (debounce * 1E9).toLong(), (debounce * 1E9).toLong())
 
 	/**
 	 * non-mutating
+	 *
+	 * @param rising is applied to the rising edge
+	 * @param falling is applied to the falling edge
 	 */
-	fun debounce(leading: Long, trailing: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, leading, trailing)
+	fun debounce(rising: Double, falling: Double) = EnhancedBooleanSupplier(this.booleanSupplier, (rising * 1E9).toLong(), (falling * 1E9).toLong())
 
 	/**
 	 * non-mutating
+	 *
+	 * @param debounce is applied to the rising edge
 	 */
-	fun debounceLeadingEdge(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, (debounce * 1E9).toLong(), this.trailingDebounce)
+	fun debounceRisingEdge(debounce: Double) = EnhancedBooleanSupplier(this.booleanSupplier, (debounce * 1E9).toLong(), this.fallingDebounce)
 
 	/**
 	 * non-mutating
+	 *
+	 * @param debounce is applied to the falling edge
 	 */
-	fun debounceTrailingEdge(debounce: Long) : EnhancedBooleanSupplier = EnhancedBooleanSupplier(this.booleanSupplier, this.leadingDebounce, (debounce * 1E9).toLong())
+	fun debounceFallingEdge(debounce: Double) = EnhancedBooleanSupplier(this.booleanSupplier, this.risingDebounce, (debounce * 1E9).toLong())
 
+	/**
+	 * non-mutating
+	 *
+	 * @return a new EnhancedBooleanSupplier that combines the two conditions
+	 */
+	infix fun and(booleanSupplier: Supplier<Boolean>) = EnhancedBooleanSupplier { this.get() and booleanSupplier.get() }
+
+	/**
+	 * non-mutating
+	 *
+	 * @return a new EnhancedBooleanSupplier that combines the two conditions
+	 */
+	infix fun or(booleanSupplier: Supplier<Boolean>) = EnhancedBooleanSupplier { this.get() or booleanSupplier.get() }
+
+	/**
+	 * non-mutating
+	 *
+	 * @return a new EnhancedBooleanSupplier that combines the two conditions
+	 */
+	infix fun xor(booleanSupplier: Supplier<Boolean>) = EnhancedBooleanSupplier { this.get() xor booleanSupplier.get() }
+
+	/**
+	 * non-mutating
+	 *
+	 * @return a new EnhancedBooleanSupplier that has the inverse of this
+	 */
+	operator fun not() = EnhancedBooleanSupplier { !this.get() }
+
+	//
+	// Impl Feature:
+	//
 	override val dependencies: Set<Dependency<*, *>> = DependencySet(this).yields()
 
 	init {
@@ -284,37 +323,33 @@ class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, pr
 	override fun postUserStopHook(opMode: OpModeWrapper) {}
 }
 
-class EnhancedDoubleSupplier(private val doubleSupplier: Supplier<Double>, private val modify: (Double) -> Double = { x -> x }, private val lowerDeadzone: Double = 0.0, private val upperDeadzone: Double = 0.0) : Supplier<Double> {
-	constructor(doubleSupplier: Supplier<Double>) : this(doubleSupplier, { x -> x })
+class EnhancedNumberSupplier<N: Number >(private val supplier: Supplier<N>, private val modify: (N) -> N = { x -> x }, private val lowerDeadzone: Double = 0.0, private val upperDeadzone: Double = 0.0) : Supplier<Double> {
+	constructor(supplier: Supplier<N>) : this(supplier, { x -> x })
 
 	override fun get(): Double {
-		val result = modify(doubleSupplier.get())
+		val result = modify(supplier.get()).toDouble()
 		if (result < 0.0 && result >= lowerDeadzone) return 0.0
 		if (result > 0.0 && result <= upperDeadzone) return 0.0
 		return result
 	}
 
-	/**
-	 * non-mutating
-	 */
-	fun invert(): EnhancedDoubleSupplier = EnhancedDoubleSupplier({ -this.doubleSupplier.get() }, this.modify, this.lowerDeadzone, this.upperDeadzone)
 
 	/**
 	 * non-mutating
 	 */
-	fun applyDeadzone(deadzone: Double): EnhancedDoubleSupplier = EnhancedDoubleSupplier(this.doubleSupplier, this.modify, deadzone, deadzone)
+	fun applyDeadzone(deadzone: Double) = EnhancedNumberSupplier(this.supplier, this.modify, -(deadzone.coerceAtLeast(0.0)), deadzone.coerceAtLeast(0.0))
 	/**
 	 * non-mutating
 	 */
-	fun applyDeadzone(lowerDeadzone: Double, upperDeadzone: Double): EnhancedDoubleSupplier = EnhancedDoubleSupplier(this.doubleSupplier, this.modify, lowerDeadzone, upperDeadzone)
+	fun applyDeadzone(lowerDeadzone: Double, upperDeadzone: Double) = EnhancedNumberSupplier(this.supplier, this.modify, lowerDeadzone.coerceAtMost(0.0), upperDeadzone.coerceAtLeast(0.0))
 	/**
 	 * non-mutating
 	 */
-	fun applyLowerDeadzone(lowerDeadzone: Double): EnhancedDoubleSupplier = EnhancedDoubleSupplier(this.doubleSupplier, this.modify, lowerDeadzone, this.upperDeadzone)
+	fun applyLowerDeadzone(lowerDeadzone: Double) = EnhancedNumberSupplier(this.supplier, this.modify, lowerDeadzone.coerceAtMost(0.0), this.upperDeadzone)
 	/**
 	 * non-mutating
 	 */
-	fun applyUpperDeadzone(upperDeadzone: Double): EnhancedDoubleSupplier = EnhancedDoubleSupplier(this.doubleSupplier, this.modify, this.lowerDeadzone, upperDeadzone)
+	fun applyUpperDeadzone(upperDeadzone: Double) = EnhancedNumberSupplier(this.supplier, this.modify, this.lowerDeadzone, upperDeadzone.coerceAtLeast(0.0))
 }
 
-fun DoubleSupplier.conditionalBind(): Conditional = Conditional(this)
+fun <N: Number> Supplier<N>.conditionalBind(): Conditional<N> = Conditional(this)

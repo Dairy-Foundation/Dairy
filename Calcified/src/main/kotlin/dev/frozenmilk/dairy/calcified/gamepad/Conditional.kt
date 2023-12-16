@@ -1,9 +1,9 @@
 package dev.frozenmilk.dairy.calcified.gamepad
 
 import org.jetbrains.annotations.Contract
-import java.util.function.DoubleSupplier
+import java.util.function.Supplier
 
-class Conditional internal constructor(private val doubleSupplier: DoubleSupplier) {
+class Conditional<N:  Number> internal constructor(private val supplier: Supplier<N>) {
 	private val domainCheckers: ArrayList<(Double) -> Boolean> = ArrayList(1)
 	private var domainClosureBuilder: DomainClosureBuilder = DomainClosureBuilder()
 	private var previousOperationType: OperationType? = null
@@ -11,27 +11,27 @@ class Conditional internal constructor(private val doubleSupplier: DoubleSupplie
 	/**
 	 * @return self, for chaining
 	 */
-	fun lessThan(value: Double): Conditional {
+	fun lessThan(value: N): Conditional<N> {
 		handleBuildState(OperationType.LESS, Inclusivity.NOT_INCLUSIVE, value)
-		domainClosureBuilder = domainClosureBuilder.lessThan(value)
+		domainClosureBuilder = domainClosureBuilder.lessThan(value.toDouble())
 		return this
 	}
 
 	/**
 	 * @return self, for chaining
 	 */
-	fun lessThanEqualTo(value: Double): Conditional {
+	fun lessThanEqualTo(value: N): Conditional<N> {
 		handleBuildState(OperationType.LESS, Inclusivity.INCLUSIVE, value)
-		domainClosureBuilder = domainClosureBuilder.lessThanEqualTo(value)
+		domainClosureBuilder = domainClosureBuilder.lessThanEqualTo(value.toDouble())
 		return this
 	}
 
 	/**
 	 * @return self, for chaining
 	 */
-	fun greaterThan(value: Double): Conditional {
+	fun greaterThan(value: N): Conditional<N> {
 		handleBuildState(OperationType.GREATER, Inclusivity.NOT_INCLUSIVE, value)
-		domainClosureBuilder = domainClosureBuilder.greaterThan(value)
+		domainClosureBuilder = domainClosureBuilder.greaterThan(value.toDouble())
 		return this
 	}
 	// when we do a new operation, check to see if it can form a valid closure with the previous operation, if so, perform the closure union, else, close the previous closure and add this one in
@@ -40,9 +40,9 @@ class Conditional internal constructor(private val doubleSupplier: DoubleSupplie
 	/**
 	 * @return self, for chaining
 	 */
-	fun greaterThanEqualTo(value: Double): Conditional {
+	fun greaterThanEqualTo(value: N): Conditional<N> {
 		handleBuildState(OperationType.GREATER, Inclusivity.INCLUSIVE, value)
-		domainClosureBuilder = domainClosureBuilder.greaterThanEqualTo(value)
+		domainClosureBuilder = domainClosureBuilder.greaterThanEqualTo(value.toDouble())
 		return this
 	}
 
@@ -56,7 +56,7 @@ class Conditional internal constructor(private val doubleSupplier: DoubleSupplie
 		return EnhancedBooleanSupplier {
 			var result = false
 			for (domainChecker in domainCheckers) {
-				result = result or domainChecker.invoke(doubleSupplier.asDouble)
+				result = result or domainChecker.invoke(supplier.get().toDouble())
 			}
 			result
 		}
@@ -67,7 +67,8 @@ class Conditional internal constructor(private val doubleSupplier: DoubleSupplie
 	// * we already have one value loaded in there AND:
 	// * the new value doesn't close, so we actually want inverse values, which we achieve by building the previous value and letting the user continue to cook
 	// * OTHERWISE: if the new value DOES close, we add it and then run a build
-	private fun handleBuildState(operationType: OperationType, inclusivity: Inclusivity, newValue: Double) {
+	private fun handleBuildState(operationType: OperationType, inclusivity: Inclusivity, newValue: N) {
+		val newValue = newValue.toDouble()
 		if (previousOperationType == operationType || operationType == OperationType.LESS && (newValue < domainClosureBuilder.lower && inclusivity.isInclusive || newValue <= domainClosureBuilder.lower && !inclusivity.isInclusive) || operationType == OperationType.GREATER && (domainClosureBuilder.upper < newValue && inclusivity.isInclusive || domainClosureBuilder.upper <= newValue && !inclusivity.isInclusive)) {
 			domainCheckers.add(domainClosureBuilder.build())
 			domainClosureBuilder = DomainClosureBuilder()

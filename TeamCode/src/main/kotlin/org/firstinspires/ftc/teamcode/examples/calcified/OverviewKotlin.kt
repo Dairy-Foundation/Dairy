@@ -7,14 +7,24 @@ import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.PwmControl
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.calcified.Calcify
+import dev.frozenmilk.dairy.calcified.gamepad.conditionalBind
+import dev.frozenmilk.dairy.calcified.hardware.controller.LambdaController
+import dev.frozenmilk.dairy.calcified.hardware.controller.PController
+import dev.frozenmilk.dairy.calcified.hardware.controller.appendArmFFController
+import dev.frozenmilk.dairy.calcified.hardware.controller.appendProfiledController
+import dev.frozenmilk.dairy.calcified.hardware.controller.intoGeneric
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor
 import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
 import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.calcified.hardware.sensor.fromImuOrientationOnRobot
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.OpModeLazyCell
+import dev.frozenmilk.util.angle.Angle
 import dev.frozenmilk.util.angle.AngleDegrees
+import dev.frozenmilk.util.angle.AngleRadians
 import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation
+import dev.frozenmilk.util.profile.ProfileConstraints
+import dev.frozenmilk.util.profile.ProfileStateComponent
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 
 @TeleOp
@@ -22,7 +32,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 		automatedCacheHandling = true, // these are settings for the feature that we can set
 		crossPollinate = true, // setting both to true is the default, but if you're a more advanced user you may want to make use of these
 )
-class Overview : OpMode() {
+class OverviewKotlin : OpMode() {
 	// fields which are used as demo, ignore these for the moment and come back to them when later comments refer to them
 	lateinit var motor1: CalcifiedMotor
 	val motor2 by OpModeLazyCell {
@@ -89,20 +99,23 @@ class Overview : OpMode() {
 		val degEncoder = Calcified.controlHub.getDegreesEncoder(2, 300.0) // the ticks per revolution let the encoder know how to derive the number of ticks in a degree
 		// don't worry too much about which of these you want to use, most most of the time you'll probably want the RadiansEncoder
 		// but their outputs can be easily converted
-		val radians = radEncoder.getPosition()
-		val degrees = radians.intoDegrees()
+		val radians: AngleRadians = radEncoder.position
+		val degrees: AngleDegrees = radians.intoDegrees()
 
 		// encoders offer two big pieces of information pre-built into them
 		// the position supplier
 		encoder.positionSupplier
 		// the position itself
-		encoder.getPosition() // these are the same
+		encoder.position // these are the same
 		encoder.positionSupplier.get()
+		// the position can also be set
+		encoder.position = 100
+		// the encoder will now measure as though it really was at position 100 there
 
 		// and the velocity supplier
 		encoder.velocitySupplier
 		// the velocity itself
-		encoder.getVelocity() // these are the same
+		encoder.velocity // these are the same
 		encoder.velocitySupplier.get()
 
 		// both of which are pre-wrapped with the capability to automatically calculate error
@@ -208,7 +221,143 @@ class Overview : OpMode() {
 		//
 		// Motor Controllers
 		//
-		// Calcified offers powerful motor controllers instead of
+		// Calcified offers powerful motor controllers instead of the run to position, and run with encoders run modes
+		val controller = LambdaController(0)
+				// attaches a mix of motors and cr servos to be updated by the controller
+				.addMotors(motor, motor1, motor2, crServo)
+				// says to use the position supplier on the encoder for each of the following
+				.withErrorSupplier(encoder.positionSupplier)
+				// adds a P term
+				.appendPController(0.1)
+				// adds an I term
+				.appendIController(0.00001, 0.0, 0.2)
+				// adds a D term
+				.appendDController(0.005)
+
+		// causes this controller to automatically have .update() called on it, do this after finishing building the whole controller,
+		// and turn it off again before making further changes
+		controller.autoUpdate = true
+		// this method updates the controller by hand, if auto update is off, this needs to be called for the controller to run
+		controller.update()
+		// the target of the controller can be changed simply:
+		controller.target = 1000
+
+		val armController = LambdaController<Angle>(AngleDegrees(0.0))
+				// .intoGeneric() converts any supplier of a particular angle type into a more generic supplier
+				.withPositionSupplier(degEncoder.positionSupplier.intoGeneric())
+				// an arm FF controller can only be appended to a controller that takes in an Angle as a target
+				// and runs the angle the supplier through the cos function, which means if you set up your encoder correctly,
+				// this will provide full power when the arm is out flat, and none when its vertical
+				.appendArmFFController(0.1)
+
+		val otherController = LambdaController(0.0)
+				// controllers can also be appended like so:
+				.appendPController(PController(encoder.velocitySupplier, 0.7))
+				.appendDController(0.008)
+				// this is the same as:
+				.withErrorSupplier(encoder.velocitySupplier)
+				.appendPController(0.7)
+				.appendDController(0.008)
+				// and will cause the error supplier passed in to be inferred for further arguments
+
+		val profiledController = LambdaController(0)
+				.withPositionSupplier(encoder.positionSupplier)
+				.appendProfiledController(ProfileConstraints(100.0, 10.0), ProfileStateComponent.Position)
+
+		// motion profiles can also be used in controllers!
+
+		//
+		// Gamepads:
+		//
+		// Calcified also offers advanced versions of the Gamepads
+		Calcified.gamepad1
+		Calcified.gamepad2
+
+		// buttons on the gamepads are represented by EnhancedBooleanSuppliers
+		// which we also saw when looking at digital and analog inputs
+		var enhancedBooleanSupplier = Calcified.gamepad1.a
+
+		enhancedBooleanSupplier.get() // current state
+		enhancedBooleanSupplier.whenTrue // a rising edge detector
+		enhancedBooleanSupplier.whenFalse // a falling edge detector
+		enhancedBooleanSupplier.toggleTrue // a toggle that gets changed whenever a rising edge is detected
+		enhancedBooleanSupplier.toggleFalse // a toggle that gets changed whenever a falling edge is detected
+
+		// EnhancedBooleanSuppliers are immutable by default, so you can pull them out of the gamepad, do one-off modifications to them, and then store and use them again later
+
+		// debouncing can be applied independently to both the rising and falling edge
+		// note that each of these operations does not modify the original supplier, attached to gamepad1.a
+		enhancedBooleanSupplier = enhancedBooleanSupplier.debounce(0.1)
+		enhancedBooleanSupplier = enhancedBooleanSupplier.debounce(0.1, 0.0)
+		enhancedBooleanSupplier = enhancedBooleanSupplier.debounceFallingEdge(0.1)
+		enhancedBooleanSupplier = enhancedBooleanSupplier.debounceRisingEdge(0.1)
+
+		// if we do not reassign the new EnhancedBooleanSupplier to the variable, or store it in a different variable it will be lost
+
+		// suppliers can also be combined:
+		enhancedBooleanSupplier = enhancedBooleanSupplier and { encoder.position > 5 }
+		enhancedBooleanSupplier = enhancedBooleanSupplier.or { encoder.velocity < 100.0 }
+
+		// this works is all kinds of ways!
+		val twoButtons = Calcified.gamepad1.a and Calcified.gamepad1.b
+
+		// you can also reassign the buttons on the gamepads themselves, if you wish to make a change more global
+		Calcified.gamepad2.a = Calcified.gamepad1.a or Calcified.gamepad2.a
+		// now either the driver or the operator can trigger this condition!
+
+		// note: the calcified gamepads have remaps for all gamepad buttons and inputs, the inputs that are shared across the different gamepad types
+		// but share a name (i.e. cross on a ps4 controller and a on a logitech or x-box controller) are linked together on the calcified gamepad
+
+		// sticks and triggers are represented via EnhancedNumberSuppliers
+		var enhancedNumberSupplier = Calcified.gamepad1.leftStickY
+
+		// the value of the stick
+		enhancedNumberSupplier.get()
+
+		// deadzones can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
+		enhancedNumberSupplier = enhancedNumberSupplier.applyDeadzone(0.1) // becomes -0.1, 0.1
+		enhancedNumberSupplier = enhancedNumberSupplier.applyDeadzone(-0.1, 0.2)
+		enhancedNumberSupplier = enhancedNumberSupplier.applyUpperDeadzone(-0.1)
+		enhancedNumberSupplier = enhancedNumberSupplier.applyLowerDeadzone(0.1)
+
+		// EnhancedNumberSuppliers also interact well with building complex EnhancedBooleanSuppliers from ranges
+		val rangeBasedCondition = enhancedNumberSupplier.conditionalBind()
+				.greaterThan(-0.5)
+				.lessThan(0.5)
+				.bind()
+
+		// this system is fairly intuitive, and works best if you list numbers from smallest to largest,
+		// or in pairs e.g.:
+
+		val complexRangeBasedCondition = enhancedNumberSupplier.conditionalBind()
+				.greaterThan(0.0)
+				.lessThan(10.0)
+				.greaterThanEqualTo(1.0)
+				.lessThanEqualTo(1000.0)
+				.bind()
+
+		// forms two acceptable ranges,
+		// but obviously this could be simplified
+		// imagine you were reading out each condition and then drawing it on the number line.
+		// if it can form a closed range with the last condition you listed, it will!
+
+		// for 90% of use cases it is just best to list numbers from smallest to largest, the rest will work itself out
+
+		// this process works for all Supplier<Double>s and so can be used on things like encoders:
+
+		val encoderBasedCondition = encoder.positionSupplier.conditionalBind()
+				.greaterThanEqualTo(100)
+				.lessThanEqualTo(250)
+				.bind()
+
+		// remember, its best to run these operations once at the start of the op mode, and store them for later,
+		// as they are reasonably expensive to remake every loop
+		// but checking
+		encoderBasedCondition.whenTrue
+		// will run all the correct checks against the encoder position whenever you call it, but only if you call it
+
+		// Hopefully this has been a helpful overview of how to use Calcified, hosted on DairyCore
+		// See the other examples for better usage examples of these features (if there are no other examples uhh, this should be fine tbh, and todo)
 	}
 
 	override fun loop() {

@@ -5,6 +5,7 @@ import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.util.angle.Angle
 import java.util.function.Supplier
+import kotlin.math.cos
 
 interface ComplexController<IN> : Feature {
 	var autoUpdate: Boolean
@@ -26,7 +27,6 @@ interface ComplexController<IN> : Feature {
 	}
 
 	fun update() {
-		if (!autoUpdate) return
 		previousTime = currentTime
 		currentTime = System.nanoTime()
 		motors.power = calculators.sumOf { it.calculate(target, deltaTime()) }
@@ -35,6 +35,7 @@ interface ComplexController<IN> : Feature {
 	override fun preUserInitHook(opMode: OpModeWrapper) {}
 
 	override fun postUserInitHook(opMode: OpModeWrapper) {
+		if (!autoUpdate) return
 		update()
 	}
 
@@ -42,6 +43,7 @@ interface ComplexController<IN> : Feature {
 	}
 
 	override fun postUserInitLoopHook(opMode: OpModeWrapper) {
+		if (!autoUpdate) return
 		update()
 	}
 
@@ -49,6 +51,7 @@ interface ComplexController<IN> : Feature {
 	}
 
 	override fun postUserStartHook(opMode: OpModeWrapper) {
+		if (!autoUpdate) return
 		update()
 	}
 
@@ -56,6 +59,7 @@ interface ComplexController<IN> : Feature {
 	}
 
 	override fun postUserLoopHook(opMode: OpModeWrapper) {
+		if (!autoUpdate) return
 		update()
 	}
 
@@ -96,5 +100,11 @@ class DController<IN>(errorSupplier: ErrorSupplier<IN, Double>, private val kD: 
 		val result = (error - previousError) / deltaTime * kD
 		previousError = error
 		return result
+	}
+}
+
+class ArmFFController<A : Angle>(positionSupplier: Supplier<A>, private val kF: Double) : PositionBasedCalculator<A>(positionSupplier) {
+	override fun calculate(target: A, deltaTime: Double): Double {
+		return cos(positionSupplier.get().intoRadians().theta) * kF
 	}
 }

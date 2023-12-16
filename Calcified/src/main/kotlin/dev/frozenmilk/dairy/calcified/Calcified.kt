@@ -20,12 +20,14 @@ object Calcified : Feature {
 	/**
 	 * @see Calcify.crossPollinate
 	 */
+	@JvmStatic
 	var crossPollinate = true
 		private set
 
 	/**
 	 * @see Calcify.automatedCacheHandling
 	 */
+	@JvmStatic
 	var automatedCacheHandling = true
 		private set
 
@@ -54,6 +56,7 @@ object Calcified : Feature {
 	/**
 	 * all calcified modules found this OpMode
 	 */
+	@JvmStatic
 	var modules: Array<CalcifiedModule> = emptyArray()
 		private set
 
@@ -61,8 +64,10 @@ object Calcified : Feature {
 	private var boringGamepad2: Gamepad by LateInitCell()
 
 	private val gamepad1Cell = LazyCell { CalcifiedGamepad(boringGamepad1) }
+	@JvmStatic
 	val gamepad1: CalcifiedGamepad by gamepad1Cell
 	private val gamepad2Cell = LazyCell { CalcifiedGamepad(boringGamepad2) }
+	@JvmStatic
 	val gamepad2: CalcifiedGamepad by gamepad2Cell
 
 	private val controlHubCell = LazyCell {
@@ -73,6 +78,7 @@ object Calcified : Feature {
 	/**
 	 * the first hub in [modules] that satisfies the conditions to be considered a control hub
 	 */
+	@JvmStatic
 	val controlHub: CalcifiedModule by controlHubCell
 
 	private val expansionHubCell = LazyCell {
@@ -83,6 +89,7 @@ object Calcified : Feature {
 	/**
 	 * the first hub in [modules] that satisfies the conditions to be considered an expansion hub
 	 */
+	@JvmStatic
 	val expansionHub: CalcifiedModule by expansionHubCell
 
 	/**
@@ -95,6 +102,7 @@ object Calcified : Feature {
 	/**
 	 * should be run in stop if you want to clear the status of the hardware objects for the next user, otherwise modules and hardware will be cleared according to [crossPollinate]
 	 */
+	@JvmStatic
 	fun clearModules() {
 		modules = emptyArray()
 	}
