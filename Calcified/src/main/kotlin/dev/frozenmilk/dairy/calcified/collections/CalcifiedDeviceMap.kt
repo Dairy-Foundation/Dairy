@@ -17,6 +17,7 @@ import dev.frozenmilk.dairy.calcified.hardware.servo.PWMDevice
 import dev.frozenmilk.dairy.calcified.hardware.motor.RadiansEncoder
 import dev.frozenmilk.dairy.calcified.hardware.motor.TicksEncoder
 import dev.frozenmilk.dairy.calcified.hardware.motor.UnitEncoder
+import dev.frozenmilk.dairy.calcified.hardware.sensor.AnalogInput
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil
 
 abstract class CalcifiedDeviceMap<T> internal constructor(protected val module: CalcifiedModule, private val map: MutableMap<Byte, T> = mutableMapOf()) : MutableMap<Byte, T> by map
@@ -87,10 +88,13 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 	}
 }
 
-class IMUs internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<CalcifiedIMU>(module){
+class I2CDevices internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<Any>(module){
 	fun getIMU(port: Byte, imuType: LynxModuleImuType, angleBasedRobotOrientation: AngleBasedRobotOrientation): CalcifiedIMU {
-		this.putIfAbsent(port, CalcifiedIMU(imuType, LynxFirmwareVersionManager.createLynxI2cDeviceSynch(AppUtil.getDefContext(), module.lynxModule, port.toInt()), angleBasedRobotOrientation))
-		return this[port]!!
+		if (port !in 0 until LynxConstants.NUMBER_OF_I2C_BUSSES) throw IllegalArgumentException("$port is not in the acceptable port range [0, ${LynxConstants.NUMBER_OF_I2C_BUSSES - 1}]")
+		if (this.containsKey(port) && this[port] !is CalcifiedIMU) {
+			this[port] = CalcifiedIMU(imuType, LynxFirmwareVersionManager.createLynxI2cDeviceSynch(AppUtil.getDefContext(), module.lynxModule, port.toInt()), angleBasedRobotOrientation)
+		}
+		return (this[port] as CalcifiedIMU)
 	}
 
 	fun getIMU_BHI260(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()) = this.getIMU(port, LynxModuleImuType.BHI260, angleBasedRobotOrientation)
@@ -112,5 +116,13 @@ class DigitalChannels internal constructor(module: CalcifiedModule) : CalcifiedD
 			this[port] = DigitalInput(module, port)
 		}
 		return (this[port] as DigitalOutput)
+	}
+}
+
+class AnalogInputs internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<AnalogInput>(module) {
+	fun getInput(port: Byte): AnalogInput {
+		if (port !in 0 until LynxConstants.NUMBER_OF_ANALOG_INPUTS) throw IllegalArgumentException("$port is not in the acceptable port range [0, ${LynxConstants.NUMBER_OF_ANALOG_INPUTS - 1}]")
+		this.putIfAbsent(port, AnalogInput(module, port))
+		return this[port]!!
 	}
 }

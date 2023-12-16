@@ -19,6 +19,8 @@ annotation class Calcify(
 		 *
 		 * Set to true if you want to prompt [Calcified] to drop its hardware objects by hand.
 		 * This should be done using [Calcified.clearModules]
+		 *
+		 * By default, drops hardware objects at the start of an auto, and at the end of a teleop, allowing values to be carried over from an auto to a teleop
 		 */
 		val crossPollinate: Boolean = true
 )

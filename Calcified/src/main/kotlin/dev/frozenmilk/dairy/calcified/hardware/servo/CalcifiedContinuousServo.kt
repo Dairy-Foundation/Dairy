@@ -10,10 +10,9 @@ import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
 import dev.frozenmilk.dairy.calcified.hardware.motor.SimpleMotor
 import kotlin.math.abs
 
-class CalcifiedContinuousServo internal constructor(private val module: CalcifiedModule, private val port: Byte) : SimpleMotor,
-	PWMDevice {
+class CalcifiedContinuousServo internal constructor(private val module: CalcifiedModule, private val port: Byte) : SimpleMotor, PWMDevice {
 	override var direction: Direction = Direction.FORWARD
-	override var pwmRange: PwmControl.PwmRange = PwmControl.PwmRange(600.0, 2400.0)
+	override var pwmRange: PwmControl.PwmRange = PwmControl.PwmRange.defaultRange
 		set(value) {
 			if (value.usFrame != field.usFrame) {
 				LynxSetPWMConfigurationCommand(module.lynxModule, port.toInt(), value.usFrame.toInt()).send()

@@ -20,7 +20,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * features that are registered to potentially become active
 	 */
-	private var registeredFeatures: MutableList<WeakReference<Feature>> = mutableListOf()
+	private var registeredFeatures: MutableSet<WeakReference<Feature>> = mutableSetOf()
 
 	/**
 	 * intermediary collection of features that need to be checked to be added to the active pool
@@ -30,7 +30,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * features that have been activated via [resolveDependenciesMap]
 	 */
-	private val activeFeatures: MutableList<WeakReference<Feature>> = mutableListOf()
+	private val activeFeatures: MutableSet<WeakReference<Feature>> = mutableSetOf()
 
 	/**
 	 * the feature flag annotations of the active OpMode
@@ -112,7 +112,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	}
 
 	private fun cleanFeatures() {
-		registeredFeatures = registeredFeatures.filter { it.get() != null }.toMutableList()
+		registeredFeatures = registeredFeatures.filter { it.get() != null }.toMutableSet()
 	}
 
 	override fun onOpModePreInit(opMode: OpMode) {

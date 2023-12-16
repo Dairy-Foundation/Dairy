@@ -27,6 +27,7 @@ import org.firstinspires.ftc.robotcore.internal.hardware.android.AndroidBoard
 import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.PI
 
 class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, private val device: LynxI2cDeviceSynch, initialAngles: AngleBasedRobotOrientation) {
 	init {
@@ -78,8 +79,9 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 */
 	val headingSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
 		override fun getError(target: Angle): Double {
-			return get().findShortestDistance(target)
+			return get().intoRadians().findShortestDistance(target)
 		}
+
 		override fun get(): Angle {
 			return heading
 		}
@@ -97,8 +99,9 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 */
 	val xRotSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
 		override fun getError(target: Angle): Double {
-			return get().findShortestDistance(target)
+			return get().intoRadians().findShortestDistance(target)
 		}
+
 		override fun get(): Angle {
 			return orientation.xRot
 		}
@@ -111,8 +114,9 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 */
 	val yRotSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
 		override fun getError(target: Angle): Double {
-			return get().findShortestDistance(target)
+			return get().intoRadians().findShortestDistance(target)
 		}
+
 		override fun get(): Angle {
 			return orientation.yRot
 		}

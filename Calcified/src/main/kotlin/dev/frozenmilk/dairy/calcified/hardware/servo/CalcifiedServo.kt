@@ -12,7 +12,7 @@ import kotlin.math.abs
 class CalcifiedServo internal constructor(private val module: CalcifiedModule, private val port: Byte) : PWMDevice {
 	var direction = Direction.FORWARD;
 
-	override var pwmRange: PwmRange = PwmRange(600.0, 2400.0)
+	override var pwmRange: PwmRange = PwmRange.defaultRange
 		set(value) {
 			if (value.usFrame != field.usFrame) {
 				LynxSetPWMConfigurationCommand(module.lynxModule, port.toInt(), value.usFrame.toInt()).send()
