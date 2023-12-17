@@ -1,5 +1,6 @@
 # Dairy
 [![](https://www.jitpack.io/v/Dairy-Foundation/Dairy.svg)](https://www.jitpack.io/#Dairy-Foundation/Dairy)
+
 This repository contains a multi-module project that contains both core functionality of the Dairy project, and sub-libraries built on the project
 
 This repository also contains a copy of the FTC Robot Controller project, to enable fast development, and a single repository combination of source code and implementation samples
