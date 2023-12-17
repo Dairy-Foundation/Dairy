@@ -11,9 +11,22 @@ import dev.frozenmilk.util.angle.AngleRadians
  * @property zRot the rotation of the robot about the positive z-axis of the field
  */
 class AngleBasedRobotOrientation(val xRot: Angle = AngleRadians(), val yRot: Angle = AngleRadians(), val zRot: Angle = AngleRadians()) {
-//	constructor(orientation: Orientation) : this(fromOrientation(orientation))
-//
-//	constructor(quaternion: Quaternion) : this(fromQuaternion(quaternion))
+	enum class Axis {
+		X,
+		Y,
+		Z
+	}
+
+	/**
+	 * a more programmatic way of getting an angle
+	 */
+	fun getAngle(axis: Axis): Angle {
+		return when (axis) {
+			Axis.X -> xRot
+			Axis.Y -> yRot
+			Axis.Z -> zRot
+		}
+	}
 
 	/**
 	 * used by the helper

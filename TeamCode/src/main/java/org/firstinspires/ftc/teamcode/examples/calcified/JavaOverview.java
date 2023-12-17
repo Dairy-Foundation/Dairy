@@ -173,6 +173,9 @@ public class JavaOverview extends OpMode {
 		)));
 		CalcifiedIMU imu = Calcified.getControlHub().getIMU((byte) 2, LynxModuleImuType.BNO055, new AngleBasedRobotOrientation(new AngleDegrees(50.0), new AngleDegrees(-40.7), new AngleDegrees()));
 		
+		// the imu supports the sdk's default way of doing angles
+		imu.getYawPitchRollAngles();
+		
 		imu.getHeading(); // the heading of the robot
 		// the angles from the robot orientation
 		imu.getOrientation().getXRot();

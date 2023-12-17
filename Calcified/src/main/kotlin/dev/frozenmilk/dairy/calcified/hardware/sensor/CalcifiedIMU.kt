@@ -23,6 +23,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles
 import org.firstinspires.ftc.robotcore.internal.hardware.android.AndroidBoard
 import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin
 import java.nio.ByteBuffer
@@ -51,13 +52,25 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 			if (!cached) {
 				previousOrientation = field
 				// doesn't run through the setter function
-				field = readIMU() - offsetOrientation
+				val result = readIMU()
+				field = result.second - offsetOrientation
 			}
 			return field
 		}
 		set(value) {
 			offsetOrientation = value - field
 			field = value
+		}
+
+	/**
+	 * the current orientation of the robot
+	 */
+	var yawPitchRollAngles: YawPitchRollAngles
+		get() {
+			return orientation.toYawPitchRoll()
+		}
+		set(value) {
+			orientation = fromYawPitchRollAngles(value)
 		}
 
 	/**
@@ -215,7 +228,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	/**
 	 * performs the actual read of the imu
 	 */
-	private fun readIMU(): AngleBasedRobotOrientation {
+	private fun readIMU(): Pair<Quaternion, AngleBasedRobotOrientation> {
 		previousTime = cachedTime
 		cachedTime = System.nanoTime()
 		return when (imuType) {
@@ -238,7 +251,8 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 				}
 
 				val buffer = ByteBuffer.wrap(data.data).order(ByteOrder.LITTLE_ENDIAN)
-				fromQuaternion(Quaternion(buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, data.nanoTime))
+				val quaternion = Quaternion(buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, buffer.getShort() / scale, data.nanoTime)
+				quaternion to fromQuaternion(quaternion)
 			}
 
 			BHI260 -> {
@@ -276,7 +290,8 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 				val y = (yInt * QUATERNION_SCALE_FACTOR).toFloat()
 				val z = (zInt * QUATERNION_SCALE_FACTOR).toFloat()
 				val w = (wInt * QUATERNION_SCALE_FACTOR).toFloat()
-				fromQuaternion(Quaternion(w, x, y, z, timestamp))
+				val quaternion = Quaternion(w, x, y, z, timestamp)
+				quaternion to fromQuaternion(quaternion)
 			}
 		}
 	}
@@ -331,3 +346,15 @@ fun fromQuaternion(quaternion: Quaternion): AngleBasedRobotOrientation {
 	return fromOrientation(quaternion.toOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS))
 }
 
+fun fromYawPitchRollAngles(yawPitchRollAngles: YawPitchRollAngles): AngleBasedRobotOrientation {
+	return fromOrientation(Orientation(AxesReference.INTRINSIC, AxesOrder.ZXY, AngleUnit.DEGREES, yawPitchRollAngles.getYaw(AngleUnit.DEGREES).toFloat(), yawPitchRollAngles.getPitch(AngleUnit.DEGREES).toFloat(), yawPitchRollAngles.getRoll(AngleUnit.DEGREES).toFloat(), yawPitchRollAngles.acquisitionTime))
+}
+
+fun AngleBasedRobotOrientation.toOrientation(): Orientation {
+	return Orientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.RADIANS, xRot.intoRadians().theta.toFloat(), yRot.intoRadians().theta.toFloat(), zRot.intoRadians().theta.toFloat(), 0L)
+}
+
+fun AngleBasedRobotOrientation.toYawPitchRoll(): YawPitchRollAngles {
+	val orientation = toOrientation().toAxesOrder(AxesOrder.ZXY).toAxesReference(AxesReference.EXTRINSIC)
+	return YawPitchRollAngles(orientation.angleUnit, orientation.firstAngle.toDouble(), orientation.secondAngle.toDouble(), orientation.thirdAngle.toDouble(), orientation.acquisitionTime)
+}

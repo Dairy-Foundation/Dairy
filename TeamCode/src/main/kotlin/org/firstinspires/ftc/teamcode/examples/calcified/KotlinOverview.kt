@@ -161,6 +161,9 @@ class KotlinOverview : OpMode() {
 		)))
 		val imu = Calcified.controlHub.getIMU(2, LynxModuleImuType.BNO055, AngleBasedRobotOrientation(AngleDegrees(50.0), AngleDegrees(-40.7), AngleDegrees()))
 
+		// the imu supports the sdk's default way of doing angles
+		imu.yawPitchRollAngles
+
 		imu.heading // the heading of the robot
 		// the angles from the robot orientation
 		imu.orientation.xRot
