@@ -10,7 +10,7 @@ android {
 	compileSdk = 29
 
 	defaultConfig {
-		minSdk = 26 // todo remember in docs that this is upgraded from 24 -> 26
+		minSdk = 24
 		//noinspection ExpiredTargetSdkVersion
 		targetSdk = 28
 

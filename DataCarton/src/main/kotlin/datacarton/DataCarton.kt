@@ -8,8 +8,8 @@ import datacarton.annotations.PackageProcessor
 import datacarton.annotations.PublicationProcessor
 import datacarton.annotations.TelemetryPublicationProcessor
 import dev.frozenmilk.dairy.core.DairyCore
-import dev.frozenmilk.dairy.core.Dependency
-import dev.frozenmilk.dairy.core.DependencySet
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.OpModeWrapper
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -18,8 +18,8 @@ import java.util.function.Supplier
 import kotlin.collections.HashMap
 
 object DataCarton : Feature {
-	override val dependencies: Set<Dependency<*>> = DependencySet(this)
-			.includesExactlyOneOf(DairyCore::class.java, DairyCore.DataCarton::class.java)
+	override val dependencies: Set<Dependency<*, *>> = DependencySet(this)
+			.includesExactlyOneOf(DairyCore::class.java, Pack::class.java)
 
 	fun initFromTelemetry(telemetry: Telemetry, defaultRenderOrder: RenderOrder, vararg additionalPublicationProcessors: PublicationProcessor) {
 		telemetry.isAutoClear = false
