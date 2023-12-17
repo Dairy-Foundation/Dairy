@@ -68,6 +68,7 @@ class Conditional<N:  Number> internal constructor(private val supplier: Supplie
 	// * the new value doesn't close, so we actually want inverse values, which we achieve by building the previous value and letting the user continue to cook
 	// * OTHERWISE: if the new value DOES close, we add it and then run a build
 	private fun handleBuildState(operationType: OperationType, inclusivity: Inclusivity, newValue: N) {
+		@Suppress("NAME_SHADOWING")
 		val newValue = newValue.toDouble()
 		if (previousOperationType == operationType || operationType == OperationType.LESS && (newValue < domainClosureBuilder.lower && inclusivity.isInclusive || newValue <= domainClosureBuilder.lower && !inclusivity.isInclusive) || operationType == OperationType.GREATER && (domainClosureBuilder.upper < newValue && inclusivity.isInclusive || domainClosureBuilder.upper <= newValue && !inclusivity.isInclusive)) {
 			domainCheckers.add(domainClosureBuilder.build())

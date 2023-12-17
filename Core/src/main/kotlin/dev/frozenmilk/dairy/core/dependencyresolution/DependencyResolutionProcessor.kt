@@ -51,7 +51,7 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 						try {
 							val newResolutionResult = it.resolvesOrError(resolved.keys)
 							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
-							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(currentResolutionResult.second ?: newResolutionResult.second);
+							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(currentResolutionResult.second);
 							resolutionPair.resolves and (newResolutionResult.first or currentResolutionResult.first)
 						} catch (e: FeatureDependencyResolutionFailureException) {
 							exceptions.add(e)
