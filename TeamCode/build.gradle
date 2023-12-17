@@ -28,9 +28,10 @@ dependencies {
     implementation project(':FtcRobotController')
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
-    implementation project(':Core')
-    implementation project(':Calcified')
+//    implementation project(':Core')
+//    implementation project(':Calcified')
 //    implementation project(':DataCarton')
 
-//    implementation 'com.github.Dairy-Foundation.Dairy:Core:d97fd0f'
+    implementation 'com.github.Dairy-Foundation.Dairy:dairycore:1388e31'
+    implementation 'com.github.Dairy-Foundation.Dairy:calcified:1388e31'
 }

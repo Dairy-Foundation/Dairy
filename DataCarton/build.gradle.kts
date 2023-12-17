@@ -47,7 +47,7 @@ publishing {
 	publications {
 		register<MavenPublication>("release") {
 			groupId = "dev.frozenmilk.dairy"
-			artifactId = "datacarton"
+			artifactId = "DataCarton"
 			version = "v0.0.0"
 
 			afterEvaluate {

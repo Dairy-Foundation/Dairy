@@ -15,7 +15,7 @@ publishing {
 	publications {
 		register<MavenPublication>("release") {
 			groupId = "dev.frozenmilk.dairy"
-			artifactId = "dairycore"
+			artifactId = "Util"
 			version = "v0.0.0"
 
 			afterEvaluate {
@@ -25,7 +25,7 @@ publishing {
 	}
 	repositories {
 		maven {
-			name = "DairyCore"
+			name = "Util"
 			url = uri("${project.buildDir}/release")
 		}
 	}

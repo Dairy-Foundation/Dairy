@@ -48,7 +48,7 @@ publishing {
 	publications {
 		register<MavenPublication>("release") {
 			groupId = "dev.frozenmilk.dairy"
-			artifactId = "calcified"
+			artifactId = "Calcified"
 			version = "v0.0.0"
 
 			afterEvaluate {
