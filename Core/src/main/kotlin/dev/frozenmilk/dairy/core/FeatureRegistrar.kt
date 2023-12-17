@@ -11,6 +11,7 @@ import dev.frozenmilk.dairy.core.dependencyresolution.FeatureDependencyResolutio
 import dev.frozenmilk.dairy.core.dependencyresolution.plus
 import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependenciesMap
 import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependenciesOrderedList
+import dev.frozenmilk.util.cell.MirroredCell
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
 import java.lang.ref.WeakReference
 import java.util.ArrayDeque
@@ -40,12 +41,27 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * if there is currently an [OpMode] active on the robot, should be true almost all of the time
 	 */
+	@JvmStatic
 	var opModeActive: Boolean = false
 		private set
 
 	/**
+	 * the mirror cell used to manage this
+	 */
+	private val activeOpModeMirroredCell = MirroredCell<OpMode>(opModeManager, "activeOpMode")
+
+	/**
+	 * the currently active OpMode, contents may be undefined if [opModeActive] does not return true
+	 */
+	@JvmStatic
+	var activeOpMode: OpModeWrapper
+		get() = activeOpModeMirroredCell.get() as OpModeWrapper
+		private set(value) = activeOpModeMirroredCell.accept(value)
+
+	/**
 	 * this is mildly expensive to do while an OpMode is running, especially if many features are registered
 	 */
+	@JvmStatic
 	fun registerFeature(feature: Feature) {
 		val weakRef = WeakReference(feature)
 		registeredFeatures.add(weakRef)
@@ -70,6 +86,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	 *
 	 * an optional dependency resolution diagnostic tool
 	 */
+	@JvmStatic
 	fun checkFeatures(opMode: OpMode, vararg features: Feature) {
 		val resolved = resolveDependenciesMap(features.toList(), activeFeatures.mapNotNull { it.get() }, opMode.javaClass.annotations.toList())
 		// throws all the exceptions it came across in one giant message, if we find any
@@ -85,6 +102,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * this is mildly expensive to do while an OpMode is running, especially if many listeners are registered
 	 */
+	@JvmStatic
 	fun deregisterFeature(feature: Feature) {
 		activeFeatures.remove(
 				activeFeatures.first {
@@ -125,36 +143,38 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		resolveRegistrationQueue()
 
 		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
-		val activeOpMode = dev.frozenmilk.util.cell.MirroredCell<OpMode>(opModeManager, "activeOpMode")
-
-		val wrapped = OpModeWrapper(opMode)
-		activeOpMode.accept(wrapped)
+		activeOpMode = OpModeWrapper(opMode)
 		opModeActive = true
 
 		// resolves the queue of anything that was registered later
 		resolveRegistrationQueue()
 	}
 
+	@JvmStatic
 	fun onOpModePreInit(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.preUserInitHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePostInit(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.postUserInitHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePreInitLoop(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.preUserInitLoopHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePostInitLoop(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.postUserInitLoopHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePreStart(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.preUserStartHook(opMode) }
@@ -164,26 +184,31 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		// we expose our own hook, rather than this one
 	}
 
+	@JvmStatic
 	fun onOpModePostStart(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.postUserStartHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePreLoop(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.preUserLoopHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePostLoop(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.postUserLoopHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePreStop(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.preUserStopHook(opMode) }
 	}
 
+	@JvmStatic
 	fun onOpModePostStop(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.postUserStopHook(opMode) }

@@ -40,7 +40,7 @@ class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : C
 		/**
 		 * returns error in ticks, consider wrapping this encoder in a different UnitEncoder to use error with some other, more predictable unit
 		 */
-		override fun getError(target: Int): Double {
+		override fun findError(target: Int): Double {
 			if (cachedError == null) cachedError = (target - get()).toDouble()
 			return cachedError!!
 		}
@@ -61,7 +61,7 @@ class TicksEncoder internal constructor(module: CalcifiedModule, port: Byte) : C
 		private var cachedError: Double? = null
 		private var previousPosition = positionSupplier.get()
 
-		override fun getError(target: Double): Double {
+		override fun findError(target: Double): Double {
 			if (cachedError == null) cachedError = target - get()
 			return cachedError!!
 		}
@@ -107,7 +107,7 @@ class RadiansEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		private var cachedAngle: AngleRadians? = null
 		private var cachedError: Double? = null
 
-		override fun getError(target: AngleRadians): Double {
+		override fun findError(target: AngleRadians): Double {
 			if (cachedError == null) cachedError = get().findShortestDistance(target)
 			return cachedError!!
 		}
@@ -128,7 +128,7 @@ class RadiansEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		private var cachedError: Double? = null
 		private var previousPosition = positionSupplier.get()
 
-		override fun getError(target: Double): Double {
+		override fun findError(target: Double): Double {
 			if (cachedError == null) cachedError = target - get()
 			return cachedError!!
 		}
@@ -159,7 +159,7 @@ class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		private var cachedAngle: AngleDegrees? = null
 		private var cachedError: Double? = null
 
-		override fun getError(target: AngleDegrees): Double {
+		override fun findError(target: AngleDegrees): Double {
 			if (cachedError == null) cachedError = get().findShortestDistance(target)
 			return cachedError!!
 		}
@@ -180,7 +180,7 @@ class DegreesEncoder internal constructor(ticksEncoder: TicksEncoder, ticksPerRe
 		private var cachedError: Double? = null
 		private var previousPosition = positionSupplier.get()
 
-		override fun getError(target: Double): Double {
+		override fun findError(target: Double): Double {
 			if (cachedError == null) cachedError = target - get()
 			return cachedError!!
 		}

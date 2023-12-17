@@ -6,7 +6,7 @@ import dev.frozenmilk.util.angle.AngleRadians
 import java.util.function.Supplier
 
 interface ErrorSupplier<IN, OUT> {
-	fun getError(target: IN): OUT
+	fun findError(target: IN): OUT
 }
 
 /**

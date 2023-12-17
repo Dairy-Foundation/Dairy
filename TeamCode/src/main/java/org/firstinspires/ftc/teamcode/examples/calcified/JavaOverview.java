@@ -12,7 +12,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import dev.frozenmilk.dairy.calcified.Calcified;
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedBooleanSupplier;
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedNumberSupplier;
+import dev.frozenmilk.dairy.calcified.gamepad.EnhancedNumberSupplierKt;
 import dev.frozenmilk.dairy.calcified.hardware.controller.LambdaController;
+import dev.frozenmilk.dairy.calcified.hardware.controller.LambdaControllerKt;
 import dev.frozenmilk.dairy.calcified.hardware.controller.PController;
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor;
@@ -26,13 +28,28 @@ import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalInput;
 import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalOutput;
 import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedContinuousServo;
 import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedServo;
+import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.OpModeLazyCell;
+import dev.frozenmilk.util.angle.Angle;
 import dev.frozenmilk.util.angle.AngleDegrees;
 import dev.frozenmilk.util.angle.AngleRadians;
 import dev.frozenmilk.util.cell.Cell;
 import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation;
+import dev.frozenmilk.util.profile.ProfileConstraints;
+import dev.frozenmilk.util.profile.ProfileStateComponent;
 
-public class OverviewJava extends OpMode {
+public class JavaOverview extends OpMode {
+	public JavaOverview() {
+		// this ensures that Calcified is attached,
+		// if it failed for some reason, then it will spit out a helpful error describing why
+		// what you asked for wasn't successfully attached
+		
+		// if this line isn't here, the first time you run an opmode with calcified in it it might crash,
+		// and then work after that, due to the way classes are loaded in java,
+		// so this line is advised even if you know that everything should be fine
+		FeatureRegistrar.checkFeatures(this, Calcified.INSTANCE);
+	}
+	
 	// fields which are used as demo, ignore these for the moment and come back to them when later comments refer to them
 	private CalcifiedMotor motor1;
 	private final Cell<CalcifiedMotor> motor2 = new OpModeLazyCell<>(() -> {
@@ -115,12 +132,12 @@ public class OverviewJava extends OpMode {
 		encoder.getVelocitySupplier().get();
 		
 		// both of which are pre-wrapped with the capability to automatically calculate error
-		encoder.getPositionSupplier().getError(100); // how far away is the encoder from 100 ticks?
-		encoder.getVelocitySupplier().getError(54.3); // how far away is the encoder from a velocity of 54.3 ticks / second?
+		encoder.getPositionSupplier().findError(100); // how far away is the encoder from 100 ticks?
+		encoder.getVelocitySupplier().findError(54.3); // how far away is the encoder from a velocity of 54.3 ticks / second?
 		
 		// for other types of encoders, these properties stay true
-		degEncoder.getPositionSupplier().getError(new AngleDegrees(180)); // how far away is the encoder from 180 degrees?
-		degEncoder.getVelocitySupplier().getError(1000.0); // how far away is the encoder from 1000 degrees per second?
+		degEncoder.getPositionSupplier().findError(new AngleDegrees(180)); // how far away is the encoder from 180 degrees?
+		degEncoder.getVelocitySupplier().findError(1000.0); // how far away is the encoder from 1000 degrees per second?
 		
 		// but these features probably won't come into handy too often for you
 		// instead they allow encoders to interface super nicely with the motor controller interfaces, which we'll review later
@@ -164,7 +181,7 @@ public class OverviewJava extends OpMode {
 		
 		// like the encoders, the imu supports some complex suppliers
 		imu.getHeadingSupplier().get(); // the heading of the robot, same as imu.heading
-		imu.getHeadingSupplier().getError(new AngleDegrees(50.0)); // how far away is the heading of the robot from 50 degrees?
+		imu.getHeadingSupplier().findError(new AngleDegrees(50.0)); // how far away is the heading of the robot from 50 degrees?
 		
 		imu.getXRotSupplier();
 		imu.getYRotSupplier();
@@ -235,17 +252,16 @@ public class OverviewJava extends OpMode {
 		// the target of the controller can be changed simply:
 		controller.setTarget(1000);
 		
-		// todo the arm controller is not currently implemented in java
-//		LambdaController<Angle> armController = new LambdaController<Angle>(new AngleDegrees(0.0))
-//				// .intoGeneric() converts any supplier of a particular angle type into a more generic supplier
-//				.withPositionSupplier(degEncoder::getPosition)
-//				// an arm FF controller can only be appended to a controller that takes in an Angle as a target
-//				// and runs the angle the supplier through the cos function, which means if you set up your encoder correctly,
-//				// this will provide full power when the arm is out flat, and none when its vertical
-//				.app(0.1);
+		LambdaController<Angle> armController = new LambdaController<Angle>(new AngleDegrees(0.0))
+				// .intoGeneric() converts any supplier of a particular angle type into a more generic supplier
+				.withPositionSupplier(degEncoder::getPosition);
+				// an arm FF controller can only be appended to a controller that takes in an Angle as a target
+				// and runs the angle the supplier through the cos function, which means if you set up your encoder correctly,
+				// this will provide full power when the arm is out flat, and none when its vertical
+		armController = LambdaControllerKt.appendArmFFController(armController, 0.1);
 		
 		// note, android studio seems to get very confused about this block of code, bc of the full appendPController line (4 below this line), without it, things are fine
-		LambdaController<Double> otherController = new LambdaController<Double>(0.0)
+		LambdaController<Double> otherController = new LambdaController<>(0.0)
 				// controllers can also be appended like so:
 				.appendPController(new PController(encoder.getVelocitySupplier(), 0.7))
 				.appendDController(0.008)
@@ -255,10 +271,9 @@ public class OverviewJava extends OpMode {
 				.appendDController(0.008);
 		// and will cause the error supplier passed in to be inferred for further arguments
 		
-		// todo the profiledController is not currently implemented in java
-//		LambdaController<Integer> profiledController = new LambdaController<Integer>(0)
-//				.withPositionSupplier(encoder.getPositionSupplier())
-//				.appendProfiledController(new ProfileConstraints(100.0, 10.0), ProfileStateComponent.Position)
+		LambdaController<Integer> profiledController = new LambdaController<Integer>(0)
+				.withPositionSupplier(encoder.getPositionSupplier());
+		profiledController = LambdaControllerKt.appendProfiledController(profiledController, new ProfileConstraints(100.0, 10.0), ProfileStateComponent.Position);
 		
 		// motion profiles can also be used in controllers!
 		
@@ -315,22 +330,20 @@ public class OverviewJava extends OpMode {
 		enhancedNumberSupplier = enhancedNumberSupplier.applyUpperDeadzone(-0.1);
 		enhancedNumberSupplier = enhancedNumberSupplier.applyLowerDeadzone(0.1);
 		
-		// todo range based conditions are not currently implemented in java
 		// EnhancedNumberSuppliers also interact well with building complex EnhancedBooleanSuppliers from ranges
-//		EnhancedBooleanSupplier rangeBasedCondition = enhancedNumberSupplier.conditionalBind()
-//				.greaterThan(-0.5)
-//				.lessThan(0.5)
-//				.bind();
+		EnhancedBooleanSupplier rangeBasedCondition = EnhancedNumberSupplierKt.conditionalBind(enhancedNumberSupplier)
+				.greaterThan(-0.5)
+				.lessThan(0.5)
+				.bind();
 		
 		// this system is fairly intuitive, and works best if you list numbers from smallest to largest,
 		// or in pairs e.g.:
-		
-//		EnhancedBooleanSupplier complexRangeBasedCondition = enhancedNumberSupplier.conditionalBind()
-//				.greaterThan(0.0)
-//				.lessThan(10.0)
-//				.greaterThanEqualTo(1.0)
-//				.lessThanEqualTo(1000.0)
-//				.bind();
+		EnhancedBooleanSupplier complexRangeBasedCondition = EnhancedNumberSupplierKt.conditionalBind(enhancedNumberSupplier)
+				.greaterThan(0.0)
+				.lessThan(10.0)
+				.greaterThanEqualTo(1.0)
+				.lessThanEqualTo(1000.0)
+				.bind();
 		
 		// forms two acceptable ranges,
 		// but obviously this could be simplified
@@ -341,15 +354,15 @@ public class OverviewJava extends OpMode {
 		
 		// this process works for all Supplier<Double>s and so can be used on things like encoders:
 		
-//		EnhancedBooleanSupplier encoderBasedCondition = encoder.getVelocitySupplier().conditionalBind()
-//				.greaterThanEqualTo(100)
-//				.lessThanEqualTo(250)
-//				.bind();
+		EnhancedBooleanSupplier encoderBasedCondition = EnhancedNumberSupplierKt.conditionalBind(encoder.getVelocitySupplier())
+				.greaterThanEqualTo(100.0)
+				.lessThanEqualTo(250.0)
+				.bind();
 		
 		// remember, its best to run these operations once at the start of the op mode, and store them for later,
 		// as they are reasonably expensive to remake every loop
 		// but checking
-//		encoderBasedCondition.whenTrue
+		encoderBasedCondition.getWhenTrue();
 		// will run all the correct checks against the encoder position whenever you call it, but only if you call it
 		
 		// Hopefully this has been a helpful overview of how to use Calcified, hosted on DairyCore
@@ -362,3 +375,4 @@ public class OverviewJava extends OpMode {
 	
 	}
 }
+

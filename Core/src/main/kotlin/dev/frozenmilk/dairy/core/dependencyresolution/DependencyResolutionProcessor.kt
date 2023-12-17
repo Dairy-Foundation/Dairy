@@ -9,7 +9,7 @@ import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Yields
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.YieldsTo
 
 /**
- * todo
+ * performs dependency resolution to determine which of the [unresolvedFeatures] can be resolved based off their dependencies, already active features, and feature flags that are available at the moment
  */
 fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyActiveFeatures: Collection<Feature>, featureFlags: Collection<Annotation>): Map<Feature, Set<FeatureDependencyResolutionFailureException>> {
 	val unresolvedFeatureMap: MutableCollection<ResolutionPair> = unresolvedFeatures.map { ResolutionPair(it) }.toMutableList()
@@ -125,7 +125,7 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 }
 
 /**
- * todo
+ * transforms the output of [resolveDependenciesMap] to be in the order of resolution, where the first item resolved first, and the last resolved last
  */
 fun resolveDependenciesOrderedList(unresolvedFeatures: Collection<Feature>, currentlyActiveFeatures: Collection<Feature>, featureFlags: Collection<Annotation>): List<Pair<Feature, Set<FeatureDependencyResolutionFailureException>>> {
 	return resolveDependenciesMap(unresolvedFeatures, currentlyActiveFeatures, featureFlags).toList().reversed()

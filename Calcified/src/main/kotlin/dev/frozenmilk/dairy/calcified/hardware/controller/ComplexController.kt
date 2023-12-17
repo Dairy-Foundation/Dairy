@@ -80,14 +80,14 @@ abstract class PositionBasedCalculator<IN>(val positionSupplier: Supplier<IN>) :
 
 class PController<IN>(errorSupplier: ErrorSupplier<IN, Double>, private val kP: Double) : ErrorBasedCalculator<IN>(errorSupplier) {
 	override fun calculate(target: IN, deltaTime: Double): Double {
-		return errorSupplier.getError(target) * kP
+		return errorSupplier.findError(target) * kP
 	}
 }
 
 class IController<IN>(errorSupplier: ErrorSupplier<IN, Double>, private val kI: Double, private val lowerLimit: Double, private val upperLimit: Double) : ErrorBasedCalculator<IN>(errorSupplier) {
 	private var i = 0.0
 	override fun calculate(target: IN, deltaTime: Double): Double {
-		i += errorSupplier.getError(target) / deltaTime * kI
+		i += errorSupplier.findError(target) / deltaTime * kI
 		i = i.coerceIn(lowerLimit, upperLimit)
 		return i
 	}
@@ -96,7 +96,7 @@ class IController<IN>(errorSupplier: ErrorSupplier<IN, Double>, private val kI: 
 class DController<IN>(errorSupplier: ErrorSupplier<IN, Double>, private val kD: Double) : ErrorBasedCalculator<IN>(errorSupplier) {
 	private var previousError = 0.0
 	override fun calculate(target: IN, deltaTime: Double): Double {
-		val error = errorSupplier.getError(target)
+		val error = errorSupplier.findError(target)
 		val result = (error - previousError) / deltaTime * kD
 		previousError = error
 		return result

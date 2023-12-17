@@ -35,10 +35,8 @@ class OpModeWrapper(private val opMode: OpMode) : OpMode() {
 		latest1.set(this, latest1.get(opMode))
 		latest2.set(this, latest2.get(opMode))
 
-		//todo test these
 		this.hardwareMap = opMode.hardwareMap
 		this.telemetry = opMode.telemetry
-		//todo test above
 
 		opModeType // initialises the lazy property
 	}

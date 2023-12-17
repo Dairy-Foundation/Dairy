@@ -32,16 +32,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 		automatedCacheHandling = true, // these are settings for the feature that we can set
 		crossPollinate = true, // setting both to true is the default, but if you're a more advanced user you may want to make use of these
 )
-class OverviewKotlin : OpMode() {
-	// fields which are used as demo, ignore these for the moment and come back to them when later comments refer to them
-	lateinit var motor1: CalcifiedMotor
-	val motor2 by OpModeLazyCell {
-		val motor = Calcified.controlHub.getMotor(2)
-		motor.direction = Direction.REVERSE
-		motor.cachingTolerance = 0.01
-		motor.zeroPowerBehaviour = ZeroPowerBehaviour.BRAKE
-		motor
-	}
+class KotlinOverview : OpMode() {
 	init {
 		// this ensures that Calcified is attached,
 		// if it failed for some reason, then it will spit out a helpful error describing why
@@ -51,6 +42,16 @@ class OverviewKotlin : OpMode() {
 		// and then work after that, due to the way classes are loaded in java,
 		// so this line is advised even if you know that everything should be fine
 		FeatureRegistrar.checkFeatures(this, Calcified)
+	}
+
+	// fields which are used as demo, ignore these for the moment and come back to them when later comments refer to them
+	lateinit var motor1: CalcifiedMotor
+	val motor2 by OpModeLazyCell {
+		val motor = Calcified.controlHub.getMotor(2)
+		motor.direction = Direction.REVERSE
+		motor.cachingTolerance = 0.01
+		motor.zeroPowerBehaviour = ZeroPowerBehaviour.BRAKE
+		motor
 	}
 	override fun init() {
 		// Calcified provides access to the control and expansion hubs like so:
@@ -119,12 +120,12 @@ class OverviewKotlin : OpMode() {
 		encoder.velocitySupplier.get()
 
 		// both of which are pre-wrapped with the capability to automatically calculate error
-		encoder.positionSupplier.getError(100) // how far away is the encoder from 100 ticks?
-		encoder.velocitySupplier.getError(54.3) // how far away is the encoder from a velocity of 54.3 ticks / second?
+		encoder.positionSupplier.findError(100) // how far away is the encoder from 100 ticks?
+		encoder.velocitySupplier.findError(54.3) // how far away is the encoder from a velocity of 54.3 ticks / second?
 
 		// for other types of encoders, these properties stay true
-		degEncoder.positionSupplier.getError(AngleDegrees(180.0)) // how far away is the encoder from 180 degrees?
-		degEncoder.velocitySupplier.getError(1000.0) // how far away is the encoder from 1000 degrees per second?
+		degEncoder.positionSupplier.findError(AngleDegrees(180.0)) // how far away is the encoder from 180 degrees?
+		degEncoder.velocitySupplier.findError(1000.0) // how far away is the encoder from 1000 degrees per second?
 
 		// but these features probably won't come into handy too often for you
 		// instead they allow encoders to interface super nicely with the motor controller interfaces, which we'll review later
@@ -168,7 +169,7 @@ class OverviewKotlin : OpMode() {
 
 		// like the encoders, the imu supports some complex suppliers
 		imu.headingSupplier.get() // the heading of the robot, same as imu.heading
-		imu.headingSupplier.getError(AngleDegrees(50.0)) // how far away is the heading of the robot from 50 degrees?
+		imu.headingSupplier.findError(AngleDegrees(50.0)) // how far away is the heading of the robot from 50 degrees?
 
 		imu.xRotSupplier
 		imu.yRotSupplier
@@ -296,7 +297,7 @@ class OverviewKotlin : OpMode() {
 
 		// suppliers can also be combined:
 		enhancedBooleanSupplier = enhancedBooleanSupplier and { encoder.position > 5 }
-		enhancedBooleanSupplier = enhancedBooleanSupplier.or { encoder.velocity < 100.0 }
+		enhancedBooleanSupplier = enhancedBooleanSupplier or { encoder.velocity < 100.0 }
 
 		// this works is all kinds of ways!
 		val twoButtons = Calcified.gamepad1.a and Calcified.gamepad1.b

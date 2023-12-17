@@ -27,7 +27,6 @@ import org.firstinspires.ftc.robotcore.internal.hardware.android.AndroidBoard
 import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.PI
 
 class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, private val device: LynxI2cDeviceSynch, initialAngles: AngleBasedRobotOrientation) {
 	init {
@@ -78,7 +77,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * supplies the robot's heading
 	 */
 	val headingSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
-		override fun getError(target: Angle): Double {
+		override fun findError(target: Angle): Double {
 			return get().intoRadians().findShortestDistance(target)
 		}
 
@@ -98,7 +97,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * supplies the angle of the robot around the positive x-axis of the field
 	 */
 	val xRotSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
-		override fun getError(target: Angle): Double {
+		override fun findError(target: Angle): Double {
 			return get().intoRadians().findShortestDistance(target)
 		}
 
@@ -113,7 +112,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * supplies the angle of the robot around the positive y-axis of the field
 	 */
 	val yRotSupplier: CompoundSupplier<Angle, Double> = object : CompoundSupplier<Angle, Double> {
-		override fun getError(target: Angle): Double {
+		override fun findError(target: Angle): Double {
 			return get().intoRadians().findShortestDistance(target)
 		}
 
@@ -134,7 +133,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * velocity in radians / second
 	 */
 	val headingVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
-		override fun getError(target: Double): Double {
+		override fun findError(target: Double): Double {
 			return target - get()
 		}
 
@@ -155,8 +154,8 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * velocity in radians / second
 	 */
 	val zRotVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
-		override fun getError(target: Double): Double {
-			return headingVelocitySupplier.getError(target)
+		override fun findError(target: Double): Double {
+			return headingVelocitySupplier.findError(target)
 		}
 
 		override fun get(): Double {
@@ -176,7 +175,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * velocity in radians / second
 	 */
 	val xRotVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
-		override fun getError(target: Double): Double {
+		override fun findError(target: Double): Double {
 			return target - get()
 		}
 
@@ -197,7 +196,7 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 	 * velocity in radians / second
 	 */
 	val yRotVelocitySupplier: CompoundSupplier<Double, Double> = object : CompoundSupplier<Double, Double> {
-		override fun getError(target: Double): Double {
+		override fun findError(target: Double): Double {
 			return target - get()
 		}
 
