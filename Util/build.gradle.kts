@@ -10,3 +10,23 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_1_8
 	targetCompatibility = JavaVersion.VERSION_1_8
 }
+
+publishing {
+	publications {
+		register<MavenPublication>("release") {
+			groupId = "dev.frozenmilk.dairy"
+			artifactId = "dairycore"
+			version = "v0.0.0"
+
+			afterEvaluate {
+				from(components["kotlin"])
+			}
+		}
+	}
+	repositories {
+		maven {
+			name = "DairyCore"
+			url = uri("${project.buildDir}/release")
+		}
+	}
+}
