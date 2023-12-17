@@ -30,8 +30,4 @@ dependencies {
 
     implementation project(':Core')
     implementation project(':Calcified')
-//    implementation project(':DataCarton')
-
-//    implementation 'com.github.Dairy-Foundation.Dairy:Dairy:3d249d1'
-//    implementation 'com.github.Dairy-Foundation.Dairy:Calcified:3d249d1'
 }
