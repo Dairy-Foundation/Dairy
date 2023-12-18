@@ -12,6 +12,10 @@ open class EnhancedNumberSupplier<N: Number >(private val supplier: Supplier<N>,
 		return result
 	}
 
+	/**
+	 * non-mutating
+	 */
+	fun applyModifier(modify: (N) -> N) = EnhancedNumberSupplier(this.supplier, modify, this.lowerDeadzone, this.upperDeadzone)
 
 	/**
 	 * non-mutating
