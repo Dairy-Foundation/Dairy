@@ -163,7 +163,7 @@ object Calcified : Feature {
 	}
 
 	override fun postUserStopHook(opMode: OpModeWrapper) {
-		if (opMode.opModeType == OpModeWrapper.OpModeType.TELEOP) {
+		if (crossPollinate && opMode.opModeType == OpModeWrapper.OpModeType.TELEOP) {
 			clearModules()
 		}
 	}
