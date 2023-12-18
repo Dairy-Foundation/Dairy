@@ -2,7 +2,7 @@ package dev.frozenmilk.dairy.calcified.gamepad
 
 import java.util.function.Supplier
 
-class EnhancedNumberSupplier<N: Number >(private val supplier: Supplier<N>, private val modify: (N) -> N = { x -> x }, private val lowerDeadzone: Double = 0.0, private val upperDeadzone: Double = 0.0) : Supplier<Double> {
+open class EnhancedNumberSupplier<N: Number >(private val supplier: Supplier<N>, private val modify: (N) -> N = { x -> x }, private val lowerDeadzone: Double = 0.0, private val upperDeadzone: Double = 0.0) : Supplier<Double> {
 	constructor(supplier: Supplier<N>) : this(supplier, { x -> x })
 
 	override fun get(): Double {
@@ -29,6 +29,8 @@ class EnhancedNumberSupplier<N: Number >(private val supplier: Supplier<N>, priv
 	 * non-mutating
 	 */
 	fun applyUpperDeadzone(upperDeadzone: Double) = EnhancedNumberSupplier(this.supplier, this.modify, this.lowerDeadzone, upperDeadzone.coerceAtLeast(0.0))
+
+	fun conditionalBind(): Conditional<Double> = Conditional(this)
 }
 
 fun <N: Number> Supplier<N>.conditionalBind(): Conditional<N> = Conditional(this)
