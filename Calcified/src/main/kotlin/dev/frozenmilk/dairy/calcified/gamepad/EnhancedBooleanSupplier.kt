@@ -7,7 +7,7 @@ import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import java.util.function.Supplier
 
-open class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, private val risingDebounce: Long, private val fallingDebounce: Long) : Supplier<Boolean>, Feature {
+class EnhancedBooleanSupplier(private val booleanSupplier: Supplier<Boolean>, private val risingDebounce: Long, private val fallingDebounce: Long) : Supplier<Boolean>, Feature {
 	constructor(booleanSupplier: Supplier<Boolean>) : this(booleanSupplier, 0, 0)
 	private var previous = booleanSupplier.get()
 	private var current = booleanSupplier.get()

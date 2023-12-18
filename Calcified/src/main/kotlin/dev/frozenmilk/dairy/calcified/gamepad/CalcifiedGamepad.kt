@@ -2,7 +2,7 @@ package dev.frozenmilk.dairy.calcified.gamepad
 
 import com.qualcomm.robotcore.hardware.Gamepad
 
-open class CalcifiedGamepad(private val gamepad: Gamepad) {
+class CalcifiedGamepad(private val gamepad: Gamepad) {
 	/**
 	 * left analog stick horizontal axis
 	 */
