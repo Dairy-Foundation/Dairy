@@ -334,14 +334,14 @@ public class JavaOverview extends OpMode {
 		enhancedNumberSupplier = enhancedNumberSupplier.applyLowerDeadzone(0.1);
 		
 		// EnhancedNumberSuppliers also interact well with building complex EnhancedBooleanSuppliers from ranges
-		EnhancedBooleanSupplier rangeBasedCondition = EnhancedNumberSupplierKt.conditionalBind(enhancedNumberSupplier)
+		EnhancedBooleanSupplier rangeBasedCondition = enhancedNumberSupplier.conditionalBind()
 				.greaterThan(-0.5)
 				.lessThan(0.5)
 				.bind();
 		
 		// this system is fairly intuitive, and works best if you list numbers from smallest to largest,
 		// or in pairs e.g.:
-		EnhancedBooleanSupplier complexRangeBasedCondition = EnhancedNumberSupplierKt.conditionalBind(enhancedNumberSupplier)
+		EnhancedBooleanSupplier complexRangeBasedCondition = enhancedNumberSupplier.conditionalBind()
 				.greaterThan(0.0)
 				.lessThan(10.0)
 				.greaterThanEqualTo(1.0)
