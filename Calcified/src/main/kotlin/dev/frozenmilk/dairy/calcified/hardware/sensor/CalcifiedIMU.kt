@@ -29,7 +29,7 @@ import org.firstinspires.ftc.robotcore.internal.hardware.android.GpioPin
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, private val device: LynxI2cDeviceSynch, initialAngles: AngleBasedRobotOrientation) {
+class CalcifiedIMU internal constructor(val imuType: LynxModuleImuType, private val device: LynxI2cDeviceSynch, initialAngles: AngleBasedRobotOrientation) {
 	init {
 		when (imuType) {
 			NONE, UNKNOWN -> throw IllegalStateException("Attempted to access IMU, but no accessible IMU found")
@@ -276,12 +276,12 @@ class CalcifiedIMU internal constructor(private val imuType: LynxModuleImuType, 
 
 				gameRVRequestGpio.setState(false)
 
-				val xInt = data.short.toInt()
-				val yInt = data.short.toInt()
-				val zInt = data.short.toInt()
-				val wInt = data.short.toInt()
+				val xInt = data.short
+				val yInt = data.short
+				val zInt = data.short
+				val wInt = data.short
 
-				if (xInt == 0 && yInt == 0 && zInt == 0 && wInt == 0) {
+				if (xInt == 0.toShort() && yInt == 0.toShort() && zInt == 0.toShort() && wInt == 0.toShort()) {
 					// All zeros is not a valid quaternion.
 					throw FailedToRetrieveQuaternionException()
 				}

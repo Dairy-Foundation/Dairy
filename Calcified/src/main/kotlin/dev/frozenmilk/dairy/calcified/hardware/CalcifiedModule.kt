@@ -73,8 +73,7 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 				.forEach { (_, input) -> (input as DigitalInput).clearCache() }
 
 		// finally, update the bulk cache
-		val command = LynxGetBulkInputDataCommand(lynxModule)
-		bulkData = command.sendReceive();
+		bulkData = LynxGetBulkInputDataCommand(lynxModule).sendReceive();
 	}
 
 	//

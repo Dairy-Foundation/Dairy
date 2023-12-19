@@ -42,7 +42,7 @@ class PWMDevices internal constructor(module: CalcifiedModule) : CalcifiedDevice
 
 	fun getContinuousServo(port: Byte): CalcifiedContinuousServo {
 		if (port !in LynxConstants.INITIAL_SERVO_PORT until LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_SERVO_PORT}, ${LynxConstants.INITIAL_SERVO_PORT + LynxConstants.NUMBER_OF_SERVO_CHANNELS - 1}]")
-		if (this.containsKey(port) && this[port] !is CalcifiedContinuousServo) {
+		if (this.containsKey(port) || this[port] !is CalcifiedContinuousServo) {
 			this[port] = CalcifiedContinuousServo(module, port)
 		}
 		return (this[port] as CalcifiedContinuousServo)
@@ -58,8 +58,11 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 		// this is pretty much the same as the motors, as the encoders match the motors
 		// checks to confirm that the encoder port is validly in range
 		if (port !in LynxConstants.INITIAL_MOTOR_PORT until LynxConstants.INITIAL_MOTOR_PORT + LynxConstants.NUMBER_OF_MOTORS) throw IllegalArgumentException("$port is not in the acceptable port range [${LynxConstants.INITIAL_MOTOR_PORT}, ${LynxConstants.INITIAL_MOTOR_PORT + LynxConstants.NUMBER_OF_MOTORS - 1}]")
-		this[port] = TicksEncoder(module, port)
-		return (this[port] as TicksEncoder?)!!
+		if (!contains(port) || this[port] !is TicksEncoder) {
+			this[port] = TicksEncoder(module, port)
+			this[port]?.reset()
+		}
+		return (this[port] as TicksEncoder)
 	}
 
 	/**
@@ -67,9 +70,11 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 	 *
 	 * @return Overrides the encoder on the port with a [UnitEncoder] of the supplied type, with the [ticksPerUnit] specified
 	 */
-	fun <T : UnitEncoder<*>> getEncoder(type: Class<out T>, port: Byte, ticksPerUnit: Double): T {
-		val ticksEncoder = getTicksEncoder(port)
-		this[port] = type.getDeclaredConstructor(TicksEncoder::class.java, Double::class.java).newInstance(ticksEncoder, ticksPerUnit)
+	inline fun <reified T : UnitEncoder<*>> getEncoder(type: Class<out T>, port: Byte, ticksPerUnit: Double): T {
+		if (!contains(port) || this[port] !is T) {
+			val ticksEncoder = getTicksEncoder(port)
+			this[port] = type.getDeclaredConstructor(TicksEncoder::class.java, Double::class.java).newInstance(ticksEncoder, ticksPerUnit)
+		}
 		return type.cast(this[port])!!
 	}
 
@@ -91,7 +96,7 @@ class Encoders internal constructor(module: CalcifiedModule) : CalcifiedDeviceMa
 class I2CDevices internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<Any>(module){
 	fun getIMU(port: Byte, imuType: LynxModuleImuType, angleBasedRobotOrientation: AngleBasedRobotOrientation): CalcifiedIMU {
 		if (port !in 0 until LynxConstants.NUMBER_OF_I2C_BUSSES) throw IllegalArgumentException("$port is not in the acceptable port range [0, ${LynxConstants.NUMBER_OF_I2C_BUSSES - 1}]")
-		if (this.containsKey(port) && this[port] !is CalcifiedIMU) {
+		if (!this.containsKey(port) || this[port] !is CalcifiedIMU || (this[port] as CalcifiedIMU).imuType != imuType) {
 			this[port] = CalcifiedIMU(imuType, LynxFirmwareVersionManager.createLynxI2cDeviceSynch(AppUtil.getDefContext(), module.lynxModule, port.toInt()), angleBasedRobotOrientation)
 		}
 		return (this[port] as CalcifiedIMU)
@@ -105,14 +110,14 @@ class I2CDevices internal constructor(module: CalcifiedModule) : CalcifiedDevice
 class DigitalChannels internal constructor(module: CalcifiedModule) : CalcifiedDeviceMap<Any>(module) {
 	fun getInput(port: Byte): DigitalInput {
 		if (port !in 0 until LynxConstants.NUMBER_OF_DIGITAL_IOS) throw IllegalArgumentException("$port is not in the acceptable port range [0, ${LynxConstants.NUMBER_OF_DIGITAL_IOS - 1}]")
-		if (this.containsKey(port) && this[port] !is DigitalInput) {
+		if (this.containsKey(port) || this[port] !is DigitalInput) {
 			this[port] = DigitalInput(module, port)
 		}
 		return (this[port] as DigitalInput)
 	}
 	fun getOutput(port: Byte): DigitalOutput {
 		if (port !in 0 until LynxConstants.NUMBER_OF_DIGITAL_IOS) throw IllegalArgumentException("$port is not in the acceptable port range [0, ${LynxConstants.NUMBER_OF_DIGITAL_IOS - 1}]")
-		if (this.containsKey(port) && this[port] !is DigitalOutput) {
+		if (this.containsKey(port) || this[port] !is DigitalOutput) {
 			this[port] = DigitalInput(module, port)
 		}
 		return (this[port] as DigitalOutput)
