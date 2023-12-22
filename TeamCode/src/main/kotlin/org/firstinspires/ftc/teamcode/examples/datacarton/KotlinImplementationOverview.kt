@@ -33,7 +33,7 @@ class KotlinImplementationOverview : OpMode() {
 
 	// the @Pack annotation can also be applied to a method with no parameters
 	@Pack
-	fun getVarContainer(): Container {
+	fun getVarContainerFunction(): Container {
 		return varContainer
 	}
 
@@ -68,7 +68,7 @@ class KotlinImplementationOverview : OpMode() {
 	// we're working on improving @Import functionality to ensure that DataCarton is usable
 	// for extracting and recording data from libraries that don't support it
 	// note, as these features are a wip, they are most likely to cause issues atm
-	fun getContainer(): Container {
+	fun getContainerFunc(): Container {
 		return container
 	}
 
