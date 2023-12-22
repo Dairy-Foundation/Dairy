@@ -5,4 +5,11 @@ interface SimpleMotor {
 	var cachingTolerance: Double
 	var enabled: Boolean
 	var power: Double
+	// sets the power, ignoring the caching tolerance
+	fun forcePower(power: Double) {
+		val tolerance = cachingTolerance
+		cachingTolerance = 0.0
+		this.power = power
+		cachingTolerance = tolerance
+	}
 }

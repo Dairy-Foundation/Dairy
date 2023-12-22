@@ -29,19 +29,29 @@ class CalcifiedServo internal constructor(private val module: CalcifiedModule, p
 			}
 		}
 
-	var position = 0.0
+	var position = Double.NaN
 		set(value) {
 			if (!enabled) return
 			var correctedValue = value.coerceIn(0.0, 1.0)
 			if (direction == Direction.REVERSE) correctedValue = 1 - correctedValue
-			if (abs(field - correctedValue) >= cachingTolerance || correctedValue == 0.0 && field != 0.0 || correctedValue == 1.0 && field != 1.0) {
+			if (field.isNaN() || abs(field - correctedValue) >= cachingTolerance || correctedValue == 0.0 && field != 0.0 || correctedValue == 1.0 && field != 1.0) {
 				val pwm = Range
 						.scale(correctedValue, 0.0, 1.0, pwmRange.usPulseLower, pwmRange.usPulseUpper)
 						.toInt()
 						.coerceIn(LynxSetServoPulseWidthCommand.apiPulseWidthFirst, LynxSetServoPulseWidthCommand.apiPulseWidthLast)
 
 				LynxSetServoPulseWidthCommand(module.lynxModule, port.toInt(), pwm).send()
-				field = correctedValue;
+				field = correctedValue
 			}
 		}
+
+	/**
+	 * sets the position, ignoring caching tolerance
+	 */
+	fun forcePosition(position: Double) {
+		val tolerance = cachingTolerance
+		cachingTolerance = 0.0
+		this.position = position
+		cachingTolerance = tolerance
+	}
 }
