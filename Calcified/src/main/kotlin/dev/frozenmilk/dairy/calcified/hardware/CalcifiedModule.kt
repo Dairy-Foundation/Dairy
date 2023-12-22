@@ -104,14 +104,17 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 		return PWMDevices.getContinuousServo(port)
 	}
 
+	@JvmOverloads
 	fun getIMU_BHI260(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()): CalcifiedIMU {
 		return i2cDevices.getIMU_BHI260(port, angleBasedRobotOrientation)
 	}
 
+	@JvmOverloads
 	fun getIMU_BNO055(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()): CalcifiedIMU {
 		return i2cDevices.getIMU_BNO055(port, angleBasedRobotOrientation)
 	}
 
+	@JvmOverloads
 	fun getIMU(port: Byte, lynxModuleImuType: LynxModuleImuType, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()): CalcifiedIMU {
 		return i2cDevices.getIMU(port, lynxModuleImuType, angleBasedRobotOrientation)
 	}

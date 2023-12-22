@@ -102,8 +102,10 @@ class I2CDevices internal constructor(module: CalcifiedModule) : CalcifiedDevice
 		return (this[port] as CalcifiedIMU)
 	}
 
+	@JvmOverloads
 	fun getIMU_BHI260(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()) = this.getIMU(port, LynxModuleImuType.BHI260, angleBasedRobotOrientation)
 
+	@JvmOverloads
 	fun getIMU_BNO055(port: Byte, angleBasedRobotOrientation: AngleBasedRobotOrientation = AngleBasedRobotOrientation()) = this.getIMU(port, LynxModuleImuType.BNO055, angleBasedRobotOrientation)
 }
 

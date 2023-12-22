@@ -10,7 +10,7 @@ import dev.frozenmilk.util.angle.AngleRadians
  * @property yRot the rotation of the robot about the positive y-axis of the field
  * @property zRot the rotation of the robot about the positive z-axis of the field
  */
-class AngleBasedRobotOrientation(val xRot: Angle = AngleRadians(), val yRot: Angle = AngleRadians(), val zRot: Angle = AngleRadians()) {
+class AngleBasedRobotOrientation @JvmOverloads constructor(val xRot: Angle = AngleRadians(), val yRot: Angle = AngleRadians(), val zRot: Angle = AngleRadians()) {
 	enum class Axis {
 		X,
 		Y,

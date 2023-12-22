@@ -18,26 +18,26 @@ import dev.frozenmilk.util.cell.LazyCell
  */
 object Calcified : Feature {
 	/**
-	 * @see Calcify.crossPollinate
+	 * @see Attach.crossPollinate
 	 */
 	@JvmStatic
 	var crossPollinate = true
 		private set
 
 	/**
-	 * @see Calcify.automatedCacheHandling
+	 * @see Attach.automatedCacheHandling
 	 */
 	@JvmStatic
 	var automatedCacheHandling = true
 		private set
 
 	/**
-	 * enabled by having either @[DairyCore] or @[Calcify]
+	 * enabled by having either @[DairyCore] or @[Attach]
 	 */
 	override val dependencies = DependencySet(this)
-			.includesExactlyOneOf(DairyCore::class.java, Calcify::class.java).bindOutputTo {
+			.includesExactlyOneOf(DairyCore::class.java, Attach::class.java).bindOutputTo {
 				when (it) {
-					is Calcify -> {
+					is Attach -> {
 						crossPollinate = it.crossPollinate
 						automatedCacheHandling = it.automatedCacheHandling
 					}
@@ -167,4 +167,26 @@ object Calcified : Feature {
 			clearModules()
 		}
 	}
+
+	@Retention(AnnotationRetention.RUNTIME)
+	@Target(AnnotationTarget.CLASS)
+	annotation class Attach(
+			/**
+			 * Controls if the caches are automatically handled by [Calcified] or not
+			 *
+			 * Set to false if you want to handle the clearing of the module caches by hand
+			 *
+			 * Clearing the caches should probably be done using [CalcifiedModule.refreshBulkCache]
+			 */
+			val automatedCacheHandling: Boolean = true,
+			/**
+			 * Controls when [Calcified] drops its modules and this hardware objects
+			 *
+			 * Set to false if you want to prompt [Calcified] to drop its hardware objects by hand.
+			 * This should be done using [Calcified.clearModules]
+			 *
+			 * By default, drops hardware objects at the start of an auto, and at the end of a teleop, allowing values to be carried over from an auto to a teleop
+			 */
+			val crossPollinate: Boolean = true
+	)
 }
