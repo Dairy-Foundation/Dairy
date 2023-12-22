@@ -1,7 +1,6 @@
 package datacarton
 
 import datacarton.CartonComponent.TraceComponentBuilder
-import datacarton.annotations.PublicationProcessor
 import java.lang.reflect.InvocationTargetException
 
 class CartonComponentRenderer private constructor(
@@ -19,9 +18,9 @@ class CartonComponentRenderer private constructor(
 	}
 
 	fun add(traceClass: Class<out CartonComponent?>, dataLine: DataLine?) {
-		val entry = renderOrder.getEntry(traceClass)
+		val entry = renderOrder.getEntry(traceClass)?.component1()
 				?: throw RuntimeException("Target trace class was not in the render order map")
-		cartonComponents[entry.component1()]!!.add(dataLine)
+		cartonComponents[entry]!!.add(dataLine)
 	}
 
 	class Builder(private val renderOrder: RenderOrder) {
@@ -61,7 +60,7 @@ class CartonComponentRenderer private constructor(
 		fun build(title: String): CartonComponentRenderer {
 			val cartonComponents = arrayOfNulls<CartonComponent>(traceComponentBuilders.size)
 			var i = 0
-			val it: Iterator<Map.Entry<Class<out CartonComponent?>, Pair<Int, RenderOrder.Render<*>>>> =
+			val it: Iterator<Map.Entry<Class<out CartonComponent?>, Pair<Int, Render<*>>>> =
 					renderOrder.orderMapping.entries.iterator()
 			while (it.hasNext()) {
 				val (_, value) = it.next()

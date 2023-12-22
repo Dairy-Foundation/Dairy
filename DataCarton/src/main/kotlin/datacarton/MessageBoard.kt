@@ -3,7 +3,6 @@ package datacarton
 import collections.LimitedQueue
 import datacarton.CartonComponent.TraceComponentBuilder
 
-@Suppress("unused")
 open class MessageBoard(protected val dataLineQueue: LimitedQueue<DataLine>) : CartonComponent {
 	private var cachedBuild = ""
 	protected open fun rebuild(): String {
@@ -36,21 +35,17 @@ open class MessageBoard(protected val dataLineQueue: LimitedQueue<DataLine>) : C
 
 		override fun build(settings: Any?): CartonComponent? {
 			val castSettings = settings as Settings?
-			if (length == 0) return null
 			if (castSettings?.len != null) {
 				length = castSettings.len!!
 			} else if (castSettings?.minLen != null) {
-				length = length.coerceAtLeast(castSettings.minLen!!)
+				length = length.coerceAtLeast(castSettings.minLen)
 			}
-			length.coerceAtLeast(3)
 			return if (castSettings != null && castSettings.reversed) Reversed(LimitedQueue(length))
 			else MessageBoard(LimitedQueue(length))
 		}
 	}
 
-	class Settings constructor(var reversed: Boolean = true, var len: Int? = null, var minLen: Int? = null) {
-		constructor() : this(true, null, 3)
-	}
+	class Settings (var reversed: Boolean = true, var len: Int? = null, var minLen: Int = 5)
 
 	class Reversed(dataLineQueue: LimitedQueue<DataLine>) : MessageBoard(dataLineQueue) {
 		override fun rebuild(): String {

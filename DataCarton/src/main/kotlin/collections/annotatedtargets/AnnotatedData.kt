@@ -11,7 +11,7 @@ class AnnotatedData(
         accessibleObject: AccessibleObject,
         parentGroup: String,
         flatten: Boolean
-) : AnnotatedTarget<AccessibleObject, Data>(parentInstance, accessibleObject, Data::class.java), ValidData {
+) : AnnotatedTarget<AccessibleObject, Data>(parentInstance, accessibleObject, Data::class.java, Data()), ValidData {
 
     override val group: String by lazy {
         return@lazy if (flatten) parentGroup
