@@ -6,6 +6,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Set;
 
 import dev.frozenmilk.dairy.calcified.Calcified;
@@ -36,10 +40,10 @@ public class JavaWritingAFeature implements Feature {
 	public Set<Dependency<?, ?>> getDependencies() {
 		return new DependencySet(this)
 				// this says that we need the @JavaMyFeature annotation to activate this
-			.includesExactlyOneOf(JavaMyFeature.class)
+			.includesExactlyOneOf(Attach.class)
 				// this allows us to run a piece of code when this feature gets activated, and the @JavaMyFeature annotation will be passed to it
 			.bindOutputTo((annotation) -> {
-				if (annotation instanceof JavaMyFeature) {
+				if (annotation instanceof Attach) {
 					System.out.println("my feature activated!");
 				}
 				else {
@@ -150,7 +154,12 @@ public class JavaWritingAFeature implements Feature {
 	}
 
 	// and that's all! a nice and simple way to do things powerfully!
+	
+	// the annotation used in this example,
+	// it is encouraged to use a static inner annotation class with the name Attach
+	// which will look like @JavaWritingAFeature.Attach
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.TYPE)
+	public @interface Attach {}
 }
 
-// the annotation used in this example
-@interface JavaMyFeature {}

@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.PwmControl
 import dev.frozenmilk.dairy.calcified.Calcified
-import dev.frozenmilk.dairy.calcified.Calcify
 import dev.frozenmilk.dairy.calcified.gamepad.conditionalBind
 import dev.frozenmilk.dairy.calcified.hardware.controller.LambdaController
 import dev.frozenmilk.dairy.calcified.hardware.controller.PController
@@ -28,25 +27,28 @@ import dev.frozenmilk.util.profile.ProfileStateComponent
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 
 @TeleOp
-@Calcify(
+@Calcified.Attach( // attaches the Calcified feature
 		automatedCacheHandling = true, // these are settings for the feature that we can set
 		crossPollinate = true, // setting both to true is the default, but if you're a more advanced user you may want to make use of these
 )
+// @DairyCore
+// can also be used to activate all dairy library features, but doesn't allow settings,
+// also, if @DairyCore is present it will clash with the @Calcified.Attach annotation
 class KotlinOverview : OpMode() {
 	init {
 		// this ensures that Calcified is attached,
 		// if it failed for some reason, then it will spit out a helpful error describing why
 		// what you asked for wasn't successfully attached
 
-		// if this line isn't here, the first time you run an opmode with calcified in it it might crash,
+		// if this line isn't here, the first time you run an opmode with Calcified in it it might crash,
 		// and then work after that, due to the way classes are loaded in java,
 		// so this line is advised even if you know that everything should be fine
 		FeatureRegistrar.checkFeatures(this, Calcified)
 	}
 
 	// fields which are used as demo, ignore these for the moment and come back to them when later comments refer to them
-	lateinit var motor1: CalcifiedMotor
-	val motor2 by OpModeLazyCell {
+	private lateinit var motor1: CalcifiedMotor
+	private val motor2 by OpModeLazyCell {
 		val motor = Calcified.controlHub.getMotor(2)
 		motor.direction = Direction.REVERSE
 		motor.cachingTolerance = 0.01

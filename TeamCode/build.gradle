@@ -30,4 +30,5 @@ dependencies {
 
     implementation project(':Core')
     implementation project(':Calcified')
+    implementation project(':DataCarton')
 }

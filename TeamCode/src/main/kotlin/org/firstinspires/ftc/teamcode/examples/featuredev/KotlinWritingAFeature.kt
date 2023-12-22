@@ -23,16 +23,16 @@ object KotlinWritingAFeature : Feature {
 	// the dependencies allow the FeatureRegistrar to determine the order in which our dependencies are attached
 	override val dependencies: Set<Dependency<*, *>>
 		= DependencySet(this)
-				// this says that we need the @KotlinMyFeature annotation to activate this
-			.includesExactlyOneOf(KotlinMyFeature::class.java)
-				// this allows us to run a piece of code when this feature gets activated, and the @KotlinMyFeature annotation will be passed to it
+				// this says that we need the @Activate annotation to activate this
+			.includesExactlyOneOf(Attach::class.java)
+				// this allows us to run a piece of code when this feature gets activated, and the @Activate annotation will be passed to it
 			.bindOutputTo { annotation ->
 				when (annotation) {
-					is KotlinMyFeature -> {
+					is Attach -> {
 						println("my feature activated!")
 					}
 					else -> {
-						// this can't happen, because we only asked to find @KotlinMyFeature
+						// this can't happen, because we only asked to find @Activate
 						println("something else got here!")
 					}
 				}
@@ -123,7 +123,11 @@ object KotlinWritingAFeature : Feature {
 	}
 
 	// and that's all! a nice and simple way to do things powerfully!
-}
 
-// the annotation used in this example
-annotation class KotlinMyFeature
+	// the annotation used in this example,
+	// it is encouraged to use a static inner annotation class with the name Attach
+	// which will look like @KotlinWritingAFeature.Attach
+	@Target(AnnotationTarget.CLASS)
+	@Retention(AnnotationRetention.RUNTIME)
+	annotation class Attach
+}

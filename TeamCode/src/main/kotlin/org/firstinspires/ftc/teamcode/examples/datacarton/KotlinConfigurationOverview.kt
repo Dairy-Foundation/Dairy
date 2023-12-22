@@ -2,10 +2,9 @@ package org.firstinspires.ftc.teamcode.examples.datacarton
 
 import collections.annotatedtargets.GroupedData
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import datacarton.DataBlock
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import datacarton.DataBlockRender
 import datacarton.DataCarton
-import datacarton.MessageBoard
 import datacarton.MessageBoardRender
 import datacarton.Render
 import datacarton.RenderOrder
@@ -14,6 +13,7 @@ import datacarton.processors.LogPublicationProcessor
 import datacarton.processors.TelemetryPublicationProcessor
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 
+@TeleOp
 @DataCarton.Attach( // attaches the Calcified feature
 		autoUpdate = true // this is the setting for the feature that we can set
 		// true is the default, but if you're a more advanced user you may want to make use of this
@@ -22,14 +22,14 @@ import dev.frozenmilk.dairy.core.FeatureRegistrar
 // can also be used to activate all dairy library features, but doesn't allow settings,
 // also, if @DairyCore is present it will clash with the @DataCarton.Attach annotation
 
-// the OpMode also needs to implement GroupedData
-class KotlinOverview : OpMode(), GroupedData {
+class KotlinConfigurationOverview : OpMode() {
+	// NOTE: read the KotlinImplementationOverview first
 	init {
 		// this ensures that DataCarton is attached,
 		// if it failed for some reason, then it will spit out a helpful error describing why
 		// what you asked for wasn't successfully attached
 
-		// if this line isn't here, the first time you run an opmode with DataCarton in it it might crash,
+		// if this line isn't here, the first time you run an OpMode with DataCarton in it it might crash,
 		// and then work after that, due to the way classes are loaded in java,
 		// so this line is advised even if you know that everything should be fine
 		FeatureRegistrar.checkFeatures(this, DataCarton)
@@ -52,6 +52,8 @@ class KotlinOverview : OpMode(), GroupedData {
 		DataCarton.initFromTelemetry(
 				telemetry,
 				RenderOrder.BLOCK_FIRST_MESSAGE_FORWARD,
+				// todo WARNING, the LogPublicationProcessor is not currently implemented
+				// do not attempt to use in user code
 				LogPublicationProcessor() // varargs attach additional processors
 		)
 
@@ -73,6 +75,9 @@ class KotlinOverview : OpMode(), GroupedData {
 
 		// either this can be done, or it can be added via the varargs in one of the above init methods
 		// standalone adding a publication processor
+
+		// todo WARNING, the LogPublicationProcessor is not currently implemented
+		// do not attempt to use in user code
 		DataCarton.publicationProcessors.add(LogPublicationProcessor())
 		DataCarton.publicationProcessors.add(TelemetryPublicationProcessor(telemetry))
 
@@ -80,6 +85,9 @@ class KotlinOverview : OpMode(), GroupedData {
 
 		// set the default display format
 		DataCarton.defaultRenderOrder = RenderOrder.DEFAULT_MAPPING
+
+		// Render orders describe the output behaviour and the display order of the different components
+		// see the section on renders below this for a description
 
 		DataCarton
 				// configure settings for the group named container
@@ -126,14 +134,23 @@ class KotlinOverview : OpMode(), GroupedData {
 		// displays messages oldest to newest, top to bottom
 		Render.DEFAULT_REVERSE_MESSAGE_BOARD
 
-
 		// Prebuilt RenderOrders:
 
 		// the default mapping
-		// 
+		// contains the default data block, followed by the default reverse message board
 		RenderOrder.DEFAULT_MAPPING
 		// which is the same as:
 		RenderOrder.BLOCK_FIRST
+
+		// in comparison:
+		// contains the default reverse message board followed by the default data block
+		// which means the messages will be displayed above the data block on the driver station
+		RenderOrder.MESSAGE_FIRST
+
+		// this is the same as the default mapping and block first, but the message board is not reversed
+		RenderOrder.BLOCK_FIRST_MESSAGE_FORWARD
+		// this is the same as message first, but the message board is not reversed
+		RenderOrder.MESSAGE_FIRST_MESSAGE_FORWARD
 
 		// lets DataCarton know that you're done configuring,
 		// and it can go looking for data now
@@ -142,9 +159,13 @@ class KotlinOverview : OpMode(), GroupedData {
 
 		// if auto update is off, you can update DataCarton manually like so:
 		DataCarton.update()
+
+		// note: this configuration overview is not as comprehensive as the calcified one,
+		// as only a small amount of data carton's configuration api is actually going to be used in any one OpMode
+		// so, this doesn't show or describe the behaviour of how data carton finds your data
+		// read the KotlinImplementationOverview to see how DataCarton actually works and how to implement it to package your data
 	}
 
 	override fun loop() {
-		TODO("Not yet implemented")
 	}
 }

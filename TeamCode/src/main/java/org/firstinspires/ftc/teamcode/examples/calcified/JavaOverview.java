@@ -4,6 +4,7 @@ import static dev.frozenmilk.dairy.calcified.hardware.sensor.CalcifiedIMUKt.from
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.LynxModuleImuType;
 import com.qualcomm.robotcore.hardware.PwmControl;
 
@@ -28,6 +29,7 @@ import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalInput;
 import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalOutput;
 import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedContinuousServo;
 import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedServo;
+import dev.frozenmilk.dairy.core.DairyCore;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.OpModeLazyCell;
 import dev.frozenmilk.util.angle.Angle;
@@ -38,13 +40,21 @@ import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation;
 import dev.frozenmilk.util.profile.ProfileConstraints;
 import dev.frozenmilk.util.profile.ProfileStateComponent;
 
+@TeleOp
+@Calcified.Attach( // attaches the Calcified feature
+		automatedCacheHandling = true, // these are settings for the feature that we can set
+		crossPollinate = true // setting both to true is the default, but if you're a more advanced user you may want to make use of these
+)
+// @DairyCore
+// can also be used to activate all dairy library features, but doesn't allow settings,
+// also, if @DairyCore is present it will clash with the @Calcified.Attach annotation
 public class JavaOverview extends OpMode {
 	public JavaOverview() {
 		// this ensures that Calcified is attached,
 		// if it failed for some reason, then it will spit out a helpful error describing why
 		// what you asked for wasn't successfully attached
 		
-		// if this line isn't here, the first time you run an opmode with calcified in it it might crash,
+		// if this line isn't here, the first time you run an OpMode with calcified in it it might crash,
 		// and then work after that, due to the way classes are loaded in java,
 		// so this line is advised even if you know that everything should be fine
 		FeatureRegistrar.checkFeatures(this, Calcified.INSTANCE);
@@ -166,7 +176,7 @@ public class JavaOverview extends OpMode {
 		//
 		// there are several ways to initialise an imu, supporting both old ways of initialising IMUs and new ones
 		// remember, the IMU built into the REV Control / Expansion Hubs are in port 0
-		CalcifiedIMU imu_BHI260 = Calcified.getControlHub().getIMU_BHI260((byte) 0, new AngleBasedRobotOrientation());
+		CalcifiedIMU imu_BHI260 = Calcified.getControlHub().getIMU_BHI260((byte) 0);
 		CalcifiedIMU imu_BNO055 = Calcified.getControlHub().getIMU_BNO055((byte) 1, fromImuOrientationOnRobot(new RevHubOrientationOnRobot(
 				RevHubOrientationOnRobot.LogoFacingDirection.UP,
 				RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
