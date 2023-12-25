@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.examples.datacarton
 
-import collections.annotatedtargets.GroupedData
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import datacarton.DataBlockRender
@@ -9,7 +8,8 @@ import datacarton.MessageBoardRender
 import datacarton.Render
 import datacarton.RenderOrder
 import datacarton.processors.DataPackageProcessor
-import datacarton.processors.LogPublicationProcessor
+import datacarton.processors.DataLogPublicationProcessor
+import datacarton.processors.MessageLogPublicationProcessor
 import datacarton.processors.TelemetryPublicationProcessor
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 
@@ -52,9 +52,8 @@ class KotlinConfigurationOverview : OpMode() {
 		DataCarton.initFromTelemetry(
 				telemetry,
 				RenderOrder.BLOCK_FIRST_MESSAGE_FORWARD,
-				// todo WARNING, the LogPublicationProcessor is not currently implemented
-				// do not attempt to use in user code
-				LogPublicationProcessor() // varargs attach additional processors
+				// the DataLogPublicationProcessor stores your data values in csv files!
+				DataLogPublicationProcessor("ConfigurationOpMode") // varargs attach additional processors
 		)
 
 		// a default init without telemetry
@@ -64,10 +63,11 @@ class KotlinConfigurationOverview : OpMode() {
 		DataCarton.initWithDefaultPackageProcessors(RenderOrder.MESSAGE_FIRST)
 
 		// a default init without telemetry, varargs attach additional processors
-		DataCarton.initWithDefaultPackageProcessors(LogPublicationProcessor())
+		// the message log publication processor stores your messages in a text document
+		DataCarton.initWithDefaultPackageProcessors(MessageLogPublicationProcessor("ConfigurationOpMode"))
 
 		// a default init without telemetry, customise the default display format, varargs attach additional processors
-		DataCarton.initWithDefaultPackageProcessors(RenderOrder.BLOCK_FIRST_MESSAGE_FORWARD, LogPublicationProcessor())
+		DataCarton.initWithDefaultPackageProcessors(RenderOrder.BLOCK_FIRST_MESSAGE_FORWARD, DataLogPublicationProcessor("ConfigurationOpMode"))
 
 		// this doesn't need to be done if one of the above init methods was used
 		// standalone adding a package processor
@@ -76,9 +76,7 @@ class KotlinConfigurationOverview : OpMode() {
 		// either this can be done, or it can be added via the varargs in one of the above init methods
 		// standalone adding a publication processor
 
-		// todo WARNING, the LogPublicationProcessor is not currently implemented
-		// do not attempt to use in user code
-		DataCarton.publicationProcessors.add(LogPublicationProcessor())
+		DataCarton.publicationProcessors.add(MessageLogPublicationProcessor("ConfigurationOpMode"))
 		DataCarton.publicationProcessors.add(TelemetryPublicationProcessor(telemetry))
 
 		// customising the settings

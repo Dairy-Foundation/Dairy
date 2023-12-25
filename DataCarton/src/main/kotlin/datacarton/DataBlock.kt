@@ -3,7 +3,7 @@ package datacarton
 import collections.DataLineArrayList
 import datacarton.CartonComponent.TraceComponentBuilder
 
-class DataBlock(private val dataLines: DataLineArrayList<DataLine?>) : CartonComponent {
+class DataBlock(val dataLines: DataLineArrayList<DataLine?>) : CartonComponent {
 	override fun toString(): String {
 		val builder = StringBuilder()
 		for (line in dataLines) {

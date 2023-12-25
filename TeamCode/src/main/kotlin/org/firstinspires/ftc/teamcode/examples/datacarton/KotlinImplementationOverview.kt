@@ -7,6 +7,8 @@ import datacarton.Render
 import datacarton.annotations.Data
 import datacarton.annotations.Import
 import datacarton.annotations.Pack
+import datacarton.processors.DataLogPublicationProcessor
+import datacarton.processors.MessageLogPublicationProcessor
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 
 @TeleOp
@@ -104,7 +106,11 @@ class KotlinImplementationOverview : OpMode() {
 		// its fine to use normal telemetry here
 
 		DataCarton.initFromTelemetry(telemetry)
+		DataCarton.publicationProcessors.add(DataLogPublicationProcessor("ImplementationOpMode"))
+		DataCarton.publicationProcessors.add(MessageLogPublicationProcessor("ImplementationOpMode"))
+
 		DataCarton.configureFor("opmode messages").with(Render.DEFAULT_REVERSE_MESSAGE_BOARD)
+
 		DataCarton.packageData(this)
 		// stop using normal telemetry (DataCarton cleans it up, so don't worry about fixing things up if you did use it)
 	}

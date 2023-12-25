@@ -1,40 +1,35 @@
 package datacarton.processors
 
-import CSVLog
 import datacarton.CartonComponentRenderer
-import datacarton.DataBlock
+import datacarton.MessageBoard
+import log.MessageLog
 
-class DataLogPublicationProcessor(val directory: String, val shelfLife: Int = 7, val recordTime: Boolean = true) : PublicationProcessor {
-	private val logMap = mutableMapOf<String, CSVLog>()
+class MessageLogPublicationProcessor(val directory: String, val shelfLife: Int = 7) : PublicationProcessor {
+	private val logMap = mutableMapOf<String, MessageLog>()
+	private val prevMap = mutableMapOf<String, String>()
 	override fun initPublication() {
 	}
 
 	override fun updatePublication() {
-		logMap.forEach { (_, log) -> log.update() }
 	}
 
 	override fun ignoreUpdate(): Boolean = false
 
 	override fun accept(p0: CartonComponentRenderer) {
 		val dataMap = p0.cartonComponents
-				.filterIsInstance<DataBlock>()
-				.flatMap { it.dataLines }
-				.mapNotNull {
-					val label = it?.label ?: return@mapNotNull null
-					val contents = it.contents.get()
-					return@mapNotNull label to contents
-				}
-		val headings = dataMap.map { it.first }.toTypedArray()
+				.filterIsInstance<MessageBoard>()
+				.map { it.getData() }
+				.mapNotNull { it.first() }
 
 		if (!logMap.contains(p0.title)) {
-			logMap[p0.title] = CSVLog("${p0.title}_data", listOf(directory), shelfLife, recordTime)
-					.setHeadings(*headings)
+			logMap[p0.title] = MessageLog("${p0.title}_messages", listOf(directory), shelfLife)
 		}
 
-		val log = logMap[p0.title]!!
-
 		dataMap.forEach {
-			log.logData(it.first, it.second)
+			if (prevMap[p0.title] != it.toString()) {
+				logMap[p0.title]!!.publish(it)
+				prevMap[p0.title] = it.toString()
+			}
 		}
 	}
 }

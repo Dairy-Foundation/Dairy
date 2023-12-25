@@ -6,11 +6,11 @@ open class DataLine internal constructor(
 		/**
 		 * represents the origin of the message
 		 */
-		private val label: String,
+		val label: String,
 		/**
 		 * contents of the message
 		 */
-		private val contents: Supplier<String>,
+		val contents: Supplier<String>,
 
 		) {
 	val labelWidth: Int

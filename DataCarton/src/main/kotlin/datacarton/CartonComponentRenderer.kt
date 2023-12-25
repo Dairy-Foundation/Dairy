@@ -4,15 +4,15 @@ import datacarton.CartonComponent.TraceComponentBuilder
 import java.lang.reflect.InvocationTargetException
 
 class CartonComponentRenderer private constructor(
-		private val title: String,
-		private val cartonComponents: Array<CartonComponent?>,
+		val title: String,
+		val cartonComponents: Array<CartonComponent?>,
 		private val renderOrder: RenderOrder,
 ) {
 	override fun toString(): String {
 		val builder = StringBuilder(title).append("\n")
-		for (trace in cartonComponents) {
-			if (trace == null) continue
-			builder.append(trace)
+		for (component in cartonComponents) {
+			if (component == null) continue
+			builder.append(component)
 		}
 		return builder.toString()
 	}

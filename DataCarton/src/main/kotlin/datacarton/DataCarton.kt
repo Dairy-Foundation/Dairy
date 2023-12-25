@@ -14,10 +14,9 @@ import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySe
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.util.cell.LateInitCell
-import dev.frozenmilk.util.cell.LazyCell
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import java.lang.reflect.AccessibleObject
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
 import kotlin.collections.HashMap
 
@@ -124,31 +123,46 @@ object DataCarton : Feature {
 	private var startTime: Long = System.nanoTime()
 	private val settingsMap = HashMap<String, RenderOrder>()
 
-	/**
-	 * asynchronous internal update manager
-	 */
-	private var future = LazyCell {
-		CompletableFuture.runAsync {
-			internalUpdate()
+	private val thread = Thread {
+		while (true) {
+			if (requestUpdate.get()) {
+				publicationProcessors.forEach {
+					if (it.ignoreUpdate()) return@forEach
+					it.initPublication()
+					rendererHashMap.forEach { (_, component) ->
+						it.accept(component)
+					}
+					it.updatePublication()
+				}
+				requestUpdate.set(false)
+			}
 		}
 	}
 
+	private val requestUpdate = AtomicBoolean(false)
+
 	/**
-	 * returns if the update succeeded or not
+	 * returns if the update request succeeded or not
 	 */
-	fun update(): Boolean{
-		if (!future.get().isDone) return false
-		future.invalidate()
+	fun update(): Boolean {
+		// if the thread wasn't started yet, start it
+		if (!thread.isAlive) thread.start()
+
+		// an update is currently underway
+		if (requestUpdate.get()) return false
+
+		// else, request one
+		requestUpdate.set(true)
 		return true
 	}
-	private fun internalUpdate() {
-		publicationProcessors.forEach {
-			if (it.ignoreUpdate()) return@forEach
-			it.initPublication()
-			rendererHashMap.forEach { (_, component) ->
-				it.accept(component)
-			}
-			it.updatePublication()
+
+	/**
+	 * blocking until an update is completed, should probably not be used except for testing
+	 */
+	fun awaitUpdate() {
+		var firstAttempt = true
+		while (firstAttempt or !update()) {
+			firstAttempt = false
 		}
 	}
 
