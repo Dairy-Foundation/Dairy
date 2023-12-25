@@ -55,13 +55,4 @@ class AngleRadians(theta: Double = 0.0) : Angle(theta) {
 	override fun toString(): String {
 		return "$theta RAD"
 	}
-
-	override fun equals(other: Any?): Boolean {
-		if (other !is Angle) return false
-		return theta == other.intoRadians().theta
-	}
-
-	override fun hashCode(): Int {
-		return javaClass.hashCode()
-	}
 }

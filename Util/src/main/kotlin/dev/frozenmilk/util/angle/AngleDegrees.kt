@@ -50,13 +50,4 @@ class AngleDegrees(theta: Double = 0.0) : Angle(theta) {
 	override fun toString(): String {
 		return "$theta DEG"
 	}
-
-	override fun equals(other: Any?): Boolean {
-		if (other !is Angle) return false
-		return this.theta == other.intoDegrees().theta
-	}
-
-	override fun hashCode(): Int {
-		return javaClass.hashCode()
-	}
 }

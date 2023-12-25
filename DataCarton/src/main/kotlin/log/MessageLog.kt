@@ -1,0 +1,4 @@
+package log
+
+class MessageLog {
+}

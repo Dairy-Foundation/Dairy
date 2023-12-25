@@ -1,5 +1,7 @@
 package dev.frozenmilk.util.angle
 
+import kotlin.math.abs
+
 /**
  * immutably represents a normalised angle in the domain of [0, 1] rotations.
  *
@@ -48,4 +50,9 @@ abstract class Angle(theta: Double = 0.0) {
 	 * returns the shortest distance from this to other, in the unit type of this
 	 */
 	abstract fun findShortestDistance(other: Angle): Double
+
+	override fun equals(other: Any?): Boolean = other is Angle && this internalEquals other
+	private infix fun internalEquals(other: Angle) = abs(this.findShortestDistance(other)) < 1E-12
+
+	override fun hashCode() = this.intoRadians().theta.hashCode()
 }
