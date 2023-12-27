@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier
 import dev.frozenmilk.dairy.core.dependencyresolution.DependencyResolutionFailureException
 import dev.frozenmilk.dairy.core.dependencyresolution.FeatureDependencyResolutionFailureException
 import dev.frozenmilk.dairy.core.dependencyresolution.plus
-import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependenciesMap
-import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependenciesOrderedList
+import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependencies
+import dev.frozenmilk.util.cell.LazyCell
 import dev.frozenmilk.util.cell.MirroredCell
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
 import java.lang.ref.WeakReference
@@ -29,7 +29,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	private val registrationQueue: Queue<WeakReference<Feature>> = ArrayDeque()
 
 	/**
-	 * features that have been activated via [resolveDependenciesMap]
+	 * features that have been activated via [resolveDependencies]
 	 */
 	private val activeFeatures: MutableSet<WeakReference<Feature>> = mutableSetOf()
 
@@ -48,7 +48,9 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	/**
 	 * the mirror cell used to manage this
 	 */
-	private val activeOpModeMirroredCell = MirroredCell<OpMode>(opModeManager, "activeOpMode")
+	private val activeOpModeMirroredCell by LazyCell {
+		MirroredCell<OpMode>(opModeManager, "activeOpMode")
+	}
 
 	/**
 	 * the currently active OpMode, contents may be undefined if [opModeActive] does not return true
@@ -71,12 +73,12 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 
 	private fun resolveRegistrationQueue() {
 		if (registrationQueue.isEmpty()) return
-		resolveDependenciesOrderedList(
+		resolveDependencies(
 				registrationQueue.mapNotNull { it.get() }, // makes a copy of the set
 				activeFeatures.mapNotNull { it.get() },
 				activeFlags
-		).filter { it.second.isEmpty() }.forEach {
-			activeFeatures.add(WeakReference(it.first))
+		).second.forEach {
+			activeFeatures.add(WeakReference(it))
 		}
 		registrationQueue.clear()
 	}
@@ -88,7 +90,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	 */
 	@JvmStatic
 	fun checkFeatures(opMode: OpMode, vararg features: Feature) {
-		val resolved = resolveDependenciesMap(features.toList(), activeFeatures.mapNotNull { it.get() }, opMode.javaClass.annotations.toList())
+		val resolved = resolveDependencies(features.toList(), activeFeatures.mapNotNull { it.get() }, opMode.javaClass.annotations.toList()).first
 		// throws all the exceptions it came across in one giant message, if we find any
 		if (!features.all { resolved[it].isNullOrEmpty() }) {
 			throw DependencyResolutionFailureException(resolved.values.fold(Exception("")) { exception: Exception, featureDependencyResolutionFailureExceptions: Set<FeatureDependencyResolutionFailureException> ->

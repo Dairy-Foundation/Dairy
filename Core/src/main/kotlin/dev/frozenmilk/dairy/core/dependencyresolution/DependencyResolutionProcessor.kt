@@ -11,9 +11,10 @@ import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.YieldsTo
 /**
  * performs dependency resolution to determine which of the [unresolvedFeatures] can be resolved based off their dependencies, already active features, and feature flags that are available at the moment
  */
-fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyActiveFeatures: Collection<Feature>, featureFlags: Collection<Annotation>): Map<Feature, Set<FeatureDependencyResolutionFailureException>> {
+fun resolveDependencies(unresolvedFeatures: Collection<Feature>, currentlyActiveFeatures: Collection<Feature>, featureFlags: Collection<Annotation>): Pair<Map<Feature, Set<FeatureDependencyResolutionFailureException>>, List<Feature>> {
 	val unresolvedFeatureMap: MutableCollection<ResolutionPair> = unresolvedFeatures.map { ResolutionPair(it) }.toMutableList()
-	val resolved = linkedMapOf<Feature, Set<FeatureDependencyResolutionFailureException>>()
+	val resolvedMap = mutableMapOf<Feature, Set<FeatureDependencyResolutionFailureException>>()
+	val resolvedOrder = mutableListOf<Feature>()
 	var notLocked = true
 	var yielding = false
 
@@ -37,7 +38,7 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 
 					is FeatureDependency -> {
 						try {
-							val newResolutionResult = it.resolvesOrError(resolved.keys)
+							val newResolutionResult = it.resolvesOrError(resolvedMap.keys)
 							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
 							if(newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second));
 							resolutionPair.resolves and (newResolutionResult.first or currentResolutionResult.first)
@@ -49,7 +50,7 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 
 					is DependsOnOneOf -> {
 						try {
-							val newResolutionResult = it.resolvesOrError(resolved.keys)
+							val newResolutionResult = it.resolvesOrError(resolvedMap.keys)
 							val currentResolutionResult = it.resolvesOrError(currentlyActiveFeatures)
 							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(currentResolutionResult.second);
 							resolutionPair.resolves and (newResolutionResult.first or currentResolutionResult.first)
@@ -72,7 +73,7 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 
 					is YieldsTo -> {
 						try {
-							val newResolutionResult = it.resolvesOrError(yielding to resolved.keys)
+							val newResolutionResult = it.resolvesOrError(yielding to resolvedMap.keys)
 							val currentResolutionResult = it.resolvesOrError(yielding to currentlyActiveFeatures)
 							if (newResolutionResult.first or currentResolutionResult.first) it.acceptResolutionOutput(newResolutionResult.second.plus(currentResolutionResult.second));
 							resolutionPair.resolves and (newResolutionResult.first or currentResolutionResult.first)
@@ -95,8 +96,8 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 					}
 				}
 			}
-			resolved.putIfAbsent(resolutionPair.feature, mutableSetOf())
-			resolved[resolutionPair.feature] = resolved[resolutionPair.feature]!!.plus(exceptions)
+			resolvedMap.putIfAbsent(resolutionPair.feature, mutableSetOf())
+			resolvedMap[resolutionPair.feature] = resolvedMap[resolutionPair.feature]!!.plus(exceptions)
 		}
 
 		val iter = unresolvedFeatureMap.iterator()
@@ -104,8 +105,9 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 			val resolutionPair = iter.next()
 			if(resolutionPair.resolves) {
 				iter.remove()
+				resolvedOrder.add(resolutionPair.feature)
 				// clear the issues found, as feature dependencies may have caused a feature to fail the first round, but pass in a later one
-				resolved[resolutionPair.feature] = mutableSetOf()
+				resolvedMap[resolutionPair.feature] = mutableSetOf()
 			}
 		}
 
@@ -116,19 +118,19 @@ fun resolveDependenciesMap(unresolvedFeatures: Collection<Feature>, currentlyAct
 
 	// the remaining features caused a deadlock, so we'll add a one off exception for them
 	unresolvedFeatureMap.forEach {
-		resolved[it.feature] = resolved[it.feature]!!.plus(FeatureDependencyResolutionFailureException(it.feature, "attempts to resolve this dependency resulted in a deadlock", emptySet()))
+		resolvedMap[it.feature] = resolvedMap[it.feature]!!.plus(FeatureDependencyResolutionFailureException(it.feature, "attempts to resolve this dependency resulted in a deadlock", emptySet()))
 	}
 
 	unresolvedFeatureMap.clear()
 
-	return resolved
+	return resolvedMap to resolvedOrder
 }
 
-/**
- * transforms the output of [resolveDependenciesMap] to be in the order of resolution, where the first item resolved first, and the last resolved last
- */
-fun resolveDependenciesOrderedList(unresolvedFeatures: Collection<Feature>, currentlyActiveFeatures: Collection<Feature>, featureFlags: Collection<Annotation>): List<Pair<Feature, Set<FeatureDependencyResolutionFailureException>>> {
-	return resolveDependenciesMap(unresolvedFeatures, currentlyActiveFeatures, featureFlags).toList().reversed()
-}
+///**
+// * transforms the output of [resolveDependenciesMap] to be in the order of resolution, where the first item resolved first, and the last resolved last
+// */
+//fun resolveDependenciesOrderedList(unresolvedFeatures: Collection<Feature>, currentlyActiveFeatures: Collection<Feature>, featureFlags: Collection<Annotation>): List<Pair<Feature, Set<FeatureDependencyResolutionFailureException>>> {
+//	return resolveDependenciesMap(unresolvedFeatures, currentlyActiveFeatures, featureFlags).toList().reversed()
+//}
 
 internal class ResolutionPair(val feature: Feature, var resolves: Boolean = false)
