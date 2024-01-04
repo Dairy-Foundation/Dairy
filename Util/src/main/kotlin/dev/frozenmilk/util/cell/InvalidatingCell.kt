@@ -8,3 +8,6 @@ open class InvalidatingCell<T>(supplier: Supplier<T>, var invalidator: Supplier<
 		return super.get()
 	}
 }
+
+@JvmName("CellUtils")
+fun <T> Supplier<T>.intoInvalidatingCell(invalidator: Supplier<Boolean>) = InvalidatingCell(this, invalidator)
