@@ -54,7 +54,10 @@ class CalcifiedModule(val lynxModule: LynxModule) {
 	var cachedTime: Double = System.nanoTime() / 1E9
 		private set
 	var previousCachedTime: Double = cachedTime
+		private set
+
 	var bulkData: LynxGetBulkInputDataResponse by LateInitCell()
+		private set
 
 	init {
 		refreshBulkCache()

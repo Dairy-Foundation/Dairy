@@ -1,6 +1,7 @@
 package dev.frozenmilk.dairy.core.dependencyresolution
 
 import dev.frozenmilk.dairy.core.Feature
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.DependsDirectlyOn
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.DependsOnOneOf
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.FeatureDependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.FlagDependency
@@ -87,6 +88,17 @@ fun resolveDependencies(unresolvedFeatures: Collection<Feature>, currentlyActive
 					is IncludesExactlyOneOf -> {
 						try {
 							val resolutionResult = it.resolvesOrError(featureFlags)
+							if(resolutionResult.first) it.acceptResolutionOutput(resolutionResult.second)
+							resolutionPair.resolves and resolutionResult.first
+						} catch (e: FeatureDependencyResolutionFailureException) {
+							exceptions.add(e)
+							false
+						}
+					}
+
+					is DependsDirectlyOn -> {
+						try {
+							val resolutionResult = it.resolvesOrError(currentlyActiveFeatures)
 							if(resolutionResult.first) it.acceptResolutionOutput(resolutionResult.second)
 							resolutionPair.resolves and resolutionResult.first
 						} catch (e: FeatureDependencyResolutionFailureException) {

@@ -1,6 +1,5 @@
 package dev.frozenmilk.dairy.core
 
-import android.annotation.SuppressLint
 import android.content.Context
 import com.qualcomm.ftccommon.FtcEventLoop
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -10,9 +9,14 @@ import dev.frozenmilk.dairy.core.dependencyresolution.DependencyResolutionFailur
 import dev.frozenmilk.dairy.core.dependencyresolution.FeatureDependencyResolutionFailureException
 import dev.frozenmilk.dairy.core.dependencyresolution.plus
 import dev.frozenmilk.dairy.core.dependencyresolution.resolveDependencies
+import dev.frozenmilk.util.cell.LateInitCell
 import dev.frozenmilk.util.cell.LazyCell
 import dev.frozenmilk.util.cell.MirroredCell
+import dev.frozenmilk.util.cell.StaleAccessCell
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta.Flavor
+import org.firstinspires.ftc.robotcore.internal.opmode.RegisteredOpModes
 import java.lang.ref.WeakReference
 import java.util.ArrayDeque
 import java.util.Queue
@@ -45,19 +49,23 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	var opModeActive: Boolean = false
 		private set
 
+	@JvmStatic
+	val opModeState: OpModeWrapper.OpModeState
+		get() = activeOpMode?.state ?: OpModeWrapper.OpModeState.STOPPED
+
 	/**
 	 * the mirror cell used to manage this
 	 */
 	private val activeOpModeMirroredCell by LazyCell {
-		MirroredCell<OpMode>(opModeManager, "activeOpMode")
+		MirroredCell<OpMode?>(opModeManager, "activeOpMode")
 	}
 
 	/**
 	 * the currently active OpMode, contents may be undefined if [opModeActive] does not return true
 	 */
 	@JvmStatic
-	var activeOpMode: OpModeWrapper
-		get() = activeOpModeMirroredCell.get() as OpModeWrapper
+	var activeOpMode: OpModeWrapper?
+		get() = activeOpModeMirroredCell.get() as? OpModeWrapper
 		private set(value) = activeOpModeMirroredCell.accept(value)
 
 	/**
@@ -118,14 +126,28 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		)
 	}
 
-	@SuppressLint("StaticFieldLeak")
-	private lateinit var opModeManager: OpModeManagerImpl
+	private var opModeManager by LateInitCell<OpModeManagerImpl>()
 
+//	private val opModeMetaDataMap by StaleAccessCell<Map<Class<out OpMode>, OpModeMeta>>(0.5) {
+//		val res = mutableMapOf<OpMode, OpModeMeta>()
+//		RegisteredOpModes.getInstance().waitOpModesRegistered()
+//		RegisteredOpModes.getInstance().opModes
+//				.forEach {meta ->
+//					RegisteredOpModes.getInstance().getOpMode(meta.name)?.let {
+//						res[it] = meta
+//					}
+//				}
+//		res
+//	}
+//
+//	val activeOpModeMetadata: OpModeMeta?
+//		get() = opModeMetaDataMap[activeOpModeMirroredCell.get()]
+//
+	/**
+	 * registers this instance against the event loop, automatically called by the FtcEventLoop, should not be called by the user
+	 */
 	@OnCreateEventLoop
 	@JvmStatic
-			/**
-			 * registers this instance against the event loop, automatically called by the FtcEventLoop, should not be called by the user
-			 */
 	fun registerSelf(@Suppress("UNUSED_PARAMETER") context: Context, ftcEventLoop: FtcEventLoop) {
 		opModeManager = ftcEventLoop.opModeManager
 		opModeManager.registerListener(this)
@@ -144,8 +166,10 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 		registrationQueue.addAll(registeredFeatures)
 		resolveRegistrationQueue()
 
+		val meta = RegisteredOpModes.getInstance().getOpModeMetadata(opModeManager.activeOpModeName) ?: throw RuntimeException("could not find metadata for OpMode")
+
 		// replace the OpMode with a wrapper that the user never sees, but provides our hooks
-		activeOpMode = OpModeWrapper(opMode)
+		activeOpMode = OpModeWrapper(opMode, meta)
 		opModeActive = true
 
 		// resolves the queue of anything that was registered later
@@ -154,6 +178,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 
 	@JvmStatic
 	fun onOpModePreInit(opMode: OpModeWrapper) {
+		opMode.initialiseThings()
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.preUserInitHook(opMode) }
 	}
@@ -178,6 +203,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 
 	@JvmStatic
 	fun onOpModePreStart(opMode: OpModeWrapper) {
+		opMode.state = OpModeWrapper.OpModeState.ACTIVE
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.preUserStartHook(opMode) }
 	}
@@ -214,6 +240,7 @@ object FeatureRegistrar : OpModeManagerNotifier.Notifications {
 	fun onOpModePostStop(opMode: OpModeWrapper) {
 		resolveRegistrationQueue()
 		activeFeatures.forEach { it.get()?.postUserStopHook(opMode) }
+		opMode.state = OpModeWrapper.OpModeState.STOPPED
 	}
 
 	override fun onOpModePostStop(opMode: OpMode) {

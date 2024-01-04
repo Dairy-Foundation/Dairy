@@ -2,6 +2,7 @@ package dev.frozenmilk.dairy.calcified.hardware.controller
 
 import dev.frozenmilk.dairy.calcified.hardware.motor.SimpleMotor
 import dev.frozenmilk.dairy.core.Feature
+import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.util.angle.Angle
 import java.util.function.Supplier
@@ -32,14 +33,9 @@ interface ComplexController<IN> : Feature {
 		motors.power = calculators.sumOf { it.calculate(target, deltaTime()) }
 	}
 
-	override fun preUserInitHook(opMode: OpModeWrapper) {}
-
 	override fun postUserInitHook(opMode: OpModeWrapper) {
 		if (!autoUpdate) return
 		update()
-	}
-
-	override fun preUserInitLoopHook(opMode: OpModeWrapper) {
 	}
 
 	override fun postUserInitLoopHook(opMode: OpModeWrapper) {
@@ -47,25 +43,15 @@ interface ComplexController<IN> : Feature {
 		update()
 	}
 
-	override fun preUserStartHook(opMode: OpModeWrapper) {
-	}
-
 	override fun postUserStartHook(opMode: OpModeWrapper) {
 		if (!autoUpdate) return
 		update()
-	}
-
-	override fun preUserLoopHook(opMode: OpModeWrapper) {
 	}
 
 	override fun postUserLoopHook(opMode: OpModeWrapper) {
 		if (!autoUpdate) return
 		update()
 	}
-
-	override fun preUserStopHook(opMode: OpModeWrapper) {
-	}
-
 	override fun postUserStopHook(opMode: OpModeWrapper) {
 		motors.power = 0.0
 	}

@@ -15,6 +15,7 @@ import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.util.cell.LateInitCell
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import java.lang.annotation.Inherited
 import java.lang.reflect.AccessibleObject
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
@@ -72,16 +73,10 @@ object DataCarton : Feature {
 		}
 	}
 
-	override fun preUserInitLoopHook(opMode: OpModeWrapper) {
-	}
-
 	override fun postUserInitLoopHook(opMode: OpModeWrapper) {
 		if (autoUpdate) {
 			update()
 		}
-	}
-
-	override fun preUserStartHook(opMode: OpModeWrapper) {
 	}
 
 	override fun postUserStartHook(opMode: OpModeWrapper) {
@@ -90,16 +85,10 @@ object DataCarton : Feature {
 		}
 	}
 
-	override fun preUserLoopHook(opMode: OpModeWrapper) {
-	}
-
 	override fun postUserLoopHook(opMode: OpModeWrapper) {
 		if (autoUpdate) {
 			update()
 		}
-	}
-
-	override fun preUserStopHook(opMode: OpModeWrapper) {
 	}
 
 	override fun postUserStopHook(opMode: OpModeWrapper) {
@@ -309,6 +298,8 @@ object DataCarton : Feature {
 
 	@Retention(AnnotationRetention.RUNTIME)
 	@Target(AnnotationTarget.CLASS)
+	@MustBeDocumented
+	@Inherited
 	annotation class Attach(
 			/**
 			 * if [DataCarton] should automatically call [DataCarton.update] after user code

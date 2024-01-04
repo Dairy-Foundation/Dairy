@@ -3,26 +3,40 @@ package dev.frozenmilk.dairy.core
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta.Flavor
 
-class OpModeWrapper(private val opMode: OpMode) : OpMode() {
-	enum class OpModeType {
-		TELEOP,
-		AUTONOMOUS,
-		NONE
+class OpModeWrapper internal constructor(private val opMode: OpMode, val meta: OpModeMeta) : OpMode() {
+	val opModeType: Flavor = meta.flavor
+
+	enum class OpModeState {
+		/**
+		 * in [OpMode.init] or [OpMode.init_loop]
+		 */
+		INIT,
+
+		/**
+		 * in [OpMode.start], [OpMode.loop] or [OpMode.stop]
+		 */
+		ACTIVE,
+
+		/**
+		 * inactive
+		 */
+		STOPPED,
 	}
 
-	val opModeType: OpModeType by lazy {
-		if (opMode.javaClass.isAnnotationPresent(TeleOp::class.java)) OpModeType.TELEOP
-		else if (opMode.javaClass.isAnnotationPresent(Autonomous::class.java)) OpModeType.AUTONOMOUS
-		else OpModeType.NONE
-	}
+	var state: OpModeState = OpModeState.STOPPED
+		internal set
+
+	val name = meta.displayName
 
 	/**
 	 * moves things around, so that the irritating little fields that exist on each OpMode get remapped through this correctly
 	 *
 	 * since this wrapper gets made AFTER the OpMode gets made and has a bunch of info passed to it, its mainly just pulling things up into this
 	 */
-	private fun initialiseThings() {
+	internal fun initialiseThings() {
 		this.gamepad1 = opMode.gamepad1
 		this.gamepad2 = opMode.gamepad2
 
@@ -39,11 +53,10 @@ class OpModeWrapper(private val opMode: OpMode) : OpMode() {
 		this.telemetry = opMode.telemetry
 
 		opModeType // initialises the lazy property
+		state = OpModeState.INIT
 	}
 
 	override fun init() {
-		initialiseThings();
-
 		FeatureRegistrar.onOpModePreInit(this)
 		opMode.init()
 		FeatureRegistrar.onOpModePostInit(this)

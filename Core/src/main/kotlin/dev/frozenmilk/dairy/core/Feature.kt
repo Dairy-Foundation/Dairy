@@ -18,50 +18,50 @@ interface Feature {
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun preUserInitHook(opMode: OpModeWrapper)
+	fun preUserInitHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun postUserInitHook(opMode: OpModeWrapper)
+	fun postUserInitHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun preUserInitLoopHook(opMode: OpModeWrapper)
+	fun preUserInitLoopHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun postUserInitLoopHook(opMode: OpModeWrapper)
+	fun postUserInitLoopHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun preUserStartHook(opMode: OpModeWrapper)
+	fun preUserStartHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun postUserStartHook(opMode: OpModeWrapper)
+	fun postUserStartHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun preUserLoopHook(opMode: OpModeWrapper)
+	fun preUserLoopHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun postUserLoopHook(opMode: OpModeWrapper)
+	fun postUserLoopHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun preUserStopHook(opMode: OpModeWrapper)
+	fun preUserStopHook(opMode: OpModeWrapper) {}
 
 	/**
 	 * provided by [OpModeWrapper]
 	 */
-	fun postUserStopHook(opMode: OpModeWrapper)
+	fun postUserStopHook(opMode: OpModeWrapper) {}
 }

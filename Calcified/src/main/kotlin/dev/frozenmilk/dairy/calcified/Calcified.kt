@@ -1,5 +1,6 @@
 package dev.frozenmilk.dairy.calcified
 
+import android.content.Context
 import com.qualcomm.hardware.lynx.LynxModule
 import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants
@@ -12,6 +13,10 @@ import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.util.cell.LateInitCell
 import dev.frozenmilk.util.cell.LazyCell
+import org.firstinspires.ftc.ftccommon.external.OnCreate
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta.Flavor
+import java.lang.annotation.Inherited
 
 /**
  * enabled by having either @[DairyCore] or @[Calcify]
@@ -49,7 +54,15 @@ object Calcified : Feature {
 				}
 			}
 
-	init {
+
+	/**
+	 * does not need to be called by the user,
+	 *
+	 * todo test this as a method of self registration
+	 */
+	@OnCreate
+	@JvmStatic
+	fun registerFeature(@Suppress("UNUSED_PARAMETER") context: Context) {
 		FeatureRegistrar.registerFeature(this)
 	}
 
@@ -112,9 +125,9 @@ object Calcified : Feature {
 		// however, if we have no modules (like after a teleop or at the very start) then we want to find new modules too
 		// if cross pollination is disabled, we only want to find new stuff if the modules are empty
 		if(modules.isEmpty() || (crossPollinate && when(opMode.opModeType) {
-					OpModeWrapper.OpModeType.TELEOP -> false
-					OpModeWrapper.OpModeType.AUTONOMOUS -> true
-					OpModeWrapper.OpModeType.NONE -> false
+					Flavor.TELEOP -> false
+					Flavor.AUTONOMOUS -> true
+					Flavor.SYSTEM -> false
 				})) {
 			modules = opMode.hardwareMap.getAll(LynxModule::class.java).map {
 				CalcifiedModule(it)
@@ -163,13 +176,15 @@ object Calcified : Feature {
 	}
 
 	override fun postUserStopHook(opMode: OpModeWrapper) {
-		if (crossPollinate && opMode.opModeType == OpModeWrapper.OpModeType.TELEOP) {
+		if (crossPollinate && opMode.opModeType == Flavor.TELEOP) {
 			clearModules()
 		}
 	}
 
 	@Retention(AnnotationRetention.RUNTIME)
 	@Target(AnnotationTarget.CLASS)
+	@MustBeDocumented
+	@Inherited
 	annotation class Attach(
 			/**
 			 * Controls if the caches are automatically handled by [Calcified] or not

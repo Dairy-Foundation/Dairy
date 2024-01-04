@@ -12,27 +12,27 @@ class KotlinLinearOpMode : LinearOpMode() {
 
 		// DO NOT put code before this
 		FeatureRegistrar.checkFeatures(this, /* pass desired features as varargs here */)
-		FeatureRegistrar.onOpModePreInit(FeatureRegistrar.activeOpMode)
+		FeatureRegistrar.onOpModePreInit(FeatureRegistrar.activeOpMode!!)
 		// your init code here
 		// remember that you can use OpModeLazyCells to init your hardware and similar
-		FeatureRegistrar.onOpModePostInit(FeatureRegistrar.activeOpMode)
+		FeatureRegistrar.onOpModePostInit(FeatureRegistrar.activeOpMode!!)
 		while (opModeInInit()) {
-			FeatureRegistrar.onOpModePreInitLoop(FeatureRegistrar.activeOpMode)
+			FeatureRegistrar.onOpModePreInitLoop(FeatureRegistrar.activeOpMode!!)
 			// your init_loop code here
-			FeatureRegistrar.onOpModePostInitLoop(FeatureRegistrar.activeOpMode)
+			FeatureRegistrar.onOpModePostInitLoop(FeatureRegistrar.activeOpMode!!)
 		}
 		waitForStart()
-		FeatureRegistrar.onOpModePreStart(FeatureRegistrar.activeOpMode)
+		FeatureRegistrar.onOpModePreStart(FeatureRegistrar.activeOpMode!!)
 		// your start code here
-		FeatureRegistrar.onOpModePostStart(FeatureRegistrar.activeOpMode)
+		FeatureRegistrar.onOpModePostStart(FeatureRegistrar.activeOpMode!!)
 		while (opModeIsActive()) {
-			FeatureRegistrar.onOpModePreLoop(FeatureRegistrar.activeOpMode)
+			FeatureRegistrar.onOpModePreLoop(FeatureRegistrar.activeOpMode!!)
 			// your loop code here
-			FeatureRegistrar.onOpModePostLoop(FeatureRegistrar.activeOpMode)
+			FeatureRegistrar.onOpModePostLoop(FeatureRegistrar.activeOpMode!!)
 		}
-		FeatureRegistrar.onOpModePreStop(FeatureRegistrar.activeOpMode)
+		FeatureRegistrar.onOpModePreStop(FeatureRegistrar.activeOpMode!!)
 		// your stop code here
-		FeatureRegistrar.onOpModePostStop(FeatureRegistrar.activeOpMode)
+		FeatureRegistrar.onOpModePostStop(FeatureRegistrar.activeOpMode!!)
 
 		// obviously this is much more ugly, but there is no way to automate this for you
 		// so we advise that iterative OpModes are used instead

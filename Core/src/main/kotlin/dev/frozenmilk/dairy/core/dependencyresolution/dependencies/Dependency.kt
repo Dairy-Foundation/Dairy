@@ -178,3 +178,27 @@ class YieldsTo(override val feature: Feature, private vararg val features: Class
 
 	override var outputRef: Consumer<Collection<Feature>>? = null
 }
+
+class DependsDirectlyOn(override val feature: Feature, private vararg  val features: Feature) : Dependency<Collection<Feature>, Collection<Feature>> {
+	override fun resolves(args: Collection<Feature>): Pair<Boolean, Collection<Feature>> {
+		//return features.all { it in args } to features.toList()
+		var resolves = true
+		features.forEach {
+			val found = it in args
+			resolves = resolves and found
+			if (!found) failures.add("unable to find feature of type: ${feature.javaClass.simpleName}")
+		}
+		// args is only used if we resolved
+		return resolves to args
+	}
+
+	override val failures: MutableList<String> = mutableListOf()
+
+	override val dependencyResolutionFailureMessage: String = "not all required features were attached"
+
+	override fun validateContents() {
+		if (feature in features) throw IllegalArgumentException("${feature.javaClass.simpleName} has an illegal dependency set: it is self dependant/exclusive")
+	}
+
+	override var outputRef: Consumer<Collection<Feature>>? = null
+}

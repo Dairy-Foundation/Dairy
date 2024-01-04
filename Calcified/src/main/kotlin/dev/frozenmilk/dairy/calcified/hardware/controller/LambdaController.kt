@@ -19,6 +19,15 @@ class LambdaController<IN> internal constructor(override var target: IN,
                                                 val lastErrorSupplier: LateInitCell<ErrorSupplier<IN, Double>>,
                                                 val lastPositionSupplier: LateInitCell<Supplier<IN>>) : ComplexController<IN> {
     override var autoUpdate: Boolean = false
+        set(value) {
+            if (value && !field) {
+                FeatureRegistrar.registerFeature(this)
+            }
+            else if (!value && field) {
+                FeatureRegistrar.deregisterFeature(this)
+            }
+            field = value
+        }
     override var currentTime: Long = System.nanoTime()
     override var previousTime: Long = currentTime
     override val dependencies: Set<Dependency<*, *>> = DependencySet(this).yieldsTo(Calcified::class.java)
@@ -30,16 +39,9 @@ class LambdaController<IN> internal constructor(override var target: IN,
             target,
             MotorControllerGroup(),
             emptyList(),
-            LateInitCell("Error supplier cannot be inferred, try attaching one first"),
-            LateInitCell("Position supplier cannot be inferred, try attaching one first"))
+            LateInitCell(error = "Error supplier cannot be inferred, try attaching one first"),
+            LateInitCell(error = "Position supplier cannot be inferred, try attaching one first"))
 
-    /**
-     * should be the last instruction in the building of your controller, putting it in earlier may cause issues
-     */
-    fun enableAutoPolling() {
-        FeatureRegistrar.registerFeature(this)
-        autoUpdate = true
-    }
 
     /**
      * non-mutating

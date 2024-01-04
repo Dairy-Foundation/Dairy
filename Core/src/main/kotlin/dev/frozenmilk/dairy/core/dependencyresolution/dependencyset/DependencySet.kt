@@ -2,6 +2,7 @@ package dev.frozenmilk.dairy.core.dependencyresolution.dependencyset
 
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
+import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.DependsDirectlyOn
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.DependsOnOneOf
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.ExcludesFlags
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.IncludesExactlyOneOf
@@ -92,6 +93,15 @@ open class DependencySet internal constructor(internal val feature: Feature, dep
 	 */
 	fun yieldsTo(vararg features: Class<out Feature>): YieldsToFeatureBoundDependencySet {
 		return YieldsToFeatureBoundDependencySet(withDependency(YieldsTo(feature, *features)))
+	}
+
+	/**
+	 * non-mutating
+	 *
+	 * @see [DependsDirectlyOn]
+	 */
+	fun dependsDirectlyOn(vararg features: Feature): YieldsToFeatureBoundDependencySet {
+		return YieldsToFeatureBoundDependencySet(withDependency(DependsDirectlyOn(feature, *features)))
 	}
 }
 

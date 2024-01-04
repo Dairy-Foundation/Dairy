@@ -38,6 +38,8 @@ dependencies {
 	testImplementation("org.testng:testng:6.9.6")
 
 	compileOnly(project(":Core"))
+	testImplementation(project(":Core"))
+	testImplementation("org.firstinspires.ftc:RobotCore:9.0.1")
 
 	compileOnly("org.firstinspires.ftc:RobotCore:9.0.1")
 	compileOnly("org.firstinspires.ftc:Hardware:9.0.1")
