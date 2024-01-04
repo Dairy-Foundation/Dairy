@@ -1,12 +1,19 @@
-package dev.frozenmilk.dairy.milkman
+package dev.frozenmilk.dairy.milkman.notifier
 
-import dev.frozenmilk.dairy.core.Feature
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
-import dev.frozenmilk.util.cell.LateInitCell
+import com.qualcomm.robotcore.util.RobotLog
+import dev.frozenmilk.dairy.milkman.MilkManWSD
+import dev.frozenmilk.dairy.milkman.messages.outgoing.OutgoingMessage
+import java.util.function.Supplier
 
-class Notifier() : Feature {
-	val wsdCell = LateInitCell<Collection<Feature>>()
-	override val dependencies: Set<Dependency<*, *>> = DependencySet(this).yieldsTo(MilkManWSD::class.java).bindOutputTo(wsdCell)
-	val 
+class Notifier(val milkManWSD: MilkManWSD, var delta: Supplier<Any?>, var messageMaker: Supplier<OutgoingMessage>) {
+	private var prev: Any? = null
+
+	fun poll() {
+		val new = delta.get()
+		if (new != prev) {
+			RobotLog.vv("MilkMan", "notifying about $new")
+			milkManWSD.sendToAllSockets(messageMaker.get())
+			prev = new
+		}
+	}
 }
