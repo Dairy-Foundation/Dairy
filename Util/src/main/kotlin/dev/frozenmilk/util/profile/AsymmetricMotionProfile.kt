@@ -5,13 +5,13 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 import dev.frozenmilk.util.profile.ProfileStateComponent.*
 
-class AsymmetricMotionProfile(initial: Int, final: Int, val constraints: ProfileConstraints) {
+class AsymmetricMotionProfile(initial: Double, final: Double, val constraints: ProfileConstraints) {
     val totalTime: Double
-    val distance: Int
-    val original: Int
+    val distance: Double
+    val original: Double
 
-    val initial: Int
-    val final: Int
+    val initial: Double
+    val final: Double
 
     var t1: Double
     var t2: Double
@@ -33,7 +33,7 @@ class AsymmetricMotionProfile(initial: Int, final: Int, val constraints: Profile
             // TODO: check if this really swaps i wrote this when i was sleep deprived
             this.initial = final.also { this.final = initial }
         } else {
-            original = 0
+            original = 0.0
 
             this.initial = initial
             this.final = final
@@ -105,14 +105,14 @@ class AsymmetricMotionProfile(initial: Int, final: Int, val constraints: Profile
             else -> {
                 acceleration = 0.0
                 velocity = 0.0
-                position = final.toDouble()
+                position = final
             }
         }
 
         val x: Double = if (time <= totalTime) {
             if (flipped) original - position else initial + position
         } else {
-            if (flipped) initial.toDouble() else original + position
+            if (flipped) initial else original + position
         }
 
         return ProfileState(x, velocity, acceleration)

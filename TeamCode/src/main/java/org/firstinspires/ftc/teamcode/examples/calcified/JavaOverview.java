@@ -14,8 +14,12 @@ import dev.frozenmilk.dairy.calcified.Calcified;
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedBooleanSupplier;
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedNumberSupplier;
 import dev.frozenmilk.dairy.calcified.gamepad.EnhancedNumberSupplierKt;
-import dev.frozenmilk.dairy.calcified.hardware.controller.LambdaController;
-import dev.frozenmilk.dairy.calcified.hardware.controller.LambdaControllerKt;
+import dev.frozenmilk.dairy.calcified.hardware.controller.AngularFFController;
+import dev.frozenmilk.dairy.calcified.hardware.controller.DController;
+import dev.frozenmilk.dairy.calcified.hardware.controller.IController;
+import dev.frozenmilk.dairy.calcified.hardware.controller.LinearController;
+import dev.frozenmilk.dairy.calcified.hardware.controller.LinearControllerCompiler;
+import dev.frozenmilk.dairy.calcified.hardware.controller.MotionProfile;
 import dev.frozenmilk.dairy.calcified.hardware.controller.PController;
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor;
@@ -29,7 +33,6 @@ import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalInput;
 import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalOutput;
 import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedContinuousServo;
 import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedServo;
-import dev.frozenmilk.dairy.core.DairyCore;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.OpModeLazyCell;
 import dev.frozenmilk.util.angle.Angle;
@@ -245,50 +248,38 @@ public class JavaOverview extends OpMode {
 		// Motor Controllers
 		//
 		// Calcified offers powerful motor controllers instead of the run to position, and run with encoders run modes
-		LambdaController<Integer> controller = new LambdaController<>(0)
+		LinearController<Integer> controller = new LinearControllerCompiler<Integer>()
 				// attaches a mix of motors and cr servos to be updated by the controller
-				.addMotors(motor, motor1, motor2.get(), crServo)
+				.set(motor, motor1, motor2.get(), crServo)
 				// says to use the position supplier on the encoder for each of the following
 				.withErrorSupplier(encoder.getPositionSupplier())
 				// adds a P term
-				.appendPController(0.1)
+				.append(new PController(0.1))
 				// adds an I term
-				.appendIController(0.00001, 0.0, 0.2)
+				.append(new IController(0.00001, 0.0, 0.2))
 				// adds a D term
-				.appendDController(0.005);
+				.append(new DController(0.005))
+				.compile(0, 0.0);
 		
-		// causes this controller to automatically have .update() called on it, do this after finishing building the whole controller,
-		// and turn it off again before making further changes
-		controller.setAutoUpdate(true);
 		// this method updates the controller by hand, if auto update is off, this needs to be called for the controller to run
 		controller.update();
 		// the target of the controller can be changed simply:
 		controller.setTarget(1000);
 		
-		LambdaController<Angle> armController = new LambdaController<Angle>(new AngleDegrees(0.0))
+		LinearController<Angle> armController = new LinearControllerCompiler<Angle>()
 				// .intoGeneric() converts any supplier of a particular angle type into a more generic supplier
-				.withPositionSupplier(degEncoder::getPosition);
+				.withPositionSupplier(degEncoder.getPositionSupplier())
 				// an arm FF controller can only be appended to a controller that takes in an Angle as a target
 				// and runs the angle the supplier through the cos function, which means if you set up your encoder correctly,
 				// this will provide full power when the arm is out flat, and none when its vertical
-		armController = LambdaControllerKt.appendArmFFController(armController, 0.1);
-		
-		// note, android studio seems to get very confused about this block of code, bc of the full appendPController line (4 below this line), without it, things are fine
-		LambdaController<Double> otherController = new LambdaController<>(0.0)
-				// controllers can also be appended like so:
-				.appendPController(new PController(encoder.getVelocitySupplier(), 0.7))
-				.appendDController(0.008)
-				// this is the same as:
-				.withErrorSupplier(encoder.getVelocitySupplier())
-				.appendPController(0.7)
-				.appendDController(0.008);
-		// and will cause the error supplier passed in to be inferred for further arguments
-		
-		LambdaController<Integer> profiledController = new LambdaController<Integer>(0)
-				.withPositionSupplier(encoder.getPositionSupplier());
-		profiledController = LambdaControllerKt.appendProfiledController(profiledController, new ProfileConstraints(100.0, 10.0), ProfileStateComponent.Position);
+				.append(new AngularFFController(0.1))
+				.compile(new AngleDegrees(0.0), 0.1);
 		
 		// motion profiles can also be used in controllers!
+		LinearController<Integer> profiledController = new LinearControllerCompiler<Integer>()
+				.withPositionSupplier(encoder.getPositionSupplier())
+				.append(new MotionProfile<>(new ProfileConstraints(100.0, 10.0), ProfileStateComponent.Position))
+				.compile(0, 0);
 		
 		//
 		// Gamepads:

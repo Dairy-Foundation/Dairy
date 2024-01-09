@@ -7,11 +7,12 @@ import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.PwmControl
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.calcified.gamepad.conditionalBind
-import dev.frozenmilk.dairy.calcified.hardware.controller.LambdaController
+import dev.frozenmilk.dairy.calcified.hardware.controller.AngularFFController
+import dev.frozenmilk.dairy.calcified.hardware.controller.DController
+import dev.frozenmilk.dairy.calcified.hardware.controller.IController
+import dev.frozenmilk.dairy.calcified.hardware.controller.LinearControllerCompiler
+import dev.frozenmilk.dairy.calcified.hardware.controller.MotionProfile
 import dev.frozenmilk.dairy.calcified.hardware.controller.PController
-import dev.frozenmilk.dairy.calcified.hardware.controller.appendArmFFController
-import dev.frozenmilk.dairy.calcified.hardware.controller.appendProfiledController
-import dev.frozenmilk.dairy.calcified.hardware.controller.intoGeneric
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor
 import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
 import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour
@@ -228,49 +229,53 @@ class KotlinOverview : OpMode() {
 		// Motor Controllers
 		//
 		// Calcified offers powerful motor controllers instead of the run to position, and run with encoders run modes
-		val controller = LambdaController(0)
+		// we use the generic parameter to specify the the target type of the system
+		// we provide support for number targets, and angle targets
+		// but its pretty easy to write your own!
+		val controller = LinearControllerCompiler<Int>()
 				// attaches a mix of motors and cr servos to be updated by the controller
-				.addMotors(motor, motor1, motor2, crServo)
+				.add(motor, motor1, motor2, crServo)
 				// says to use the position supplier on the encoder for each of the following
-				.withErrorSupplier(encoder.positionSupplier)
+				.withErrorSupplier(encoder.positionSupplier, true)
 				// adds a P term
-				.appendPController(0.1)
+				.append(PController(0.1))
 				// adds an I term
-				.appendIController(0.00001, 0.0, 0.2)
+				.append(IController(0.0001, 0.0, 0.2))
 				// adds a D term
-				.appendDController(0.005)
+				.append(DController(0.005))
+				.compile(0, 0.002)
 
 		// causes this controller to automatically have .update() called on it, do this after finishing building the whole controller,
 		// and turn it off again before making further changes
-		controller.autoUpdate = true
 		// this method updates the controller by hand, if auto update is off, this needs to be called for the controller to run
 		controller.update()
 		// the target of the controller can be changed simply:
 		controller.target = 1000
 
-		val armController = LambdaController<Angle>(AngleDegrees(0.0))
-				// .intoGeneric() converts any supplier of a particular angle type into a more generic supplier
-				.withPositionSupplier(degEncoder.positionSupplier.intoGeneric())
+		controller.error()
+		controller.error(100)
+		controller.finished()
+		controller.finished(0.005)
+
+		val armController = LinearControllerCompiler<Angle>()
+				.withPositionSupplier(degEncoder.positionSupplier)
 				// an arm FF controller can only be appended to a controller that takes in an Angle as a target
 				// and runs the angle the supplier through the cos function, which means if you set up your encoder correctly,
 				// this will provide full power when the arm is out flat, and none when its vertical
-				.appendArmFFController(0.1)
-
-		val otherController = LambdaController(0.0)
-				// controllers can also be appended like so:
-				.appendPController(PController(encoder.velocitySupplier, 0.7))
-				.appendDController(0.008)
-				// this is the same as:
-				.withErrorSupplier(encoder.velocitySupplier)
-				.appendPController(0.7)
-				.appendDController(0.008)
-				// and will cause the error supplier passed in to be inferred for further arguments
-
-		val profiledController = LambdaController(0)
-				.withPositionSupplier(encoder.positionSupplier)
-				.appendProfiledController(ProfileConstraints(100.0, 10.0), ProfileStateComponent.Position)
+				.append(AngularFFController(0.1))
+				.compile(AngleDegrees(0.0), 0.2)
 
 		// motion profiles can also be used in controllers!
+		val profiledController = LinearControllerCompiler<Int>()
+				.withPositionSupplier(encoder.positionSupplier)
+				.append(MotionProfile(ProfileConstraints(100.0, 10.0), ProfileStateComponent.Position))
+				.compile(100, 0.1)
+
+		// todo these
+//		val customController = ControllerCompiler<Vector2D>()
+//				.withErrorSupplier(ErrorSupplier<Vector2D, Vector2D>)
+//				.append()
+
 
 		//
 		// Gamepads:
