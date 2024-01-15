@@ -21,11 +21,11 @@ import dev.frozenmilk.dairy.calcified.hardware.controller.LinearController;
 import dev.frozenmilk.dairy.calcified.hardware.controller.LinearControllerCompiler;
 import dev.frozenmilk.dairy.calcified.hardware.controller.MotionProfile;
 import dev.frozenmilk.dairy.calcified.hardware.controller.PController;
+import dev.frozenmilk.dairy.calcified.hardware.motor.AngleEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor;
-import dev.frozenmilk.dairy.calcified.hardware.motor.DegreesEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.motor.Direction;
-import dev.frozenmilk.dairy.calcified.hardware.motor.RadiansEncoder;
+import dev.frozenmilk.dairy.calcified.hardware.motor.DistanceEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour;
 import dev.frozenmilk.dairy.calcified.hardware.sensor.AnalogInput;
 import dev.frozenmilk.dairy.calcified.hardware.sensor.CalcifiedIMU;
@@ -35,11 +35,12 @@ import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedContinuousServo;
 import dev.frozenmilk.dairy.calcified.hardware.servo.CalcifiedServo;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.OpModeLazyCell;
-import dev.frozenmilk.util.angle.Angle;
-import dev.frozenmilk.util.angle.AngleDegrees;
-import dev.frozenmilk.util.angle.AngleRadians;
 import dev.frozenmilk.util.cell.Cell;
-import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation;
+import dev.frozenmilk.util.units.Distance;
+import dev.frozenmilk.util.units.DistanceUnits;
+import dev.frozenmilk.util.units.Angle;
+import dev.frozenmilk.util.units.AngleUnits;
+import dev.frozenmilk.util.units.orientation.AngleBasedRobotOrientation;
 import dev.frozenmilk.util.profile.ProfileConstraints;
 import dev.frozenmilk.util.profile.ProfileStateComponent;
 
@@ -120,13 +121,19 @@ public class JavaOverview extends OpMode {
 		// encoders come in several flavours
 		// the ticks encoder is the standard variant
 		CalcifiedEncoder<Integer> encoder = Calcified.getControlHub().getTicksEncoder((byte) 0);
+		// note: this port is out of bounds
+		DistanceEncoder unitsEncoder = Calcified.getControlHub().getDistanceEncoder((byte) 10, 100.0, DistanceUnits.INCH);
+		
 		// additionally, the radians and degrees encoders wrap into absolute degree measurements
-		RadiansEncoder radEncoder = Calcified.getControlHub().getRadiansEncoder((byte) 1, 300.0); // the ticks per revolution let the encoder know how to derive the number of ticks in a radian
-		DegreesEncoder degEncoder = Calcified.getControlHub().getDegreesEncoder((byte) 2, 300.0); // the ticks per revolution let the encoder know how to derive the number of ticks in a degree
-		// don't worry too much about which of these you want to use, most most of the time you'll probably want the RadiansEncoder
-		// but their outputs can be easily converted
-		AngleRadians radians = radEncoder.getPosition();
-		AngleDegrees degrees = radians.intoDegrees();
+		AngleEncoder radEncoder = Calcified.getControlHub().getRadianEncoder((byte) 1, 300.0); // the ticks per revolution let the encoder know how to derive the number of ticks in a radian
+		AngleEncoder degEncoder = Calcified.getControlHub().getDegreeEncoder((byte) 2, 300.0); // the ticks per revolution let the encoder know how to derive the number of ticks in a degree
+		
+		// both of these are the same type, and, if you have your own custom wrappingUnit implementation, you can use that as well
+		AngleEncoder customisedEncoder = Calcified.getControlHub().getAngleEncoder((byte) 3, 1000.0, AngleUnits.RADIAN);
+		
+		// all Angles, custom or not, can easily be converted
+		Angle radians = radEncoder.getPosition();
+		Angle degrees = radians.intoDegrees();
 		
 		// encoders offer two big pieces of information pre-built into them
 		// the position supplier
@@ -149,7 +156,7 @@ public class JavaOverview extends OpMode {
 		encoder.getVelocitySupplier().findError(54.3); // how far away is the encoder from a velocity of 54.3 ticks / second?
 		
 		// for other types of encoders, these properties stay true
-		degEncoder.getPositionSupplier().findError(new AngleDegrees(180)); // how far away is the encoder from 180 degrees?
+		degEncoder.getPositionSupplier().findError(new Angle(AngleUnits.DEGREE, 180)); // how far away is the encoder from 180 degrees?
 		degEncoder.getVelocitySupplier().findError(1000.0); // how far away is the encoder from 1000 degrees per second?
 		
 		// but these features probably won't come into handy too often for you
@@ -184,7 +191,7 @@ public class JavaOverview extends OpMode {
 				RevHubOrientationOnRobot.LogoFacingDirection.UP,
 				RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
 		)));
-		CalcifiedIMU imu = Calcified.getControlHub().getIMU((byte) 2, LynxModuleImuType.BNO055, new AngleBasedRobotOrientation(new AngleDegrees(50.0), new AngleDegrees(-40.7), new AngleDegrees()));
+		CalcifiedIMU imu = Calcified.getControlHub().getIMU((byte) 2, LynxModuleImuType.BNO055, new AngleBasedRobotOrientation(new Angle(AngleUnits.DEGREE, 50.0), new Angle(AngleUnits.DEGREE, -40.7), new Angle()));
 		
 		// the imu supports the sdk's default way of doing angles
 		imu.getYawPitchRollAngles();
@@ -197,17 +204,17 @@ public class JavaOverview extends OpMode {
 		
 		// like the encoders, the imu supports some complex suppliers
 		imu.getHeadingSupplier().get(); // the heading of the robot, same as imu.heading
-		imu.getHeadingSupplier().findError(new AngleDegrees(50.0)); // how far away is the heading of the robot from 50 degrees?
+		imu.getHeadingSupplier().findError(new Angle(AngleUnits.DEGREE, 50.0)); // how far away is the heading of the robot from 50 degrees?
 		
 		imu.getXRotSupplier();
 		imu.getYRotSupplier();
 		imu.getZRotSupplier(); // the same the as the heading supplier
 		
 		// setting the imu's orientation does so for all the axes
-		imu.setOrientation(new AngleBasedRobotOrientation(new AngleDegrees(90.0), new AngleDegrees(), new AngleDegrees()));
+		imu.setOrientation(new AngleBasedRobotOrientation(new Angle(AngleUnits.DEGREE, 90.0), new Angle(), new Angle()));
 		
 		// the above is equivalent to the below, due to how frequently teams only use the heading
-		imu.setHeading(new AngleDegrees(90.0));
+		imu.setHeading(new Angle(AngleUnits.DEGREE, 90.0));
 		
 		// velocities can also be obtained
 		imu.getHeadingVelocity();
@@ -273,7 +280,7 @@ public class JavaOverview extends OpMode {
 				// and runs the angle the supplier through the cos function, which means if you set up your encoder correctly,
 				// this will provide full power when the arm is out flat, and none when its vertical
 				.append(new AngularFFController(0.1))
-				.compile(new AngleDegrees(0.0), 0.1);
+				.compile(new Angle(), 0.1);
 		
 		// motion profiles can also be used in controllers!
 		LinearController<Integer> profiledController = new LinearControllerCompiler<Integer>()
@@ -363,7 +370,12 @@ public class JavaOverview extends OpMode {
 				.lessThanEqualTo(250.0)
 				.bind();
 		
-		// remember, its best to run these operations once at the start of the op mode, and store them for later,
+		// Distance encoders work too (all units implement Number)
+		EnhancedBooleanSupplier distanceEncoderBasedPosition = EnhancedNumberSupplierKt.conditionalBind(unitsEncoder.getPositionSupplier())
+				.lessThan(new Distance(DistanceUnits.FOOT, 1.2))
+				.bind();
+		
+		// remember, it is best to run these operations once at the start of the op mode, and store them for later,
 		// as they are reasonably expensive to remake every loop
 		// but checking
 		encoderBasedCondition.getWhenTrue();
@@ -371,7 +383,6 @@ public class JavaOverview extends OpMode {
 		
 		// Hopefully this has been a helpful overview of how to use Calcified, hosted on DairyCore
 		// See the other examples for better usage examples of these features (if there are no other examples uhh, this should be fine tbh, and todo)
-		
 	}
 	
 	@Override

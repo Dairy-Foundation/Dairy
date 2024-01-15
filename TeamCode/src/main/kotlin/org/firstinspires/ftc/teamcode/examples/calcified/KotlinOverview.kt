@@ -19,12 +19,13 @@ import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.calcified.hardware.sensor.fromImuOrientationOnRobot
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.OpModeLazyCell
-import dev.frozenmilk.util.angle.Angle
-import dev.frozenmilk.util.angle.AngleDegrees
-import dev.frozenmilk.util.angle.AngleRadians
-import dev.frozenmilk.util.orientation.AngleBasedRobotOrientation
+import dev.frozenmilk.util.units.Angle
+import dev.frozenmilk.util.units.orientation.AngleBasedRobotOrientation
 import dev.frozenmilk.util.profile.ProfileConstraints
 import dev.frozenmilk.util.profile.ProfileStateComponent
+import dev.frozenmilk.util.units.DistanceUnits
+import dev.frozenmilk.util.units.AngleUnits
+import dev.frozenmilk.util.units.Distance
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 
 @TeleOp
@@ -98,13 +99,20 @@ class KotlinOverview : OpMode() {
 		// encoders come in several flavours
 		// the ticks encoder is the standard variant
 		val encoder = Calcified.controlHub.getTicksEncoder(0)
+		// note: this port is out of bounds
+		val unitsEncoder = Calcified.controlHub.getDistanceEncoder(10, 100.0, DistanceUnits.INCH)
+
 		// additionally, the radians and degrees encoders wrap into absolute degree measurements
-		val radEncoder = Calcified.controlHub.getRadiansEncoder(1, 300.0) // the ticks per revolution let the encoder know how to derive the number of ticks in a radian
-		val degEncoder = Calcified.controlHub.getDegreesEncoder(2, 300.0) // the ticks per revolution let the encoder know how to derive the number of ticks in a degree
-		// don't worry too much about which of these you want to use, most most of the time you'll probably want the RadiansEncoder
-		// but their outputs can be easily converted
-		val radians: AngleRadians = radEncoder.position
-		val degrees: AngleDegrees = radians.intoDegrees()
+		val radEncoder = Calcified.controlHub.getRadianEncoder(1, 300.0) // the ticks per revolution let the encoder know how to derive the number of ticks in a radian
+		val degEncoder = Calcified.controlHub.getDegreeEncoder(2, 300.0) // the ticks per revolution let the encoder know how to derive the number of ticks in a degree
+
+		// both of these are the same type, and, if you have your own custom wrappingUnit implementation, you can use that as well
+		val customisedEncoder = Calcified.controlHub.getAngleEncoder(3, 1000.0, AngleUnits.RADIAN)
+
+		// all Angles, custom or not, can easily be converted
+		val radians: Angle = radEncoder.position
+		val degrees: Angle = radians.intoDegrees()
+		val radiansAgain: Angle = degrees.into(AngleUnits.RADIAN)
 
 		// encoders offer two big pieces of information pre-built into them
 		// the position supplier
@@ -127,7 +135,7 @@ class KotlinOverview : OpMode() {
 		encoder.velocitySupplier.findError(54.3) // how far away is the encoder from a velocity of 54.3 ticks / second?
 
 		// for other types of encoders, these properties stay true
-		degEncoder.positionSupplier.findError(AngleDegrees(180.0)) // how far away is the encoder from 180 degrees?
+		degEncoder.positionSupplier.findError(Angle(AngleUnits.DEGREE, 180.0)) // how far away is the encoder from 180 degrees?
 		degEncoder.velocitySupplier.findError(1000.0) // how far away is the encoder from 1000 degrees per second?
 
 		// but these features probably won't come into handy too often for you
@@ -162,7 +170,7 @@ class KotlinOverview : OpMode() {
 				RevHubOrientationOnRobot.LogoFacingDirection.UP,
 				RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
 		)))
-		val imu = Calcified.controlHub.getIMU(2, LynxModuleImuType.BNO055, AngleBasedRobotOrientation(AngleDegrees(50.0), AngleDegrees(-40.7), AngleDegrees()))
+		val imu = Calcified.controlHub.getIMU(2, LynxModuleImuType.BNO055, AngleBasedRobotOrientation(Angle(AngleUnits.DEGREE, 50.0), Angle(AngleUnits.DEGREE, -40.7), Angle()))
 
 		// the imu supports the sdk's default way of doing angles
 		imu.yawPitchRollAngles
@@ -175,17 +183,17 @@ class KotlinOverview : OpMode() {
 
 		// like the encoders, the imu supports some complex suppliers
 		imu.headingSupplier.get() // the heading of the robot, same as imu.heading
-		imu.headingSupplier.findError(AngleDegrees(50.0)) // how far away is the heading of the robot from 50 degrees?
+		imu.headingSupplier.findError(Angle(AngleUnits.DEGREE, 50.0)) // how far away is the heading of the robot from 50 degrees?
 
 		imu.xRotSupplier
 		imu.yRotSupplier
 		imu.zRotSupplier // the same the as the heading supplier
 
 		// setting the imu's orientation does so for all the axes
-		imu.orientation = AngleBasedRobotOrientation(AngleDegrees(90.0), AngleDegrees(), AngleDegrees())
+		imu.orientation = AngleBasedRobotOrientation(Angle(AngleUnits.DEGREE, 90.0), Angle(), Angle())
 
 		// the above is equivalent to the below, due to how frequently teams only use the heading
-		imu.heading = AngleDegrees(90.0)
+		imu.heading = Angle(AngleUnits.DEGREE, 90.0)
 
 		// velocities can also be obtained
 		imu.headingVelocity
@@ -263,7 +271,8 @@ class KotlinOverview : OpMode() {
 				// and runs the angle the supplier through the cos function, which means if you set up your encoder correctly,
 				// this will provide full power when the arm is out flat, and none when its vertical
 				.append(AngularFFController(0.1))
-				.compile(AngleDegrees(0.0), 0.2)
+				// notice that the .new() method can be called on any Unit implementation to make a new one of it as well
+				.compile(Angle(AngleUnits.DEGREE, 0.0), 0.2)
 
 		// motion profiles can also be used in controllers!
 		val profiledController = LinearControllerCompiler<Int>()
@@ -355,13 +364,17 @@ class KotlinOverview : OpMode() {
 		// for 90% of use cases it is just best to list numbers from smallest to largest, the rest will work itself out
 
 		// this process works for all Supplier<Double>s and so can be used on things like encoders:
-
 		val encoderBasedCondition = encoder.positionSupplier.conditionalBind()
 				.greaterThanEqualTo(100)
 				.lessThanEqualTo(250)
 				.bind()
 
-		// remember, its best to run these operations once at the start of the op mode, and store them for later,
+		// Distance encoders work too (all units implement Number)
+		val distanceEncoderBasedPosition = unitsEncoder.positionSupplier.conditionalBind()
+				.lessThan(Distance(DistanceUnits.FOOT, 1.2))
+				.bind()
+
+		// remember, it is best to run these operations once at the start of the op mode, and store them for later,
 		// as they are reasonably expensive to remake every loop
 		// but checking
 		encoderBasedCondition.whenTrue
