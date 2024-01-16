@@ -2,11 +2,13 @@ package org.firstinspires.ftc.teamcode.tests
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.DcMotorEx
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor
 import dev.frozenmilk.dairy.core.DairyCore
 import dev.frozenmilk.dairy.core.FeatureRegistrar
-import dev.frozenmilk.dairy.core.OpModeLazyCell
+import dev.frozenmilk.dairy.core.util.OpModeLazyCell
+import dev.frozenmilk.dairy.core.util.cachinghardwaredevice.CachingDcMotorEX
 import kotlin.math.sin
 
 // enables all dairy features
@@ -24,6 +26,7 @@ class MotorOpMode : OpMode() {
 	}
 
 	override fun init() {
+		val test = CachingDcMotorEX(hardwareMap.get(DcMotorEx::class.java, "b"))
 	}
 
 	override fun loop() {

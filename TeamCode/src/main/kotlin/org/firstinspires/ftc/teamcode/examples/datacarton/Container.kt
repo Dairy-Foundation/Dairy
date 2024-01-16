@@ -6,7 +6,7 @@ import datacarton.annotations.Export
 import datacarton.annotations.Import
 import datacarton.annotations.Pack
 import dev.frozenmilk.dairy.calcified.Calcified
-import dev.frozenmilk.dairy.core.OpModeLazyCell
+import dev.frozenmilk.dairy.core.util.OpModeLazyCell
 import java.util.function.Supplier
 
 /**

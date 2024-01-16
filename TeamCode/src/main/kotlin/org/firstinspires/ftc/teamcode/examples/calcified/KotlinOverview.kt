@@ -18,7 +18,7 @@ import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
 import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.calcified.hardware.sensor.fromImuOrientationOnRobot
 import dev.frozenmilk.dairy.core.FeatureRegistrar
-import dev.frozenmilk.dairy.core.OpModeLazyCell
+import dev.frozenmilk.dairy.core.util.OpModeLazyCell
 import dev.frozenmilk.util.units.Angle
 import dev.frozenmilk.util.units.orientation.AngleBasedRobotOrientation
 import dev.frozenmilk.util.profile.ProfileConstraints
