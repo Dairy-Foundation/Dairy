@@ -26,8 +26,12 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
+    testImplementation 'org.testng:testng:6.9.6'
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
+//    implementation('com.github.Dairy-Foundation.Dairy:Core:master-SNAPSHOT')
+//    implementation('com.github.Dairy-Foundation.Dairy:Calcified:master-SNAPSHOT')
+//    implementation('com.github.Dairy-Foundation.Dairy:DataCarton:master-SNAPSHOT')
     implementation project(':Core')
     implementation project(':Calcified')
     implementation project(':DataCarton')

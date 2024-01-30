@@ -4,3 +4,9 @@
 [submodule "Calcified"]
 	path = Calcified
 	url = https://github.com/Dairy-Foundation/Calcified.git
+[submodule "Util"]
+	path = Util
+	url = git@github.com:Dairy-Foundation/Util.git
+[submodule "Sinister"]
+	path = Sinister
+	url = git@github.com:Dairy-Foundation/Sinister.git
