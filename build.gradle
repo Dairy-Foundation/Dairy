@@ -31,3 +31,8 @@ allprojects {
 repositories {
     mavenCentral()
 }
+
+wrapper {
+    gradleVersion = '8.5'
+    distributionType = Wrapper.DistributionType.BIN
+}
