@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -15,9 +16,9 @@ import java.util.Set;
 import dev.frozenmilk.dairy.calcified.Calcified;
 import dev.frozenmilk.dairy.core.Feature;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
-import dev.frozenmilk.dairy.core.OpModeWrapper;
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency;
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet;
+import dev.frozenmilk.dairy.core.wrapper.Wrapper;
 import dev.frozenmilk.util.cell.Cell;
 import dev.frozenmilk.util.cell.LateInitCell;
 
@@ -88,7 +89,7 @@ public class JavaWritingAFeature implements Feature {
 	}
 
 	@Override
-	public void preUserInitHook(@NonNull OpModeWrapper opMode) {
+	public void preUserInitHook(@NotNull Wrapper opMode) {
 		// code that runs before the user's init,
 		// in this case it will also be run after Calcified's version of this gets run,
 		// so we can safely assume that Calcified has been set up, and use its features
@@ -98,7 +99,7 @@ public class JavaWritingAFeature implements Feature {
 	}
 
 	@Override
-	public void postUserInitHook(@NonNull OpModeWrapper opMode) {
+	public void postUserInitHook(@NotNull Wrapper opMode) {
 		// hooks are provided for before and after each bit of user code
 
 		// Between the feature registrar and the OpModeWrapper passed to this hook,
@@ -106,7 +107,7 @@ public class JavaWritingAFeature implements Feature {
 
 		// the same as the OpModeWrapper being passed here, this probably isn't useful to you,
 		// and it would be bad practice to use it when you have the OpModeWrapper
-		FeatureRegistrar.getActiveOpMode(); // but it exists none-the-less
+		FeatureRegistrar.getActiveOpModeWrapper(); // but it exists none-the-less
 		FeatureRegistrar.getOpModeActive(); // if an OpMode is currently active
 
 		opMode.getOpModeType(); // teleop | autonomous | none
@@ -117,42 +118,41 @@ public class JavaWritingAFeature implements Feature {
 	}
 
 	@Override
-	public void preUserInitLoopHook(@NonNull OpModeWrapper opMode) {
+	public void preUserInitLoopHook(@NotNull Wrapper opMode) {
 	}
 
 	@Override
-	public void postUserInitLoopHook(@NonNull OpModeWrapper opMode) {
+	public void postUserInitLoopHook(@NotNull Wrapper opMode) {
 	}
 
 	@Override
-	public void preUserStartHook(@NonNull OpModeWrapper opMode) {
+	public void preUserStartHook(@NotNull Wrapper opMode) {
 	}
 
 	@Override
-	public void postUserStartHook(@NonNull OpModeWrapper opMode) {
+	public void postUserStartHook(@NotNull Wrapper opMode) {
 	}
 
 	@Override
-	public void preUserLoopHook(@NonNull OpModeWrapper opMode) {
+	public void preUserLoopHook(@NotNull Wrapper opMode) {
 	}
 
 	@Override
-	public void postUserLoopHook(@NonNull OpModeWrapper opMode) {
+	public void postUserLoopHook(@NotNull Wrapper opMode) {
 	}
-
+	
 	@Override
-	public void preUserStopHook(@NonNull OpModeWrapper opMode) {
+	public void preUserStopHook(@NotNull Wrapper opMode) {
 	}
-
+	
 	@Override
-	public void postUserStopHook(@NonNull OpModeWrapper opMode) {
+	public void postUserStopHook(@NotNull Wrapper opMode) {
 		// some features (not this one) might want to automatically deregister themselves after the OpMode
 		// while this isn't really necessary, as features are held weakly, and will disappear if the user doesn't hold onto them
 
 		// this would be terrible practice for a feature like this, but as this is just a demonstration
 		FeatureRegistrar.deregisterFeature(this);
 	}
-
 	// and that's all! a nice and simple way to do things powerfully!
 	
 	// the annotation used in this example,

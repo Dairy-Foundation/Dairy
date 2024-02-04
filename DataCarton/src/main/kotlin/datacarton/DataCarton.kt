@@ -12,7 +12,7 @@ import dev.frozenmilk.dairy.core.DairyCore
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.dairy.core.Feature
-import dev.frozenmilk.dairy.core.OpModeWrapper
+import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.util.cell.LateInitCell
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import java.lang.annotation.Inherited
@@ -62,36 +62,36 @@ object DataCarton : Feature {
 		publicationProcessors.addAll(additionalPublicationProcessors)
 	}
 
-	override fun preUserInitHook(opMode: OpModeWrapper) {
+	override fun preUserInitHook(opMode: Wrapper) {
 		startTime = System.nanoTime()
 	}
 
-	override fun postUserInitHook(opMode: OpModeWrapper) {
+	override fun postUserInitHook(opMode: Wrapper) {
 		if (publicationProcessors.isEmpty()) throw IllegalStateException("DataCarton had no attached publication processors")
 		if (autoUpdate) {
 			update()
 		}
 	}
 
-	override fun postUserInitLoopHook(opMode: OpModeWrapper) {
+	override fun postUserInitLoopHook(opMode: Wrapper) {
 		if (autoUpdate) {
 			update()
 		}
 	}
 
-	override fun postUserStartHook(opMode: OpModeWrapper) {
+	override fun postUserStartHook(opMode: Wrapper) {
 		if (autoUpdate) {
 			update()
 		}
 	}
 
-	override fun postUserLoopHook(opMode: OpModeWrapper) {
+	override fun postUserLoopHook(opMode: Wrapper) {
 		if (autoUpdate) {
 			update()
 		}
 	}
 
-	override fun postUserStopHook(opMode: OpModeWrapper) {
+	override fun postUserStopHook(opMode: Wrapper) {
 		if (autoUpdate) {
 			update()
 		}

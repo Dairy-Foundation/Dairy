@@ -10,3 +10,6 @@
 [submodule "Sinister"]
 	path = Sinister
 	url = git@github.com:Dairy-Foundation/Sinister.git
+[submodule "Pasteurized"]
+	path = Pasteurized
+	url = git@github.com:Dairy-Foundation/Pasteurized.git

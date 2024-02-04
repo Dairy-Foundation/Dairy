@@ -3,9 +3,9 @@ package org.firstinspires.ftc.teamcode.examples.featuredev
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.FeatureRegistrar
-import dev.frozenmilk.dairy.core.OpModeWrapper
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
+import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.util.cell.LateInitCell
 
 // Todo: in the full documentation it would be very nice to put out a quick guide to setting up and publishing a dairy core library on jitpack
@@ -66,7 +66,7 @@ object KotlinWritingAFeature : Feature {
 			return calcfiedCell.get() as Calcified
 		}
 
-	override fun preUserInitHook(opMode: OpModeWrapper) {
+	override fun preUserInitHook(opMode: Wrapper) {
 		// code that runs before the user's init,
 		// in this case it will also be run after Calcified's version of this gets run,
 		// so we can safely assume that Calcified has been set up, and use its features
@@ -75,7 +75,7 @@ object KotlinWritingAFeature : Feature {
 		calcified.gamepad1.a = calcified.gamepad1.a or calcified.gamepad2.a
 	}
 
-	override fun postUserInitHook(opMode: OpModeWrapper) {
+	override fun postUserInitHook(opMode: Wrapper) {
 		// hooks are provided for before and after each bit of user code
 
 		// Between the feature registrar and the OpModeWrapper passed to this hook,
@@ -83,7 +83,7 @@ object KotlinWritingAFeature : Feature {
 
 		// the same as the OpModeWrapper being passed here, this probably isn't useful to you,
 		// and it would be bad practice to use it when you have the OpModeWrapper
-		FeatureRegistrar.activeOpMode // but it exists none-the-less
+		FeatureRegistrar.activeOpModeWrapper // but it exists none-the-less
 		FeatureRegistrar.opModeActive // if an OpMode is currently active
 
 		opMode.opModeType // teleop | autonomous | none
@@ -93,28 +93,28 @@ object KotlinWritingAFeature : Feature {
 		opMode.hardwareMap // the hardwareMap
 	}
 
-	override fun preUserInitLoopHook(opMode: OpModeWrapper) {
+	override fun preUserInitLoopHook(opMode: Wrapper) {
 	}
 
-	override fun postUserInitLoopHook(opMode: OpModeWrapper) {
+	override fun postUserInitLoopHook(opMode: Wrapper) {
 	}
 
-	override fun preUserStartHook(opMode: OpModeWrapper) {
+	override fun preUserStartHook(opMode: Wrapper) {
 	}
 
-	override fun postUserStartHook(opMode: OpModeWrapper) {
+	override fun postUserStartHook(opMode: Wrapper) {
 	}
 
-	override fun preUserLoopHook(opMode: OpModeWrapper) {
+	override fun preUserLoopHook(opMode: Wrapper) {
 	}
 
-	override fun postUserLoopHook(opMode: OpModeWrapper) {
+	override fun postUserLoopHook(opMode: Wrapper) {
 	}
 
-	override fun preUserStopHook(opMode: OpModeWrapper) {
+	override fun preUserStopHook(opMode: Wrapper) {
 	}
 
-	override fun postUserStopHook(opMode: OpModeWrapper) {
+	override fun postUserStopHook(opMode: Wrapper) {
 		// some features (not this one) might want to automatically deregister themselves after the OpMode
 		// while this isn't really necessary, as features are held weakly, and will disappear if the user doesn't hold onto them
 

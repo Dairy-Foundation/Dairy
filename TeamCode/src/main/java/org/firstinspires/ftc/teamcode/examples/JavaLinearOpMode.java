@@ -1,39 +1,43 @@
 package org.firstinspires.ftc.teamcode.examples;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import java.util.Objects;
+
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
+import dev.frozenmilk.dairy.core.wrapper.Wrapper;
 
 // add feature annotations here
 public class JavaLinearOpMode extends LinearOpMode {
 	@Override
 	public void runOpMode() {
+		Wrapper activeOpModeWrapper = Objects.requireNonNull(FeatureRegistrar.getActiveOpModeWrapper());
 		// unfortunately, linear we can't do things so automatically with LinearOpModes
 		// so you need to call the hooks your self
 		// failing to wrap your code in these lines will likely cause issues
 
 		// DO NOT put code before this
-		FeatureRegistrar.checkFeatures(this /* pass desired features as varargs here */);
-		FeatureRegistrar.onOpModePreInit(FeatureRegistrar.getActiveOpMode());
+		FeatureRegistrar.opModePreInit(activeOpModeWrapper);
 		// your init code here
 		// remember that you can use OpModeLazyCells to init your hardware and similar
-		FeatureRegistrar.onOpModePostInit(FeatureRegistrar.getActiveOpMode());
+		FeatureRegistrar.opModePostInit(activeOpModeWrapper);
 		while (opModeInInit()) {
-			FeatureRegistrar.onOpModePreInitLoop(FeatureRegistrar.getActiveOpMode());
+			FeatureRegistrar.opModePreInitLoop(activeOpModeWrapper);
 			// your init_loop code here
-			FeatureRegistrar.onOpModePostInitLoop(FeatureRegistrar.getActiveOpMode());
+			FeatureRegistrar.opModePostInitLoop(activeOpModeWrapper);
 		}
 		waitForStart();
-		FeatureRegistrar.onOpModePreStart(FeatureRegistrar.getActiveOpMode());
+		FeatureRegistrar.opModePreStart(activeOpModeWrapper);
 		// your start code here
-		FeatureRegistrar.onOpModePostStart(FeatureRegistrar.getActiveOpMode());
+		FeatureRegistrar.opModePostStart(activeOpModeWrapper);
 		while (opModeIsActive()) {
-			FeatureRegistrar.onOpModePreLoop(FeatureRegistrar.getActiveOpMode());
+			FeatureRegistrar.opModePreLoop(activeOpModeWrapper);
 			// your loop code here
-			FeatureRegistrar.onOpModePostLoop(FeatureRegistrar.getActiveOpMode());
+			FeatureRegistrar.opModePostLoop(activeOpModeWrapper);
 		}
-		FeatureRegistrar.onOpModePreStop(FeatureRegistrar.getActiveOpMode());
+		FeatureRegistrar.opModePreStop(activeOpModeWrapper);
 		// your stop code here
-		FeatureRegistrar.onOpModePostStop(FeatureRegistrar.getActiveOpMode());
+		FeatureRegistrar.opModePostStop(activeOpModeWrapper);
 
 		// obviously this is much more ugly, but there is no way to automate this for you
 		// so we advise that iterative OpModes are used instead
