@@ -33,9 +33,7 @@ import dev.frozenmilk.dairy.calcified.hardware.sensor.DigitalOutput;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.util.OpModeLazyCell;
 import dev.frozenmilk.dairy.core.util.supplier.EnhancedBooleanSupplier;
-import dev.frozenmilk.dairy.core.util.supplier.EnhancedNumberSupplier;
 import dev.frozenmilk.dairy.core.util.supplier.EnhancedNumberSupplierKt;
-import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 import dev.frozenmilk.util.cell.Cell;
 import dev.frozenmilk.util.profile.ProfileConstraints;
 import dev.frozenmilk.util.profile.ProfileStateComponent;
@@ -238,7 +236,7 @@ public class JavaOverview extends OpMode {
 		digitalInput.getEnhanced(); // an enhanced version of the sensor supplier
 		// the enhanced version provides several improvements to a normal boolean supplier in the context of writing robot code
 		// these features are also provided on the gamepad buttons, and so they'll be covered in depth in that section
-		digitalInput.getEnhanced().getWhenTrue();
+		digitalInput.getEnhanced().getOnTrue();
 		// digital outputs are super simple
 		DigitalOutput digitalOutput = Calcified.getControlHub().getDigitalOutput((byte) 1);
 		digitalOutput.accept(true);
@@ -380,7 +378,7 @@ public class JavaOverview extends OpMode {
 		// remember, it is best to run these operations once at the start of the op mode, and store them for later,
 		// as they are reasonably expensive to remake every loop
 		// but checking
-		encoderBasedCondition.getWhenTrue();
+		encoderBasedCondition.getOnTrue();
 		// will run all the correct checks against the encoder position whenever you call it, but only if you call it
 		
 		// Hopefully this has been a helpful overview of how to use Calcified, hosted on DairyCore

@@ -218,7 +218,7 @@ class KotlinOverview : OpMode() {
 		digitalInput.enhanced // an enhanced version of the sensor supplier
 		// the enhanced version provides several improvements to a normal boolean supplier in the context of writing robot code
 		// these features are also provided on the gamepad buttons, and so they'll be covered in depth in that section
-		digitalInput.enhanced.whenTrue
+		digitalInput.enhanced.onTrue
 
 		// digital outputs are super simple
 		val digitalOutput = Calcified.controlHub.getDigitalOutput(1)
@@ -378,7 +378,7 @@ class KotlinOverview : OpMode() {
 		// remember, it is best to run these operations once at the start of the op mode, and store them for later,
 		// as they are reasonably expensive to remake every loop
 		// but checking
-		encoderBasedCondition.whenTrue
+		encoderBasedCondition.onTrue
 		// will run all the correct checks against the encoder position whenever you call it, but only if you call it
 
 		// Hopefully this has been a helpful overview of how to use Calcified, hosted on DairyCore
