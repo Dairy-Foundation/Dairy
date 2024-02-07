@@ -72,7 +72,7 @@ object KotlinWritingAFeature : Feature {
 		// so we can safely assume that Calcified has been set up, and use its features
 
 		// this feature will perform a cross-controller remap
-		calcified.gamepad1.a = calcified.gamepad1.a or calcified.gamepad2.a
+//		calcified.gamepad1.a = calcified.gamepad1.a or calcified.gamepad2.a
 	}
 
 	override fun postUserInitHook(opMode: Wrapper) {
@@ -89,8 +89,8 @@ object KotlinWritingAFeature : Feature {
 		opMode.opModeType // teleop | autonomous | none
 
 		// the OpModeWapper also provides access to all the parts of an OpMode you might normally access
-		opMode.telemetry // the telemetry
-		opMode.hardwareMap // the hardwareMap
+		opMode.opMode.telemetry // the telemetry
+		opMode.opMode.hardwareMap // the hardwareMap
 	}
 
 	override fun preUserInitLoopHook(opMode: Wrapper) {

@@ -19,13 +19,13 @@ import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.calcified.hardware.sensor.fromImuOrientationOnRobot
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.util.OpModeLazyCell
-import dev.frozenmilk.util.units.Angle
+import dev.frozenmilk.util.units.angle.Angle
 import dev.frozenmilk.util.units.orientation.AngleBasedRobotOrientation
 import dev.frozenmilk.util.profile.ProfileConstraints
 import dev.frozenmilk.util.profile.ProfileStateComponent
-import dev.frozenmilk.util.units.DistanceUnits
-import dev.frozenmilk.util.units.AngleUnits
-import dev.frozenmilk.util.units.Distance
+import dev.frozenmilk.util.units.distance.DistanceUnits
+import dev.frozenmilk.util.units.angle.AngleUnits
+import dev.frozenmilk.util.units.distance.Distance
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 
 @TeleOp

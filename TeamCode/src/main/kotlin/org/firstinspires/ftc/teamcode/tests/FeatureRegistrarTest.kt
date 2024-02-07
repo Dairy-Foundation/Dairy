@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.core.util.OpModeLazyCell
+import dev.frozenmilk.dairy.pasteurized.Pasteurized
 
 @TeleOp
 @Calcified.Attach
@@ -35,13 +36,13 @@ class FeatureRegistrarTest : OpMode() {
 		telemetry.addData("heading", imu.heading)
 		telemetry.addData("heading velo", imu.headingVelocity)
 
-		if (Calcified.gamepad1.a.whenTrue) {
+		if (Pasteurized.gamepad1.a.onTrue) {
 			servo.position = 1.0
 			crservo.power = 1.0
 			motor.power = 1.0
 		}
 
-		if (Calcified.gamepad1.b.whenTrue) {
+		if (Pasteurized.gamepad1.b.onTrue) {
 			servo.position = 0.0
 			crservo.power = 0.0
 			motor.power = 0.0

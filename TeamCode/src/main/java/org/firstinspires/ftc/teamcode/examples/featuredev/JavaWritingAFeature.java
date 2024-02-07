@@ -95,7 +95,7 @@ public class JavaWritingAFeature implements Feature {
 		// so we can safely assume that Calcified has been set up, and use its features
 
 		// this feature will perform a cross-controller remap
-		Calcified.getGamepad1().setA(Calcified.getGamepad1().getA().or(Calcified.getGamepad2().getA()));
+//		Calcified.getGamepad1().setA(Calcified.getGamepad1().getA().or(Calcified.getGamepad2().getA()));
 	}
 
 	@Override
@@ -113,8 +113,8 @@ public class JavaWritingAFeature implements Feature {
 		opMode.getOpModeType(); // teleop | autonomous | none
 
 		// the OpModeWapper also provides access to all the parts of an OpMode you might normally access
-		Telemetry telemetry = opMode.telemetry; // the telemetry
-		HardwareMap hardwareMap = opMode.hardwareMap; // the hardwareMap
+		Telemetry telemetry = opMode.getOpMode().telemetry; // the telemetry
+		HardwareMap hardwareMap = opMode.getOpMode().hardwareMap; // the hardwareMap
 	}
 
 	@Override
