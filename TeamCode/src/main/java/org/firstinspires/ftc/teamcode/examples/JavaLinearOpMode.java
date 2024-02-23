@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
+import dev.frozenmilk.util.units.angle.AngleUnit;
 
 // add feature annotations here
 public class JavaLinearOpMode extends LinearOpMode {
