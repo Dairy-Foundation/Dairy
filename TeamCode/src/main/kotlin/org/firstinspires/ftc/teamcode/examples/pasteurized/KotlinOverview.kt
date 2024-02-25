@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.examples.pasteurized
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import dev.frozenmilk.dairy.core.util.supplier.numeric.modifier.DoubleDeadZone
 import dev.frozenmilk.dairy.pasteurized.Pasteurized
 import dev.frozenmilk.dairy.pasteurized.SDKGamepad
 import dev.frozenmilk.dairy.pasteurized.layering.LayeredGamepad
@@ -57,11 +58,11 @@ class KotlinOverview : OpMode() {
 		// the value of the stick
 		enhancedNumberSupplier.position
 
-		// deadzones can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
-		enhancedNumberSupplier = enhancedNumberSupplier.applyDeadzone(0.1) // becomes -0.1, 0.1
-		enhancedNumberSupplier = enhancedNumberSupplier.applyDeadzone(-0.1, 0.2)
-		enhancedNumberSupplier = enhancedNumberSupplier.applyUpperDeadzone(-0.1)
-		enhancedNumberSupplier = enhancedNumberSupplier.applyLowerDeadzone(0.1)
+		// deadzones, ony other modifying operation can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
+
+		// deadzones, ony other modifying operation can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
+		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier(DoubleDeadZone.lowerDeadZone(-0.05))
+		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier { x: Double -> x / 2 }
 
 		// EnhancedNumberSuppliers also interact well with building complex EnhancedBooleanSuppliers from ranges
 		val rangeBasedCondition = enhancedNumberSupplier.conditionalBindPosition()

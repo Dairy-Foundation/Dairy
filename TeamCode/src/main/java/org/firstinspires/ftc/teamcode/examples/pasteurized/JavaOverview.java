@@ -1,20 +1,27 @@
 package org.firstinspires.ftc.teamcode.examples.pasteurized;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import dev.frozenmilk.dairy.core.util.OpModeLazyCell;
 import dev.frozenmilk.dairy.core.util.supplier.logical.EnhancedBooleanSupplier;
 import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier;
+import dev.frozenmilk.dairy.core.util.supplier.numeric.modifier.DoubleDeadZone;
 import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 import dev.frozenmilk.dairy.pasteurized.PasteurizedGamepad;
 import dev.frozenmilk.dairy.pasteurized.SDKGamepad;
 import dev.frozenmilk.dairy.pasteurized.layering.LayeredGamepad;
 import dev.frozenmilk.dairy.pasteurized.layering.LayeringSystem;
 import dev.frozenmilk.dairy.pasteurized.layering.MapLayeringSystem;
+import dev.frozenmilk.util.cell.LazyCell;
 
 public class JavaOverview extends OpMode {
+	private final LazyCell<DcMotorEx> lazyCell = new LazyCell<>(() -> hardwareMap.get(DcMotorEx.class, ""));
+	private final OpModeLazyCell<DcMotorEx> opModeLazyCell = new OpModeLazyCell<>(() -> hardwareMap.get(DcMotorEx.class, ""));
+	
 	@Override
 	public void init() {
 	
@@ -69,11 +76,9 @@ public class JavaOverview extends OpMode {
 		// the value of the stick
 		enhancedNumberSupplier.getPosition();
 
-		// deadzones can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
-		enhancedNumberSupplier = enhancedNumberSupplier.applyDeadzone(0.1); // becomes -0.1, 0.1
-		enhancedNumberSupplier = enhancedNumberSupplier.applyDeadzone(-0.1, 0.2);
-		enhancedNumberSupplier = enhancedNumberSupplier.applyUpperDeadzone(-0.1);
-		enhancedNumberSupplier = enhancedNumberSupplier.applyLowerDeadzone(0.1);
+		// deadzones, ony other modifying operation can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
+		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier(DoubleDeadZone.lowerDeadZone(-0.05));
+		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier((x) -> x / 2);
 
 		// EnhancedNumberSuppliers also interact well with building complex EnhancedBooleanSuppliers from ranges
 		EnhancedBooleanSupplier rangeBasedCondition = enhancedNumberSupplier.conditionalBindPosition()
