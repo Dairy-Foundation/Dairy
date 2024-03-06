@@ -102,12 +102,12 @@ public class JavaOverview extends OpMode {
 		// If you want to get more advanced, you can use a layering system to control the layers of your gamepad
 		// gamepads on inactive layers will immediately go to an 'at-rest' state, layering systems achieve this by modifying all gamepads given to it
 		// if a gamepad exits the control of the layering system, it will go back to functioning normally
-		PasteurizedGamepad teleopGamepad = new SDKGamepad(gamepad1);
+		SDKGamepad teleopGamepad = new SDKGamepad(gamepad1);
 		// note that an sdk Gamepad can be constructed from a normal sdk gamepad!
 		// this is the same as the original gamepad1 from Pasteurized, but pasteurized will auto generate one for us the first time we ask for it each OpMode
 		// WARNING: if your layering system is not very stable, you will need to be careful, as a layered gamepad will crash if it can't find a gamepad for the current layer
-		PasteurizedGamepad endgameGamepad = new SDKGamepad(gamepad1);
-		Map<Layers1, PasteurizedGamepad> pasteurizedGamepadMap = new HashMap<>();
+		SDKGamepad endgameGamepad = new SDKGamepad(gamepad1);
+		Map<Layers1, PasteurizedGamepad<EnhancedDoubleSupplier, EnhancedBooleanSupplier>> pasteurizedGamepadMap = new HashMap<>();
 		pasteurizedGamepadMap.put(Layers1.TELEOP, teleopGamepad);
 		pasteurizedGamepadMap.put(Layers1.ENDGAME, endgameGamepad);
 		LayeringSystem<Layers1> enumLayeringSystem = new MapLayeringSystem<>(Layers1.TELEOP, pasteurizedGamepadMap);
@@ -135,7 +135,7 @@ public class JavaOverview extends OpMode {
 		// Other Layering Systems
 		//
 		// the map layering system can be used for any hashable type, but is probably best for enums
-		Map<String, PasteurizedGamepad> pasteurizedGamepadMap2 = new HashMap<>();
+		Map<String, PasteurizedGamepad<EnhancedDoubleSupplier, EnhancedBooleanSupplier>> pasteurizedGamepadMap2 = new HashMap<>();
 		pasteurizedGamepadMap2.put("one", teleopGamepad);
 		pasteurizedGamepadMap2.put("two", endgameGamepad);
 		MapLayeringSystem<String> stringLayeringSystem = new MapLayeringSystem<>("one", pasteurizedGamepadMap2);

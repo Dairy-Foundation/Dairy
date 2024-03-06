@@ -429,6 +429,10 @@ public class JavaOverview extends OpMode {
 				.bind();
 		// this more complex binding will return true if the encoder has a velocity in the following domains: [-100, -10), (200, infinity)
 
+		EnhancedBooleanSupplier unitBinding = distanceEncoder.conditionalBindPosition()
+				.greaterThan(new Distance(DistanceUnits.METER, 10.0))
+				.bind();
+		
 		// there are conditional binding builders for all components of motion supplied by an EnhancedNumberSupplier
 		encoder.conditionalBindPosition();
 		encoder.conditionalBindVelocity();
@@ -512,6 +516,29 @@ public class JavaOverview extends OpMode {
 		// It explains some of the topics around the EnhancedSupplier family as well, so you may find some of what it explains, helps you to understand this
 	}
 
+	private final OpModeLazyCell<EnhancedBooleanSupplier> encoderInRangeCell = new OpModeLazyCell<>(() -> {
+		DistanceEncoder encoder = Calcified.getControlHub().getDistanceEncoder((byte) 0, DistanceUnits.METER, 10.0);
+		return encoder.conditionalBindPosition()
+				.greaterThan(new Distance(DistanceUnits.MILLIMETER, 10.0))
+				.lessThan(new Distance(DistanceUnits.METER, 10.0))
+				.bind();
+	});
+	
+	private final OpModeLazyCell<EnhancedBooleanSupplier> encoderInRangeCell2 = new OpModeLazyCell<>(() -> {
+		DistanceEncoder encoder = Calcified.getControlHub().getDistanceEncoder((byte) 0, DistanceUnits.METER, 10.0);
+		return new EnhancedBooleanSupplier(() -> {
+			return encoder.getPosition().intoMeters().getValue() > new Distance(DistanceUnits.MILLIMETER, 10.0).intoMeters().getValue() &&
+					encoder.getPosition().intoMeters().getValue() < new Distance(DistanceUnits.METER, 10.0).intoMeters().getValue();
+		});
+	});
+	
+	private EnhancedBooleanSupplier encoderInRange() {
+		return encoderInRangeCell.get();
+	}
 	@Override
-	public void loop() {}
+	public void loop() {
+		if (encoderInRange().onTrue()) {
+			// do w/e
+		}
+	}
 }
