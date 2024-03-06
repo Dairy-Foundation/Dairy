@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.examples.pasteurized
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import dev.frozenmilk.dairy.core.util.supplier.numeric.modifier.DoubleDeadZone
+import dev.frozenmilk.util.modifier.DoubleDeadZone
 import dev.frozenmilk.dairy.pasteurized.Pasteurized
 import dev.frozenmilk.dairy.pasteurized.SDKGamepad
 import dev.frozenmilk.dairy.pasteurized.layering.LayeredGamepad

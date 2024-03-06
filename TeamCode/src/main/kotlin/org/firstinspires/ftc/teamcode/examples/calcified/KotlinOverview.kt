@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.PwmControl
 import dev.frozenmilk.dairy.calcified.Calcified
-import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.CalculationComponent
 import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.DoubleDComponent
 import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.DoubleIComponent
 import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.DoublePComponent
@@ -222,6 +221,9 @@ class KotlinOverview : OpMode() {
 
 		// encoders are part of the unit system
 		// encoders take the form of EnhancedNumberSuppliers
+		// for instance, I can form a new encoder output, that passes the output of the first encoder through a function
+		val modifiedEncoder = encoder.applyModifier { x -> x / 2 }
+		modifiedEncoder.position // half of encoder.position!
 		// EnhancedSuppliers are all immutable, which means that modifying methods actually produce a new EnhancedSupplier, independent of the previous one
 		// and can be used to easily form conditional binds
 		// more on this later!
@@ -230,6 +232,8 @@ class KotlinOverview : OpMode() {
 		val absoluteEncoder = Calcified.controlHub.getAngleEncoder(1, Wrapping.WRAPPING, 28.0)
 		val distanceEncoder = Calcified.controlHub.getDistanceEncoder(2, DistanceUnits.MILLIMETER, 10.0)
 		// these work the same as above, but everything is measured as the appropriate reified unit
+
+		val combinedEncoder = distanceEncoder.merge(encoder::velocity) { distance, velocity -> distance * velocity }
 
 		// Angles
 		val angle = absoluteEncoder.position

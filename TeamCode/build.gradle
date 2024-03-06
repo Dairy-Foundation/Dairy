@@ -36,5 +36,7 @@ dependencies {
     implementation project(':Calcified')
     implementation project(':Pasteurized')
     implementation project(':DataCarton')
+    implementation project(':Mercurial')
 //    implementation project(':MilkMan')
+    implementation project(':Sinister')
 }

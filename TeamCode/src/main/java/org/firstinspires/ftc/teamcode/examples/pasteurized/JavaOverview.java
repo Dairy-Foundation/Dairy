@@ -9,7 +9,7 @@ import java.util.Map;
 import dev.frozenmilk.dairy.core.util.OpModeLazyCell;
 import dev.frozenmilk.dairy.core.util.supplier.logical.EnhancedBooleanSupplier;
 import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier;
-import dev.frozenmilk.dairy.core.util.supplier.numeric.modifier.DoubleDeadZone;
+import dev.frozenmilk.util.modifier.DoubleDeadZone;
 import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 import dev.frozenmilk.dairy.pasteurized.PasteurizedGamepad;
 import dev.frozenmilk.dairy.pasteurized.SDKGamepad;
