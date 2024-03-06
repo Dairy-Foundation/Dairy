@@ -15,4 +15,5 @@
 	url = git@github.com:Dairy-Foundation/Pasteurized.git
 [submodule "Mercurial"]
 	path = Mercurial
-	url = ./Mercurial
+	url = git@github.com:Dairy-Foundation/Mercurial.git
+
