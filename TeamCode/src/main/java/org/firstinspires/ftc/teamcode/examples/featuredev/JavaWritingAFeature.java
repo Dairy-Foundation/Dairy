@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 import java.util.Set;
 
 import dev.frozenmilk.dairy.calcified.Calcified;
+import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule;
 import dev.frozenmilk.dairy.core.Feature;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency;
@@ -76,10 +77,7 @@ public class JavaWritingAFeature implements Feature {
 	
 	// these set up a singleton pattern for this feature
 	// it might be good to make static methods that route through this instance
-	private final JavaWritingAFeature instance = new JavaWritingAFeature();
-	public JavaWritingAFeature getInstance() {
-		return instance;
-	}
+	private static final JavaWritingAFeature INSTANCE = new JavaWritingAFeature();
 
 	// this allows us to quickly get calcified out of the extraction cell, for use later
 	// note: this doesn't work in java, as calcified is static, but if it wasn't this would be required
@@ -94,8 +92,8 @@ public class JavaWritingAFeature implements Feature {
 		// in this case it will also be run after Calcified's version of this gets run,
 		// so we can safely assume that Calcified has been set up, and use its features
 
-		// this feature will perform a cross-controller remap
-//		Calcified.getGamepad1().setA(Calcified.getGamepad1().getA().or(Calcified.getGamepad2().getA()));
+		// for instance, we could add something to the Calcified Device Map
+		Calcified.getControlHub().getDeviceMap();
 	}
 
 	@Override
@@ -117,6 +115,7 @@ public class JavaWritingAFeature implements Feature {
 		HardwareMap hardwareMap = opMode.getOpMode().hardwareMap; // the hardwareMap
 	}
 
+	// note that unused methods can be left unimplemented as they default to doing nothing, but for this demo all can be left in
 	@Override
 	public void preUserInitLoopHook(@NotNull Wrapper opMode) {
 	}
