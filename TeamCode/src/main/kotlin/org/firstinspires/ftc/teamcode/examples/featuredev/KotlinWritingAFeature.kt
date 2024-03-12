@@ -7,6 +7,7 @@ import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.util.cell.LateInitCell
+import java.lang.annotation.Inherited
 
 // Todo: in the full documentation it would be very nice to put out a quick guide to setting up and publishing a dairy core library on jitpack
 
@@ -129,5 +130,7 @@ object KotlinWritingAFeature : Feature {
 	// which will look like @KotlinWritingAFeature.Attach
 	@Target(AnnotationTarget.CLASS)
 	@Retention(AnnotationRetention.RUNTIME)
+	@MustBeDocumented
+	@Inherited
 	annotation class Attach
 }

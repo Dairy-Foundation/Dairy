@@ -9,12 +9,17 @@ import dev.frozenmilk.mercurial.commands.stateful.StatefulLambdaCommand
 import dev.frozenmilk.mercurial.subsystems.Subsystem
 import dev.frozenmilk.mercurial.subsystems.SubsystemObjectCell
 import dev.frozenmilk.util.cell.RefCell
+import java.lang.annotation.Inherited
 
 // this is a kotlin object, its a lot like the singleton pattern
 // Subsystems are a lot like Features, they get preloaded and registered
 // when the Robot controller first boots up
 object KotlinSubsystem : Subsystem {
 	// the annotation class we use to attach this subsystem
+	@Target(AnnotationTarget.CLASS)
+	@Retention(AnnotationRetention.RUNTIME)
+	@MustBeDocumented
+	@Inherited
 	annotation class Attach
 	// Subsystems use the core Feature system of Dairy to be attached to OpModes
 	// we need to set up the dependencies, which at its simplest looks like this

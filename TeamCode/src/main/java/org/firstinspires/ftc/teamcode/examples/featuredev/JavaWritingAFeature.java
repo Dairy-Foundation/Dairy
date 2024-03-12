@@ -8,6 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -22,6 +23,7 @@ import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySe
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
 import dev.frozenmilk.util.cell.Cell;
 import dev.frozenmilk.util.cell.LateInitCell;
+import kotlin.annotation.MustBeDocumented;
 
 // Todo: in the full documentation it would be very nice to put out a quick guide to setting up and publishing a dairy core library on jitpack
 
@@ -159,6 +161,8 @@ public class JavaWritingAFeature implements Feature {
 	// which will look like @JavaWritingAFeature.Attach
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.TYPE)
+	@MustBeDocumented
+	@Inherited
 	public @interface Attach {}
 }
 
