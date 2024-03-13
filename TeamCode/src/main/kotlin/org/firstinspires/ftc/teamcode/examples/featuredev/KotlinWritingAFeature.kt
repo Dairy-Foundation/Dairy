@@ -57,8 +57,9 @@ object KotlinWritingAFeature : Feature {
 	// it is important that it comes after the declaration of the dependencies,
 	// otherwise the dependencies won't exist when this gets registered, which will cause a silent crash,
 	// which is painful to debug
+	// HOWEVER, in this case, we don't need this, as this is a Kotlin object, so the static instance gets automatically registered
 	init {
-		FeatureRegistrar.registerFeature(this)
+		//FeatureRegistrar.registerFeature(this)
 	}
 
 	// this allows us to quickly get calcified out of the extraction cell, for use later
