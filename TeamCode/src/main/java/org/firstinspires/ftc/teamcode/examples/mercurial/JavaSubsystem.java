@@ -103,9 +103,9 @@ public class JavaSubsystem implements Subsystem {
 	public static LambdaCommand simpleCommand() {
 		return new LambdaCommand()
 				.addRequirements(INSTANCE)
-				.setInit(() -> INSTANCE.getMotor().setPower(0.4))
+				.setInit(() -> getMotor().setPower(0.4))
 				.setEnd(interrupted -> {
-					if (!interrupted) INSTANCE.getMotor().setPower(0.0);
+					if (!interrupted) getMotor().setPower(0.0);
 				});
 	}
 	
@@ -125,14 +125,13 @@ public class JavaSubsystem implements Subsystem {
 				// and variants that also take access to state where appropriate
 				.addRequirements(INSTANCE)
 				.setInit((state) -> getMotor().setPower(0.4 + state.get()))
-				 // every time this command ends, we increase the power next time we run it
-				 // this isn't a terribly practical example
-				 // but this is useful for PID controllers and similar, without
-				 // requiring the creation of a whole command class just to hold some state
+				// every time this command ends, we increase the power next time we run it
+				// this isn't a terribly practical example
+				// but this is useful for PID controllers and similar, without
+				// requiring the creation of a whole command class just to hold some state
 				.setEnd((interrupted, state) -> {
 					if (!interrupted) getMotor().setPower(0);
 					state.accept(state.get() + 0.1);
 				});
-		}
 	}
 }

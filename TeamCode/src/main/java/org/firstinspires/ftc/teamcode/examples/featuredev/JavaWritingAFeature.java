@@ -40,7 +40,6 @@ public class JavaWritingAFeature implements Feature {
 	// the dependencies allow the FeatureRegistrar to determine the order in which our dependencies are attached
 	@NonNull
 	@Override
-	@SuppressWarnings("unchecked") // java complains about this, but it isn't an issue, so we suppress the warning
 	public Set<Dependency<?, ?>> getDependencies() {
 		return new DependencySet(this)
 				// this says that we need the @JavaMyFeature annotation to activate this
@@ -73,8 +72,12 @@ public class JavaWritingAFeature implements Feature {
 	}
 	
 	// this constructor ensures that this feature is registered as soon as it comes into existence
+	// it is important that it comes after the declaration of the dependencies,
+	// otherwise the dependencies won't exist when this gets registered, which will cause a silent crash,
+	// which is painful to debug
+	// HOWEVER, in this case, we don't need the registration line, as the static instance gets automatically registered
 	private JavaWritingAFeature() {
-		FeatureRegistrar.registerFeature(this);
+		//FeatureRegistrar.registerFeature(this);
 	}
 	
 	// these set up a singleton pattern for this feature
