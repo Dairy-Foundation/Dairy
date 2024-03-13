@@ -6,14 +6,14 @@
 	url = https://github.com/Dairy-Foundation/Calcified.git
 [submodule "Util"]
 	path = Util
-	url = git@github.com:Dairy-Foundation/Util.git
+	url = https://github.com/Dairy-Foundation/Util.git
 [submodule "Sinister"]
 	path = Sinister
-	url = git@github.com:Dairy-Foundation/Sinister.git
+	url = https://github.com/Dairy-Foundation/Sinister.git
 [submodule "Pasteurized"]
 	path = Pasteurized
-	url = git@github.com:Dairy-Foundation/Pasteurized.git
+	url = https://github.com/Dairy-Foundation/Pasteurized.git
 [submodule "Mercurial"]
 	path = Mercurial
-	url = git@github.com:Dairy-Foundation/Mercurial.git
+	url = https://github.com/Dairy-Foundation/Mercurial.git
 
