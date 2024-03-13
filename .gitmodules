@@ -1,19 +1,19 @@
 [submodule "Core"]
 	path = Core
-	url = https://github.com/Dairy-Foundation/Core.git
+	url = git@github.com:Dairy-Foundation/Core.git
 [submodule "Calcified"]
 	path = Calcified
-	url = https://github.com/Dairy-Foundation/Calcified.git
+	url = git@github.com:Dairy-Foundation/Calcified.git
 [submodule "Util"]
 	path = Util
-	url = https://github.com/Dairy-Foundation/Util.git
+	url = git@github.com:Dairy-Foundation/Util.git
 [submodule "Sinister"]
 	path = Sinister
-	url = https://github.com/Dairy-Foundation/Sinister.git
+	url = git@github.com:Dairy-Foundation/Sinister.git
 [submodule "Pasteurized"]
 	path = Pasteurized
-	url = https://github.com/Dairy-Foundation/Pasteurized.git
+	url = git@github.com:Dairy-Foundation/Pasteurized.git
 [submodule "Mercurial"]
 	path = Mercurial
-	url = https://github.com/Dairy-Foundation/Mercurial.git
+	url = git@github.com:Dairy-Foundation/Mercurial.git
 
