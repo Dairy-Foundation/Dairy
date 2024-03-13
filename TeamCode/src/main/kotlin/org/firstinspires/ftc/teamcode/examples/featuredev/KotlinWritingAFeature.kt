@@ -7,6 +7,7 @@ import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.util.cell.LateInitCell
+import java.lang.annotation.Inherited
 
 // Todo: in the full documentation it would be very nice to put out a quick guide to setting up and publishing a dairy core library on jitpack
 
@@ -71,8 +72,8 @@ object KotlinWritingAFeature : Feature {
 		// in this case it will also be run after Calcified's version of this gets run,
 		// so we can safely assume that Calcified has been set up, and use its features
 
-		// this feature will perform a cross-controller remap
-//		calcified.gamepad1.a = calcified.gamepad1.a or calcified.gamepad2.a
+		// for instance, we could add something to the Calcified Device Map
+		Calcified.controlHub.deviceMap
 	}
 
 	override fun postUserInitHook(opMode: Wrapper) {
@@ -129,5 +130,7 @@ object KotlinWritingAFeature : Feature {
 	// which will look like @KotlinWritingAFeature.Attach
 	@Target(AnnotationTarget.CLASS)
 	@Retention(AnnotationRetention.RUNTIME)
+	@MustBeDocumented
+	@Inherited
 	annotation class Attach
 }

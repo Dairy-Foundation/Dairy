@@ -4,14 +4,22 @@ import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Set;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
 import dev.frozenmilk.mercurial.commands.LambdaCommand;
+import dev.frozenmilk.mercurial.commands.stateful.StatefulLambdaCommand;
 import dev.frozenmilk.mercurial.subsystems.Subsystem;
 import dev.frozenmilk.mercurial.subsystems.SubsystemObjectCell;
+import dev.frozenmilk.util.cell.RefCell;
+import kotlin.annotation.MustBeDocumented;
 
 // this is a kotlin object, its a lot like the singleton pattern
 // Subsystems are a lot like Features, they get preloaded and registered
@@ -26,6 +34,10 @@ public class JavaSubsystem implements Subsystem {
 	}
 	
 	// the annotation class we use to attach this subsystem
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.TYPE)
+	@MustBeDocumented
+	@Inherited
 	public @interface Attach{}
 	// Subsystems use the core Feature system of Dairy to be attached to OpModes
 	// we need to set up the dependencies, which at its simplest looks like this
@@ -45,8 +57,8 @@ public class JavaSubsystem implements Subsystem {
 	// this means that we can always rely on motor to be correct and up-to-date for the current OpMode
 	// this can also work with Calcified
 	private final SubsystemObjectCell<DcMotorEx> motor = new SubsystemObjectCell<>(this, () -> FeatureRegistrar.getActiveOpMode().hardwareMap.get(DcMotorEx.class, ""));
-	public DcMotorEx getMotor() {
-		return motor.get();
+	public static DcMotorEx getMotor() {
+		return INSTANCE.motor.get();
 	}
 
 	// we get the full benefit of the Dairy core feature set,
@@ -87,6 +99,7 @@ public class JavaSubsystem implements Subsystem {
 	//
 	// commands are the same as older mercurial!
 	// lambda commands are once again, powerful tools for developing simple units of operation
+	@NonNull
 	public static LambdaCommand simpleCommand() {
 		return new LambdaCommand()
 				.addRequirements(INSTANCE)
@@ -94,5 +107,32 @@ public class JavaSubsystem implements Subsystem {
 				.setEnd(interrupted -> {
 					if (!interrupted) INSTANCE.getMotor().setPower(0.0);
 				});
+	}
+	
+	
+	// lambda commands have a new powerful extension, designed to work well with the Cell patterns in Dairy util
+	// RefCell<Double> is an immutable reference with interior immutability
+	// we could also use a LazyCell, or an OpModeLazyCell, or SubsystemObjectCell, depending on our needs
+	// we need to manage the state ourselves, if we want to reset it at the start of each run of this command,
+	// or if its persistent across runs, we are in control
+	// note that, each copy of state is unique to each individual instance of this command
+	// if we wanted shared state across all instances, we could capture state from this class instead
+	@NonNull
+	public static StatefulLambdaCommand<RefCell<Double>> statefulCommand() {
+		return new StatefulLambdaCommand<>(new RefCell<>(0.0))
+				// note that stateful lambda commands have all the same methods that
+				// the regular lambda command has
+				// and variants that also take access to state where appropriate
+				.addRequirements(INSTANCE)
+				.setInit((state) -> getMotor().setPower(0.4 + state.get()))
+				 // every time this command ends, we increase the power next time we run it
+				 // this isn't a terribly practical example
+				 // but this is useful for PID controllers and similar, without
+				 // requiring the creation of a whole command class just to hold some state
+				.setEnd((interrupted, state) -> {
+					if (!interrupted) getMotor().setPower(0);
+					state.accept(state.get() + 0.1);
+				});
+		}
 	}
 }

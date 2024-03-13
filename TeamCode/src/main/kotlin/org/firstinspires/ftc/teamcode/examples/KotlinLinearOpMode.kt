@@ -12,27 +12,27 @@ class KotlinLinearOpMode : LinearOpMode() {
 
 		// DO NOT put code before this
 		FeatureRegistrar.checkFeatures(this, /* pass desired features as varargs here */)
-		FeatureRegistrar.opModePreInit(FeatureRegistrar.activeOpModeWrapper!!)
+		FeatureRegistrar.opModePreInit(FeatureRegistrar.activeOpModeWrapper)
 		// your init code here
 		// remember that you can use OpModeLazyCells to init your hardware and similar
-		FeatureRegistrar.opModePostInit(FeatureRegistrar.activeOpModeWrapper!!)
+		FeatureRegistrar.opModePostInit(FeatureRegistrar.activeOpModeWrapper)
 		while (opModeInInit()) {
-			FeatureRegistrar.opModePreInitLoop(FeatureRegistrar.activeOpModeWrapper!!)
+			FeatureRegistrar.opModePreInitLoop(FeatureRegistrar.activeOpModeWrapper)
 			// your init_loop code here
-			FeatureRegistrar.opModePostInitLoop(FeatureRegistrar.activeOpModeWrapper!!)
+			FeatureRegistrar.opModePostInitLoop(FeatureRegistrar.activeOpModeWrapper)
 		}
 		waitForStart()
-		FeatureRegistrar.opModePreStart(FeatureRegistrar.activeOpModeWrapper!!)
+		FeatureRegistrar.opModePreStart(FeatureRegistrar.activeOpModeWrapper)
 		// your start code here
-		FeatureRegistrar.opModePostStart(FeatureRegistrar.activeOpModeWrapper!!)
+		FeatureRegistrar.opModePostStart(FeatureRegistrar.activeOpModeWrapper)
 		while (opModeIsActive()) {
-			FeatureRegistrar.opModePreLoop(FeatureRegistrar.activeOpModeWrapper!!)
+			FeatureRegistrar.opModePreLoop(FeatureRegistrar.activeOpModeWrapper)
 			// your loop code here
-			FeatureRegistrar.opModePostLoop(FeatureRegistrar.activeOpModeWrapper!!)
+			FeatureRegistrar.opModePostLoop(FeatureRegistrar.activeOpModeWrapper)
 		}
-		FeatureRegistrar.opModePreStop(FeatureRegistrar.activeOpModeWrapper!!)
+		FeatureRegistrar.opModePreStop(FeatureRegistrar.activeOpModeWrapper)
 		// your stop code here
-		FeatureRegistrar.opModePostStop(FeatureRegistrar.activeOpModeWrapper!!)
+		FeatureRegistrar.opModePostStop(FeatureRegistrar.activeOpModeWrapper)
 
 		// obviously this is much more ugly, but there is no way to automate this for you
 		// so we advise that iterative OpModes are used instead
