@@ -96,11 +96,11 @@ public class JavaOverview extends OpMode {
 	// this should not prove an issue under normal operation
 
 	// this OpModeLazyCell causes the motor in port 0 to be retrieved at the start of init
-	OpModeLazyCell<CalcifiedMotor> motor0 = new OpModeLazyCell<>(() -> Calcified.getControlHub().getMotor((byte) 0));
+	OpModeLazyCell<CalcifiedMotor> motor0 = new OpModeLazyCell<>(() -> Calcified.getControlHub().getMotor(0));
 	// this gets the motor in port 1, and sets the direction to reverse, and then returns it
 	// which is once again evaluated at the start of init
 	OpModeLazyCell<CalcifiedMotor> motor1 = new OpModeLazyCell<>(() -> {
-		CalcifiedMotor motor = Calcified.getControlHub().getMotor((byte) 1);
+		CalcifiedMotor motor = Calcified.getControlHub().getMotor(1);
 		motor.setDirection(Direction.REVERSE);
 		return motor;
 	});
@@ -148,7 +148,7 @@ public class JavaOverview extends OpMode {
 		//
 		// as shown above, Calcified uses port numbers for accessing hardware objects
 		// no need for a config file!
-		CalcifiedMotor motor2 = Calcified.getControlHub().getMotor((byte) 2);
+		CalcifiedMotor motor2 = Calcified.getControlHub().getMotor(2);
 		// most of the api is sensible and translates from the SDK
 		motor2.getZeroPowerBehaviour();
 		motor2.setZeroPowerBehaviour(ZeroPowerBehaviour.BRAKE);
@@ -215,7 +215,7 @@ public class JavaOverview extends OpMode {
 		//
 		// encoders are separate from motors in Calcified
 		// a ticks encoder is probably what you're accustomed to, it just returns the position of the encoder as a Double
-		TicksEncoder encoder = Calcified.getControlHub().getTicksEncoder((byte) 0);
+		TicksEncoder encoder = Calcified.getControlHub().getTicksEncoder(0);
 		// separate from the motor direction
 		encoder.getDirection();
 		encoder.setDirection(Direction.FORWARD);
@@ -247,8 +247,8 @@ public class JavaOverview extends OpMode {
 		// more on this later!
 
 		// encoders can be used directly as other unit systems, such as Angles, and Distances
-		AngleEncoder absoluteEncoder = Calcified.getControlHub().getAngleEncoder((byte) 1, Wrapping.WRAPPING, 28);
-		DistanceEncoder distanceEncoder = Calcified.getControlHub().getDistanceEncoder((byte) 2, DistanceUnits.MILLIMETER, 10);
+		AngleEncoder absoluteEncoder = Calcified.getControlHub().getAngleEncoder(1, Wrapping.WRAPPING, 28);
+		DistanceEncoder distanceEncoder = Calcified.getControlHub().getDistanceEncoder(2, DistanceUnits.MILLIMETER, 10);
 		// these work the same as above, but everything is measured as the appropriate reified unit
 
 		// Angles
@@ -294,7 +294,7 @@ public class JavaOverview extends OpMode {
 		// Servos
 		//
 		// Servos are fairly simple
-		CalcifiedServo servo = Calcified.getControlHub().getServo((byte) 0);
+		CalcifiedServo servo = Calcified.getControlHub().getServo(0);
 		// same as the sdk
 		servo.getPosition();
 		servo.setPosition(0);
@@ -308,7 +308,7 @@ public class JavaOverview extends OpMode {
 		servo.setPwmRange(PwmControl.PwmRange.defaultRange); // directly exposes the pwmRange, which can be used to easily change the pwm information, in order to make use of servos that use a different range
 
 		// CR Servos have all the same things, but uses power instead
-		CalcifiedContinuousServo crServo = Calcified.getControlHub().getContinuousServo((byte) 1);
+		CalcifiedContinuousServo crServo = Calcified.getControlHub().getContinuousServo(1);
 		crServo.getPower();
 		crServo.setPower(0);
 		crServo.getCachingTolerance();
@@ -331,7 +331,7 @@ public class JavaOverview extends OpMode {
 		// the imu can be obtained with full defaults
 		CalcifiedIMU imu = Calcified.getControlHub().getIMU();
 		Calcified.getControlHub().getIMU(
-				(byte) 0, // port defaults to 0
+				0, // port defaults to 0
 				LynxModuleImuType.BHI260, // if you don't supply this value, it is automatically detected, which is probably for the best
 				fromImuOrientationOnRobot( // there are lots of ways to generate a starting orientation for the imu!
 						new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.FORWARD, RevHubOrientationOnRobot.UsbFacingDirection.UP)
@@ -372,7 +372,7 @@ public class JavaOverview extends OpMode {
 		//
 		// another enhanced supplier!
 		// this one is just doubles
-		CalcifiedAnalogInput aInput = Calcified.getControlHub().getAnalogInput((byte) 0);
+		CalcifiedAnalogInput aInput = Calcified.getControlHub().getAnalogInput(0);
 		// nothing new...
 		aInput.getPosition();
 		aInput.getVelocity();
@@ -384,7 +384,7 @@ public class JavaOverview extends OpMode {
 		//
 		// digital inputs are EnhancedBooleanSuppliers
 		// they are different to the EnhancedNumberSuppliers we have seen so far
-		CalcifiedDigitalInput dInput = Calcified.getControlHub().getDigitalInput((byte) 0);
+		CalcifiedDigitalInput dInput = Calcified.getControlHub().getDigitalInput(0);
 		dInput.state(); // true / false
 		// rising and falling edge detection
 		dInput.onTrue();
@@ -406,7 +406,7 @@ public class JavaOverview extends OpMode {
 		dInput.not();
 
 		// dOutputs are pretty boring, they just accept a variable
-		CalcifiedDigitalOutput dOutput = Calcified.getControlHub().getDigitalOutput((byte) 1);
+		CalcifiedDigitalOutput dOutput = Calcified.getControlHub().getDigitalOutput(1);
 		dOutput.accept(true);
 
 		//
@@ -517,7 +517,7 @@ public class JavaOverview extends OpMode {
 	}
 
 	private final OpModeLazyCell<EnhancedBooleanSupplier> encoderInRangeCell = new OpModeLazyCell<>(() -> {
-		DistanceEncoder encoder = Calcified.getControlHub().getDistanceEncoder((byte) 0, DistanceUnits.METER, 10.0);
+		DistanceEncoder encoder = Calcified.getControlHub().getDistanceEncoder(0, DistanceUnits.METER, 10.0);
 		return encoder.conditionalBindPosition()
 				.greaterThan(new Distance(DistanceUnits.MILLIMETER, 10.0))
 				.lessThan(new Distance(DistanceUnits.METER, 10.0))
@@ -525,7 +525,7 @@ public class JavaOverview extends OpMode {
 	});
 	
 	private final OpModeLazyCell<EnhancedBooleanSupplier> encoderInRangeCell2 = new OpModeLazyCell<>(() -> {
-		DistanceEncoder encoder = Calcified.getControlHub().getDistanceEncoder((byte) 0, DistanceUnits.METER, 10.0);
+		DistanceEncoder encoder = Calcified.getControlHub().getDistanceEncoder(0, DistanceUnits.METER, 10.0);
 		return new EnhancedBooleanSupplier(() -> {
 			return encoder.getPosition().intoMeters().getValue() > new Distance(DistanceUnits.MILLIMETER, 10.0).intoMeters().getValue() &&
 					encoder.getPosition().intoMeters().getValue() < new Distance(DistanceUnits.METER, 10.0).intoMeters().getValue();
