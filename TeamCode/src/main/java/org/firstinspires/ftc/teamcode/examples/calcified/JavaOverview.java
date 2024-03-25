@@ -505,7 +505,7 @@ public class JavaOverview extends OpMode {
 				.compile(veloController::getOutput, MotionComponents.VELOCITY, new Distance(DistanceUnits.MILLIMETER, 1.0));
 		
 		// now we have a PID on position controller, that produces a target velocity output, and all we need to do to update both systems, is change the position target
-		veloController.setTarget(new Distance(DistanceUnits.MILLIMETER, 0));
+		veloController.setTarget(new Distance());
 		
 		// you might want to stop a controller from running for a bit, e.g. if you need to switch to manual control mode
 		doubleController.setEnabled(false);

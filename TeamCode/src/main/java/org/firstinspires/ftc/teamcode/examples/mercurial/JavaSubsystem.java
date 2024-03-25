@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.examples.mercurial;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
@@ -14,6 +15,7 @@ import java.util.Set;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
+import dev.frozenmilk.mercurial.commands.Command;
 import dev.frozenmilk.mercurial.commands.LambdaCommand;
 import dev.frozenmilk.mercurial.commands.stateful.StatefulLambdaCommand;
 import dev.frozenmilk.mercurial.subsystems.Subsystem;
@@ -31,6 +33,10 @@ public class JavaSubsystem implements Subsystem {
 	private static final JavaSubsystem INSTANCE = new JavaSubsystem();
 	public static JavaSubsystem getInstance() {
 		return INSTANCE;
+	}
+	
+	private JavaSubsystem() {
+		setDefaultCommand(simpleCommand());
 	}
 	
 	// the annotation class we use to attach this subsystem
