@@ -26,6 +26,9 @@ final class JavaOpModeFilter implements SinisterFilter {
 	}
 	
 	@Override
+	public void init() {}
+	
+	@Override
 	public void filter(@NonNull Class<?> clazz) {
 		if (!clazz.isInstance(OpMode.class)) return;
 		boolean auto = clazz.isAnnotationPresent(Autonomous.class);

@@ -29,6 +29,9 @@ final class JavaOnCreateFilter implements SinisterFilter {
 	}
 	
 	@Override
+	public void init() {}
+	
+	@Override
 	public void filter(@NonNull Class<?> clazz) {
 		List<Method> methods = SinisterUtil.getAllMethods(clazz);
 		methods.forEach(method -> {
