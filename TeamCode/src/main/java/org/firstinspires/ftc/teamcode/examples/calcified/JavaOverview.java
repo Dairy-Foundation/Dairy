@@ -28,7 +28,7 @@ import dev.frozenmilk.dairy.calcified.hardware.encoder.DistanceEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.encoder.TicksEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.motor.CalcifiedMotor;
 import dev.frozenmilk.dairy.calcified.hardware.motor.Direction;
-import dev.frozenmilk.dairy.calcified.hardware.motor.MotorControllerGroup;
+import dev.frozenmilk.dairy.calcified.hardware.motor.MotorGroup;
 import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour;
 import dev.frozenmilk.dairy.calcified.hardware.pwm.CalcifiedContinuousServo;
 import dev.frozenmilk.dairy.calcified.hardware.pwm.CalcifiedServo;
@@ -106,7 +106,7 @@ public class JavaOverview extends OpMode {
 	});
 	// its safe to use values from an OpModeLazyCell in others!
 	// a motor controller group allows you to control multiple motor-like objects as one!
-	OpModeLazyCell<MotorControllerGroup> motorGroup = new OpModeLazyCell<>(() -> new MotorControllerGroup(motor0.get(), motor1.get()));
+	OpModeLazyCell<MotorGroup> motorGroup = new OpModeLazyCell<>(() -> new MotorGroup(motor0.get(), motor1.get()));
 
 	// OpModeLazyCells are part of a family of utilities known as "Cell"s
 	// The remainder of this overview is not aimed at a true implementation for an OpMode
@@ -321,7 +321,7 @@ public class JavaOverview extends OpMode {
 		crServo.setPwmRange(PwmControl.PwmRange.defaultRange); // directly exposes the pwmRange, which can be used to easily change the pwm information, in order to make use of servos that use a different range
 
 		// crServos can be used in a motor controller group with motors
-		MotorControllerGroup motorControllerGroup = new MotorControllerGroup(motor0.get(), motor1.get(), motor2, crServo);
+		MotorGroup motorControllerGroup = new MotorGroup(motor0.get(), motor1.get(), motor2, crServo);
 		motorControllerGroup.getPower();
 		motorControllerGroup.setPower(1.0);
 

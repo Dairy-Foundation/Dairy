@@ -15,7 +15,7 @@ import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.UnitPCompo
 import dev.frozenmilk.dairy.calcified.hardware.controller.compiler.DoubleControllerCompiler
 import dev.frozenmilk.dairy.calcified.hardware.controller.compiler.UnitControllerCompiler
 import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
-import dev.frozenmilk.dairy.calcified.hardware.motor.MotorControllerGroup
+import dev.frozenmilk.dairy.calcified.hardware.motor.MotorGroup
 import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour
 import dev.frozenmilk.dairy.calcified.hardware.sensor.fromImuOrientationOnRobot
 import dev.frozenmilk.dairy.calcified.hardware.sensor.fromYawPitchRollAngles
@@ -91,9 +91,9 @@ class KotlinOverview : OpMode() {
 		motor
 	}
 	// its safe to use values from an OpModeLazyCell in others!
-	// a motor controller group allows you to control multiple motor-like objects as one!
+	// a motor group allows you to control multiple motor-like objects as one!
 	val motorGroup by OpModeLazyCell {
-		MotorControllerGroup(motor0, motor1)
+		MotorGroup(motor0, motor1)
 	}
 
 	// OpModeLazyCells are part of a family of utilities known as "Cell"s
@@ -294,9 +294,9 @@ class KotlinOverview : OpMode() {
 		crServo.direction = Direction.FORWARD
 		crServo.pwmRange = PwmControl.PwmRange.defaultRange // directly exposes the pwmRange, which can be used to easily change the pwm information, in order to make use of servos that use a different range
 
-		// crServos can be used in a motor controller group with motors
-		val motorControllerGroup = MotorControllerGroup(motor0, motor1, motor2, crServo)
-		motorControllerGroup.power = 1.0
+		// crServos can be used in a motor group with motors
+		val motorGroup = MotorGroup(motor0, motor1, motor2, crServo)
+		motorGroup.power = 1.0
 
 		//
 		// IMUs
@@ -424,7 +424,7 @@ class KotlinOverview : OpMode() {
 		// We start with a compiler, this one is built around processing Doubles, but there are also options for Units
 		// controller compilers are immutable, so keep that in mind
 		val doubleCompiler = DoubleControllerCompiler()
-				.add(motorControllerGroup) // we'll control the motors of the motor controller group
+				.add(motorGroup) // we'll control the motors of the motor group
 				.withSupplier(encoder) // we need to attach a supplier to use for input and / or feedback
 				.append(DoublePComponent(0.1))
 				.append(DoubleDComponent(0.0005))
@@ -464,7 +464,7 @@ class KotlinOverview : OpMode() {
 				.compile(Distance(DistanceUnits.METER, 0.2), MotionComponents.POSITION, Distance(DistanceUnits.MILLIMETER, 10.0))
 
 		UnitControllerCompiler<DistanceUnit, Distance>()
-				.set(motorControllerGroup)
+				.set(motorGroup)
 				.withSupplier(distanceEncoder)
 				.append(UnitPComponent(0.5))
 				.append(UnitDComponent(0.5))
