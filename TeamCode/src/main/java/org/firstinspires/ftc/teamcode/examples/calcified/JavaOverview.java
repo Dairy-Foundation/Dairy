@@ -105,7 +105,7 @@ public class JavaOverview extends OpMode {
 		return motor;
 	});
 	// its safe to use values from an OpModeLazyCell in others!
-	// a motor controller group allows you to control multiple motor-like objects as one!
+	// a motor group allows you to control multiple motor-like objects as one!
 	OpModeLazyCell<MotorGroup> motorGroup = new OpModeLazyCell<>(() -> new MotorGroup(motor0.get(), motor1.get()));
 
 	// OpModeLazyCells are part of a family of utilities known as "Cell"s
@@ -320,10 +320,10 @@ public class JavaOverview extends OpMode {
 		crServo.getPwmRange();
 		crServo.setPwmRange(PwmControl.PwmRange.defaultRange); // directly exposes the pwmRange, which can be used to easily change the pwm information, in order to make use of servos that use a different range
 
-		// crServos can be used in a motor controller group with motors
-		MotorGroup motorControllerGroup = new MotorGroup(motor0.get(), motor1.get(), motor2, crServo);
-		motorControllerGroup.getPower();
-		motorControllerGroup.setPower(1.0);
+		// crServos can be used in a motor group with motors
+		MotorGroup motorGroup = new MotorGroup(motor0.get(), motor1.get(), motor2, crServo);
+		motorGroup.getPower();
+		motorGroup.setPower(1.0);
 
 		//
 		// IMUs
@@ -455,8 +455,8 @@ public class JavaOverview extends OpMode {
 		// We start with a compiler, this one is built around processing Doubles, but there are also options for Units
 		// controller compilers are immutable, so keep that in mind
 		ControllerCompiler<Double> doubleCompiler = new DoubleControllerCompiler()
-				.add(motorControllerGroup) // we'll control the motors of the motor controller group
-				.withSupplier(encoder) // we need to attach a supplier to use for input and / or feedback
+				.add(motorGroup) // we'll control the motors of the motor group
+				.withSupplier(encoder, true) // we need to attach a supplier to use for input and / or feedback
 				.append(new DoublePComponent(0.1))
 				.append(new DoubleDComponent(0.0005))
 				.append(new DoubleIComponent(-0.00003, -0.1, 0.1));
@@ -489,15 +489,15 @@ public class JavaOverview extends OpMode {
 		// note that its also easy to pipe the output of one controller to another!
 		// this controller just produces an output, for another one
 		ComplexController<Distance> veloController = new UnitControllerCompiler<DistanceUnit, Distance>()
-				.withSupplier(distanceEncoder)
+				.withSupplier(distanceEncoder, true)
 				.append(new UnitPComponent<DistanceUnit, Distance>(0.5))
 				.append(new UnitDComponent<DistanceUnit, Distance>(0.5))
 				.append(new UnitIComponent<DistanceUnit, Distance>(0.5))
 				.compile(new Distance(DistanceUnits.METER, 0.2), MotionComponents.POSITION, new Distance(DistanceUnits.MILLIMETER, 10.0));
 		
 		new UnitControllerCompiler<DistanceUnit, Distance>()
-				.set(motorControllerGroup)
-				.withSupplier(distanceEncoder)
+				.set(motorGroup)
+				.withSupplier(distanceEncoder, true)
 				.append(new UnitPComponent<DistanceUnit, Distance>(0.5))
 				.append(new UnitDComponent<DistanceUnit, Distance>(0.5))
 				.append(new UnitIComponent<DistanceUnit, Distance>(0.5))
