@@ -12,16 +12,14 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Set;
 
 import dev.frozenmilk.dairy.calcified.Calcified;
-import dev.frozenmilk.dairy.calcified.hardware.CalcifiedModule;
 import dev.frozenmilk.dairy.core.Feature;
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency;
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet;
+import dev.frozenmilk.dairy.core.dependency.Dependency;
+import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation;
+import dev.frozenmilk.dairy.core.dependency.feature.SingleFeature;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
-import dev.frozenmilk.util.cell.Cell;
 import dev.frozenmilk.util.cell.LateInitCell;
 import kotlin.annotation.MustBeDocumented;
 
@@ -33,43 +31,45 @@ import kotlin.annotation.MustBeDocumented;
 // make use of the automation and hooks that the system provides
 // for instance, OpModeLazyCells are features, that use the system to eagerly evaluate themselves in init
 public class JavaWritingAFeature implements Feature {
-	// this uses a cell to extract a feature, we'll come back to this later
-	private final Cell<Feature> calcfiedCell = new LateInitCell<>();
-
-	// the dependencies are important, we use the DependencySet() class to assist with this
-	// the dependencies allow the FeatureRegistrar to determine the order in which our dependencies are attached
+	// this uses a cell to extract an annotation, we'll come back to this later
+	private final LateInitCell<Attach> attachCell = new LateInitCell<>();
+	
+	// the dependencies are important, and are a powerful way to set
+	// up the conditions that cause this feature to be attached
+	// See JavaDependencies for the full dependencies overview
+	// Dairy features only technically have one dependency, its just that that dependency
+	// can be compound, to check and resolve multiple conditions
+	private final Dependency<?> dependency =
+			// The 'Annotation' series of dependencies allow us to declare that we
+			// are dependant on some selection of @Annotations
+			new SingleAnnotation<>(Attach.class)
+					// callbacks can be bound to the resolution of a dependency
+					.onResolve((attach) -> {
+						// if @Attach had configuration options,
+						// we could extract them and store them from here
+					})
+					// we could also store the output in a variable or cell or similar
+					.onResolve(attachCell)
+					.and( // the method 'and' allows us to construct a compound property
+							// we can add that we also depend on calcified
+							new SingleFeature<>(Calcified.INSTANCE)
+					);
+	
+	// we need to have the getter, rather than the field,
+	// but if we actually constructed the dependency every time we ran this, it would slow the program down
 	@NonNull
 	@Override
-	public Set<Dependency<?, ?>> getDependencies() {
-		return new DependencySet(this)
-				// this says that we need the @JavaMyFeature annotation to activate this
-			.includesExactlyOneOf(Attach.class)
-				// this allows us to run a piece of code when this feature gets activated, and the @JavaMyFeature annotation will be passed to it
-			.bindOutputTo((annotation) -> {
-				if (annotation instanceof Attach) {
-					System.out.println("my feature activated!");
-				}
-				else {
-					// this can't happen, because we only asked to find @KotlinMyFeature
-					System.out.println("something else got here!");
-				}
-			})
-		
-				// this says we need calcified to be attached for this to be attached
-			.dependsOnOneOf(Calcified.class)
-				// outputs can also be bound to cells, instead of pieces of code, so we can extract the value to use again later
-			.bindOutputTo(calcfiedCell)
-				// this lets the dependency resolver know that this feature isn't very important,
-				// and will wait until nothing else can be attached before it is
-				// usually this isn't put on major features like this,
-				// but, for the sake of demonstration...
-		    .yields();
-		
-		// there are lots of dependency options here, that are fairly well documented, and hard to show without a much bigger example,
-		// so explore more, to figure out what best suits your project.
-		// remember, no dependency set can be empty, this will prevent your Feature from being attached,
-		// and will result in unhelpful errors being thrown by its resolution process
+	public Dependency<?> getDependency() {
+		return dependency;
 	}
+	
+	// we can then use the java equivalent of delegation to get direct access to the collected information
+	private Attach getAttach() {
+		return attachCell.get();
+	}
+	
+	// there are lots of dependency options provided, additionally, its fairly easy to write your own.
+	// so explore more, to figure out what best suits your project.
 	
 	// this constructor ensures that this feature is registered as soon as it comes into existence
 	// it is important that it comes after the declaration of the dependencies,
@@ -83,13 +83,6 @@ public class JavaWritingAFeature implements Feature {
 	// these set up a singleton pattern for this feature
 	// it might be good to make static methods that route through this instance
 	private static final JavaWritingAFeature INSTANCE = new JavaWritingAFeature();
-
-	// this allows us to quickly get calcified out of the extraction cell, for use later
-	// note: this doesn't work in java, as calcified is static, but if it wasn't this would be required
-	// so this is left in, but unused
-	private Calcified getCalcified() {
-		return (Calcified) calcfiedCell.get();
-	}
 
 	@Override
 	public void preUserInitHook(@NotNull Wrapper opMode) {
@@ -155,7 +148,10 @@ public class JavaWritingAFeature implements Feature {
 		// while this isn't really necessary, as features are held weakly, and will disappear if the user doesn't hold onto them
 
 		// this would be terrible practice for a feature like this, but as this is just a demonstration
-		FeatureRegistrar.deregisterFeature(this);
+		// FeatureRegistrar.deregisterFeature(this);
+		
+		// we should also reset some things for next run
+		attachCell.invalidate();
 	}
 	// and that's all! a nice and simple way to do things powerfully!
 	

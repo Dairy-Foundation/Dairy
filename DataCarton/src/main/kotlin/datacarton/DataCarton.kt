@@ -1,17 +1,17 @@
 package datacarton
 
-import collections.annotatedtargets.*
+import collections.annotatedtargets.ImportingPackaged
+import collections.annotatedtargets.Packaged
 import datacarton.annotations.Export
-import datacarton.processors.DataPackageProcessor
 import datacarton.annotations.Import
 import datacarton.annotations.Pack
+import datacarton.processors.DataPackageProcessor
 import datacarton.processors.PackageProcessor
 import datacarton.processors.PublicationProcessor
 import datacarton.processors.TelemetryPublicationProcessor
 import dev.frozenmilk.dairy.core.DairyCore
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
 import dev.frozenmilk.dairy.core.Feature
+import dev.frozenmilk.dairy.core.dependency.annotation.OneOfAnnotations
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.util.cell.LateInitCell
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -19,13 +19,11 @@ import java.lang.annotation.Inherited
 import java.lang.reflect.AccessibleObject
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Supplier
-import kotlin.collections.HashMap
 
 object DataCarton : Feature {
 	private var autoUpdate by LateInitCell<Boolean>()
-	override val dependencies: Set<Dependency<*, *>> = DependencySet(this)
-			.includesExactlyOneOf(DairyCore::class.java, Attach::class.java)
-			.bindOutputTo {
+	override val dependency = OneOfAnnotations(DairyCore::class.java, Attach::class.java)
+			.onResolve {
 				autoUpdate = when (it) {
 					is Attach -> {
 						it.autoUpdate

@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.examples.featuredev
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.FeatureRegistrar
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencyset.DependencySet
+import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation
+import dev.frozenmilk.dairy.core.dependency.feature.SingleFeature
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.util.cell.LateInitCell
 import java.lang.annotation.Inherited
@@ -17,56 +17,43 @@ import java.lang.annotation.Inherited
 // make use of the automation and hooks that the system provides
 // for instance, OpModeLazyCells are features, that use the system to eagerly evaluate themselves in init
 object KotlinWritingAFeature : Feature {
-	// this uses a cell to extract a feature, we'll come back to this later
-	private val calcfiedCell = LateInitCell<Feature>()
+	// this uses a cell to extract an annotation, we'll come back to this later
+	private val attachCell = LateInitCell<Attach>()
 
-	// the dependencies are important, we use the DependencySet() class to assist with this
-	// the dependencies allow the FeatureRegistrar to determine the order in which our dependencies are attached
-	override val dependencies: Set<Dependency<*, *>>
-		= DependencySet(this)
-				// this says that we need the @Activate annotation to activate this
-			.includesExactlyOneOf(Attach::class.java)
-				// this allows us to run a piece of code when this feature gets activated, and the @Activate annotation will be passed to it
-			.bindOutputTo { annotation ->
-				when (annotation) {
-					is Attach -> {
-						println("my feature activated!")
+	// the dependencies are important, and are a powerful way to set
+	// up the conditions that cause this feature to be attached
+	// See KotlinDependencies for the full dependencies overview
+	// Dairy features only technically have one dependency, its just that that dependency
+	// can be compound, to check and resolve multiple conditions
+	override val dependency =
+			// The 'Annotation' series of dependencies allow us to declare that we
+			// are dependant on some selection of @Annotations
+			SingleAnnotation(Attach::class.java)
+					// callbacks can be bound to the resolution of a dependency
+					.onResolve {
+						// if @Attach had configuration options,
+						// we could extract them and store them from here
 					}
-					else -> {
-						// this can't happen, because we only asked to find @Activate
-						println("something else got here!")
-					}
-				}
-			}
-				// this says we need calcified to be attached for this to be attached
-			.dependsOnOneOf(Calcified::class.java)
-				// outputs can also be bound to cells, instead of pieces of code, so we can extract the value to use again later
-			.bindOutputTo(calcfiedCell)
-				// this lets the dependency resolver know that this feature isn't very important,
-				// and will wait until nothing else can be attached before it is
-				// usually this isn't put on major features like this,
-				// but, for the sake of demonstration...
-			.yields()
+					// we could also store the output in a variable or cell or similar
+					.onResolve(attachCell) and // the infix operator 'and' allows us to construct a compound property
+					// we can add that we also depend on calcified
+					SingleFeature(Calcified)
 
-	// there are lots of dependency options here, that are fairly well documented, and hard to show without a much bigger example,
+	// we can then use delegation to get nice, direct access to the collected information
+	private val attach by attachCell
+
+	// there are lots of dependency options provided, additionally, its fairly easy to write your own.
 	// so explore more, to figure out what best suits your project.
-	// remember, no dependency set can be empty, this will prevent your Feature from being attached,
-	// and will result in unhelpful errors being thrown by its resolution process
 
 	// this block ensures that this feature is registered as soon as it comes into existence
 	// it is important that it comes after the declaration of the dependencies,
 	// otherwise the dependencies won't exist when this gets registered, which will cause a silent crash,
 	// which is painful to debug
-	// HOWEVER, in this case, we don't need this, as this is a Kotlin object, so the static instance gets automatically registered
+	// HOWEVER, in this case, we don't need this, as this is a Kotlin object,
+	// so the static instance gets automatically registered by Sinister
 	init {
 		//FeatureRegistrar.registerFeature(this)
 	}
-
-	// this allows us to quickly get calcified out of the extraction cell, for use later
-	private val calcified: Calcified
-		get() {
-			return calcfiedCell.get() as Calcified
-		}
 
 	override fun preUserInitHook(opMode: Wrapper) {
 		// code that runs before the user's init,
@@ -121,7 +108,10 @@ object KotlinWritingAFeature : Feature {
 		// while this isn't really necessary, as features are held weakly, and will disappear if the user doesn't hold onto them
 
 		// this would be terrible practice for a feature like this, but as this is just a demonstration
-		FeatureRegistrar.deregisterFeature(this)
+		// FeatureRegistrar.deregisterFeature(this)
+
+		// we should also reset some things for next run
+		attachCell.invalidate()
 	}
 
 	// and that's all! a nice and simple way to do things powerfully!
@@ -131,7 +121,6 @@ object KotlinWritingAFeature : Feature {
 	// which will look like @KotlinWritingAFeature.Attach
 	@Target(AnnotationTarget.CLASS)
 	@Retention(AnnotationRetention.RUNTIME)
-	@MustBeDocumented
 	@Inherited
 	annotation class Attach
 }

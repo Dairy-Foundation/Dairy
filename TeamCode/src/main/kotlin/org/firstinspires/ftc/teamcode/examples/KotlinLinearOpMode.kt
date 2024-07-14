@@ -11,7 +11,7 @@ class KotlinLinearOpMode : LinearOpMode() {
 		// failing to wrap your code in these lines will likely cause issues
 
 		// DO NOT put code before this
-		FeatureRegistrar.checkFeatures(this, /* pass desired features as varargs here */)
+		FeatureRegistrar.checkFeatures(/* pass desired features as varargs here */)
 		FeatureRegistrar.opModePreInit(FeatureRegistrar.activeOpModeWrapper)
 		// your init code here
 		// remember that you can use OpModeLazyCells to init your hardware and similar

@@ -2,12 +2,11 @@ package org.firstinspires.ftc.teamcode.examples.mercurial
 
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import dev.frozenmilk.dairy.core.FeatureRegistrar
+import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
-import dev.frozenmilk.mercurial.commands.Command
 import dev.frozenmilk.mercurial.commands.LambdaCommand
 import dev.frozenmilk.mercurial.commands.stateful.StatefulLambdaCommand
 import dev.frozenmilk.mercurial.subsystems.Subsystem
-import dev.frozenmilk.mercurial.subsystems.SubsystemObjectCell
 import dev.frozenmilk.util.cell.RefCell
 import java.lang.annotation.Inherited
 
@@ -23,18 +22,19 @@ object KotlinSubsystem : Subsystem {
 	annotation class Attach
 	// Subsystems use the core Feature system of Dairy to be attached to OpModes
 	// we need to set up the dependencies, which at its simplest looks like this
-	override val dependencies = generateDependencySet()
+	override val dependency = Subsystem.DEFAULT_DEPENDENCY and
 			// this is the standard attach annotation that is recommended for features
 			// if you are using other features, you should add them as
 			// dependencies as well
 			// you can also use the annotation to set up and manage
 			// declarative settings for your subsystem, if desired
-			.includesExactlyOneOf(Attach::class.java)
+			SingleAnnotation(Attach::class.java)
 
 	// SubsystemObjectCells get eagerly reevaluated at the start of every OpMode, if this subsystem is attached
 	// this means that we can always rely on motor to be correct and up-to-date for the current OpMode
 	// this can also work with Calcified
-	val motor by SubsystemObjectCell(this) {
+	// the subsystemCell function is used to reduce the boilerplate of setting up a SubsystemObjectCell
+	val motor by subsystemCell {
 		FeatureRegistrar.activeOpMode.hardwareMap.get(DcMotorEx::class.java, "")
 	}
 

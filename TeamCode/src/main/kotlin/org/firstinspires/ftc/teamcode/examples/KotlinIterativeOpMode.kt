@@ -6,7 +6,7 @@ import dev.frozenmilk.dairy.core.FeatureRegistrar
 // add feature annotations here
 class KotlinIterativeOpMode : OpMode() {
 	init {
-		FeatureRegistrar.checkFeatures(this, /* pass desired features as varargs here */)
+		FeatureRegistrar.checkFeatures(/* pass desired features as varargs here */)
 	}
 
 	override fun init() {

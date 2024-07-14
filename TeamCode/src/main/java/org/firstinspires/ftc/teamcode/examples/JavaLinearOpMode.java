@@ -6,10 +6,18 @@ import java.util.Objects;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
-import dev.frozenmilk.util.units.angle.AngleUnit;
 
 // add feature annotations here
 public class JavaLinearOpMode extends LinearOpMode {
+	// this block is optional, but may be helpful for debugging,
+	// first, check the logcat files to see if your feature was:
+	// 1) if the feature is a global object: located by FeatureSinisterFilter during startup
+	// 2) if the feature is located, but you think it didn't attach, check to see if it was activated for this OpMode
+	// 3) if the feature is located, and you have confirmed that, add this block to get debug messages about why it did not
+	public JavaLinearOpMode() {
+		FeatureRegistrar.checkFeatures(/* pass desired features as varargs here */);
+	}
+	
 	@Override
 	public void runOpMode() {
 		Wrapper activeOpModeWrapper = Objects.requireNonNull(FeatureRegistrar.getActiveOpModeWrapper());

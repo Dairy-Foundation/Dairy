@@ -106,7 +106,7 @@ class KotlinOverview : OpMode() {
 		// checking to see if the features you care about actually activated
 		// can be done using this line:
 		// in this case, it checks that Calcified got attached
-		FeatureRegistrar.checkFeatures(this, Calcified)
+		FeatureRegistrar.checkFeatures(Calcified)
 		// this block and line do not need to be included, but may be useful in debugging why the Features you wanted are not attached
 	}
 

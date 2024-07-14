@@ -32,7 +32,7 @@ class KotlinConfigurationOverview : OpMode() {
 		// if this line isn't here, the first time you run an OpMode with DataCarton in it it might crash,
 		// and then work after that, due to the way classes are loaded in java,
 		// so this line is advised even if you know that everything should be fine
-		FeatureRegistrar.checkFeatures(this, DataCarton)
+		FeatureRegistrar.checkFeatures(DataCarton)
 	}
 	override fun init() {
 		// do your regular init stuff

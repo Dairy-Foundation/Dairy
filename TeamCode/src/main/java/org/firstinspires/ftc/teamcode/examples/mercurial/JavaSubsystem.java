@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.examples.mercurial;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
@@ -13,9 +12,9 @@ import java.lang.annotation.Target;
 import java.util.Set;
 
 import dev.frozenmilk.dairy.core.FeatureRegistrar;
-import dev.frozenmilk.dairy.core.dependencyresolution.dependencies.Dependency;
+import dev.frozenmilk.dairy.core.dependency.Dependency;
+import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation;
 import dev.frozenmilk.dairy.core.wrapper.Wrapper;
-import dev.frozenmilk.mercurial.commands.Command;
 import dev.frozenmilk.mercurial.commands.LambdaCommand;
 import dev.frozenmilk.mercurial.commands.stateful.StatefulLambdaCommand;
 import dev.frozenmilk.mercurial.subsystems.Subsystem;
@@ -47,16 +46,22 @@ public class JavaSubsystem implements Subsystem {
 	public @interface Attach{}
 	// Subsystems use the core Feature system of Dairy to be attached to OpModes
 	// we need to set up the dependencies, which at its simplest looks like this
+	private final Dependency<?> dependency =
+			// the default dependency ensures that mercurial is attached
+			Subsystem.DEFAULT_DEPENDENCY
+					// this is the standard attach annotation that is recommended for features
+					// if you are using other features, you should add them as
+					// dependencies as well
+					// you can also use the annotation to set up and manage
+					// declarative settings for your subsystem, if desired
+					.and(new SingleAnnotation<>(Attach.class));
+	
+	// we need to have the getter, rather than the field,
+	// but if we actually constructed the dependency every time we ran this, it would slow the program down
 	@NonNull
 	@Override
-	public Set<Dependency<?, ?>> getDependencies() {
-		// this is the standard attach annotation that is recommended for features
-		// if you are using other features, you should add them as
-		// dependencies as well
-		// you can also use the annotation to set up and manage
-		// declarative settings for your subsystem, if desired
-		return generateDependencySet()
-				.includesExactlyOneOf(Attach.class);
+	public Dependency<?> getDependency() {
+		return dependency;
 	}
 	
 	// SubsystemObjectCells get eagerly reevaluated at the start of every OpMode, if this subsystem is attached
