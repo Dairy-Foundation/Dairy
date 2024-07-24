@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.dependency.Dependency
-import dev.frozenmilk.dairy.core.dependency.DependencyBase
 import dev.frozenmilk.dairy.core.dependency.annotation.AllAnnotations
 import dev.frozenmilk.dairy.core.dependency.annotation.AnnotationDependency
 import dev.frozenmilk.dairy.core.dependency.annotation.AnyAnnotations
@@ -26,6 +25,7 @@ import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.mercurial.Mercurial
 import dev.frozenmilk.mercurial.commands.LambdaCommand
 import dev.frozenmilk.util.cell.RefCell
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta
 
 class KotlinDependencies {
 	init {
@@ -35,7 +35,7 @@ class KotlinDependencies {
 		// and need to throw an exception to return early, and indicate that the operation has failed
 		// commonly, this is the DependencyResolutionException
 		// which is useful for listing pairs of objects and strings to associate with, to indicate reasons for failure
-		val ancestor = Dependency {
+		val dependency1 = Dependency {
 			// dependencies have access to:
 			// the opMode wrapper
 				opMode: Wrapper,
@@ -45,17 +45,14 @@ class KotlinDependencies {
 				yielding: Boolean ->
 			// this one just returns Unit, the equivalent of java's void
 		}
-		// base dependencies are unable to provide binding support, so they can be upgraded to DependencyBases
-		val upgraded = ancestor.upgrade()
-		// this is the same
-		val upgraded2 = DependencyBase(ancestor)
+
 		// receivers can be bound to the resolution of the dependency like so
-		upgraded2.onResolve { result: Unit -> // in this case, our result is of type unit
+		dependency1.onResolve { result: Unit -> // in this case, our result is of type unit
 			// receive
 		}
 
 		// receivers can also be bound to the failed resolution of the dependency:
-		upgraded2.onFail { exception: Throwable ->
+		dependency1.onFail { exception: Throwable ->
 			// receive
 		}
 
@@ -63,13 +60,17 @@ class KotlinDependencies {
 		// although this might not always be perfect unless you have written a more customised dependency
 		val cell = RefCell(Unit)
 		// now when resolution succeeds, the cell will be receive to the result of resolution
-		upgraded.onResolve(cell)
+		dependency1.onResolve(cell)
+
+		// a second example, this fails if the OpMode isn't teleop
+		val dependency2 = Dependency { opMode, resolvedFeatures, yielding ->
+			if(opMode.opModeType != OpModeMeta.Flavor.TELEOP) throw DependencyResolutionException("${opMode.opModeType} is not TELEOP")
+		}
 
 		// kotlin offers infix functions to build compound dependencies
-		// (this will just work, as they are the same condition)
-		upgraded and upgraded2
+		dependency1 and dependency2
 		// and and or are both short-circuiting, so take care to get the order right if you have side effects
-		upgraded or upgraded2
+		dependency1 or dependency2
 
 		// Yielding is often used as the default 'lazy' dependency
 		// Any dependency that Yields is generally considered less important than those that don't
@@ -86,23 +87,23 @@ class KotlinDependencies {
 		// a common set of patterns are the yielding combinations
 
 		// optional yield
-		upgraded or Yielding // will resolve after the first condition, or when you reach yielding
+		dependency1 or Yielding // will resolve after the first condition, or when you reach yielding
 
 		// enforced yield
-		upgraded and Yielding // will resolved to always place after upgraded and Yielding
+		dependency1 and Yielding // will resolved to always place after upgraded and Yielding
 
 		// compounds end up with convoluted return types fast, so while it is possible,
 		// it is not recommended to bind to compound endpoints beyond a single and/or bind
 		// 'and' and 'or' are configured to respect their resolution strategies
 		// when it comes time to supply to bound receivers
 
-		(upgraded and upgraded2)
-			.onResolve { pair: Pair<Unit, Unit> ->
+		(dependency1 and dependency2)
+			.onResolve { (l: Unit, r: Unit) ->
 				// and will return a pair of both the left and right hand results
 			}
 
-		(upgraded or upgraded2)
-			.onResolve { pair: Pair<Unit?, Unit?> ->
+		(dependency1 or dependency2)
+			.onResolve { (l: Unit?, r: Unit?) ->
 				// while or will return:
 				// (Unit, null) if the left hand succeeded
 				// or (null, Unit) if the right hand succeeded

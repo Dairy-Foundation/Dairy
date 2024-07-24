@@ -108,7 +108,7 @@ public class JavaWritingAFeature implements Feature {
 
 		opMode.getOpModeType(); // teleop | autonomous | none
 
-		// the OpModeWapper also provides access to all the parts of an OpMode you might normally access
+		// the OpModeWrapper also provides access to all the parts of an OpMode you might normally access
 		Telemetry telemetry = opMode.getOpMode().telemetry; // the telemetry
 		HardwareMap hardwareMap = opMode.getOpMode().hardwareMap; // the hardwareMap
 	}

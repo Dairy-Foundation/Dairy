@@ -13,16 +13,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import dev.frozenmilk.dairy.calcified.Calcified;
-import dev.frozenmilk.dairy.calcified.hardware.controller.ComplexController;
-import dev.frozenmilk.dairy.calcified.hardware.controller.ControllerCompiler;
-import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.DoubleDComponent;
-import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.DoubleIComponent;
-import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.DoublePComponent;
-import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.UnitDComponent;
-import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.UnitIComponent;
-import dev.frozenmilk.dairy.calcified.hardware.controller.calculation.UnitPComponent;
-import dev.frozenmilk.dairy.calcified.hardware.controller.compiler.DoubleControllerCompiler;
-import dev.frozenmilk.dairy.calcified.hardware.controller.compiler.UnitControllerCompiler;
 import dev.frozenmilk.dairy.calcified.hardware.encoder.AngleEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.encoder.DistanceEncoder;
 import dev.frozenmilk.dairy.calcified.hardware.encoder.TicksEncoder;
@@ -207,8 +197,7 @@ public class JavaOverview extends OpMode {
 
 		// and thats it for motors, you might be thinking, what happened to encoders?, or run modes?
 		// Calcified does some major reorganising of ideas here, but offers more powerful alternatives
-		// Calcified works only with the RUN_WITHOUT_ENCODER run mode, as it offers its own way of doing PID controllers
-		//
+		// Calcified works only with the RUN_WITHOUT_ENCODER run mode, as Dairy's Core offers its own way of doing PID controllers
 
 		//
 		// Encoders
@@ -448,70 +437,11 @@ public class JavaOverview extends OpMode {
 		EnhancedBooleanSupplier after90 = customTimer.greaterThan(90.0).bind();
 		EnhancedBooleanSupplier pre30 = customTimer.lessThan(30.0).bind();
 		
-		//
-		// ComplexControllers
-		//
-		// ComplexControllers are the Calcified alternative to run modes, allowing for powerful, extensible control loops
-		// We start with a compiler, this one is built around processing Doubles, but there are also options for Units
-		// controller compilers are immutable, so keep that in mind
-		ControllerCompiler<Double> doubleCompiler = new DoubleControllerCompiler()
-				.add(motorGroup) // we'll control the motors of the motor group
-				.withSupplier(encoder, true) // we need to attach a supplier to use for input and / or feedback
-				.append(new DoublePComponent(0.1))
-				.append(new DoubleDComponent(0.0005))
-				.append(new DoubleIComponent(-0.00003, -0.1, 0.1));
-		
-		// cool!, we just built a PID controller
-		ComplexController<Double> doubleController = doubleCompiler.compile(1000.0, MotionComponents.POSITION, 10.5);
-		// this will automatically update in the background
-		// and we can update its information
-		doubleController.getTarget();
-		doubleController.setTarget(100.0);
-		doubleController.getToleranceEpsilon();
-		doubleController.setToleranceEpsilon(15.0);
-		// the motion component determines what information is given to the PID algorithms
-		doubleController.getMotionComponent();
-		doubleController.setMotionComponent(MotionComponents.VELOCITY);
-		// before, they ran off the position of the encoder, now they run off the velocity
-		// or check out how its going
-		doubleController.finished(); // if within acceptable error of the target, determined using the toleranceEpsilon
-		doubleController.finished(100.0); // or we can supply our own temporarily
-		
-		// but we can do more!
-		doubleCompiler
-				// its simple to write your own lambda / class implementation of the calculation component
-				// due to the type system, it is necessary for implementations to do the summation process themselves
-				// so remember to return accumulation + the output you found
-				.append((Double accumulation, Double currentState, Double target, Double error, double deltaTime) -> accumulation + (error / 2));
-		
-		// there are also unit based controller systems
-		
-		// note that its also easy to pipe the output of one controller to another!
-		// this controller just produces an output, for another one
-		ComplexController<Distance> veloController = new UnitControllerCompiler<DistanceUnit, Distance>()
-				.withSupplier(distanceEncoder, true)
-				.append(new UnitPComponent<DistanceUnit, Distance>(0.5))
-				.append(new UnitDComponent<DistanceUnit, Distance>(0.5))
-				.append(new UnitIComponent<DistanceUnit, Distance>(0.5))
-				.compile(new Distance(DistanceUnits.METER, 0.2), MotionComponents.POSITION, new Distance(DistanceUnits.MILLIMETER, 10.0));
-		
-		new UnitControllerCompiler<DistanceUnit, Distance>()
-				.set(motorGroup)
-				.withSupplier(distanceEncoder, true)
-				.append(new UnitPComponent<DistanceUnit, Distance>(0.5))
-				.append(new UnitDComponent<DistanceUnit, Distance>(0.5))
-				.append(new UnitIComponent<DistanceUnit, Distance>(0.5))
-				// we pipe the output of the velocity controller, to the target of this one
-				.compile(veloController::getOutput, MotionComponents.VELOCITY, new Distance(DistanceUnits.MILLIMETER, 1.0));
-		
-		// now we have a PID on position controller, that produces a target velocity output, and all we need to do to update both systems, is change the position target
-		veloController.setTarget(new Distance());
-		
-		// you might want to stop a controller from running for a bit, e.g. if you need to switch to manual control mode
-		doubleController.setEnabled(false);
-		// for example, this stops double controller from updating in the background
-		
 		// And that's all!
+		
+		// Take a look at controller overview from Core for how to get behaviours like PID
+		// NOTE: Controllers were previously part of Calcified, but were made usable outside of it
+		
 		// If you're interested in Gamepad support in a similar vein, checkout the Pasteurized overview
 		// It explains some of the topics around the EnhancedSupplier family as well, so you may find some of what it explains, helps you to understand this
 	}

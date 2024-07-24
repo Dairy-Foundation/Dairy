@@ -1,16 +1,19 @@
 package org.firstinspires.ftc.teamcode.examples.featuredev;
 
+import androidx.annotation.NonNull;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
+
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import dev.frozenmilk.dairy.core.Feature;
 import dev.frozenmilk.dairy.core.dependency.Dependency;
-import dev.frozenmilk.dairy.core.dependency.DependencyBase;
+import dev.frozenmilk.dairy.core.dependency.VoidDependency;
 import dev.frozenmilk.dairy.core.dependency.annotation.AllAnnotations;
 import dev.frozenmilk.dairy.core.dependency.annotation.AnnotationDependency;
 import dev.frozenmilk.dairy.core.dependency.annotation.AnyAnnotations;
@@ -33,6 +36,7 @@ import dev.frozenmilk.mercurial.Mercurial;
 import dev.frozenmilk.mercurial.commands.LambdaCommand;
 import dev.frozenmilk.util.cell.RefCell;
 import kotlin.Pair;
+import kotlin.Unit;
 
 public class JavaDependencies {
 	public JavaDependencies() {
@@ -42,7 +46,10 @@ public class JavaDependencies {
 		// and need to throw an exception to return early, and indicate that the operation has failed
 		// commonly, this is the DependencyResolutionException
 		// which is useful for listing pairs of objects and strings to associate with, to indicate reasons for failure
-		Dependency<Object> ancestor = (
+		VoidDependency dependency = (
+				// VoidDependency is for Java code, to remove the need for a return statement
+				// VoidDependency is directly equivalent to Dependency<Unit>
+				
 				// dependencies have access to:
 				// the opMode wrapper
 				Wrapper opMode,
@@ -51,34 +58,43 @@ public class JavaDependencies {
 				// and if the resolution process is currently yielding or not
 				boolean yielding
 		) -> {
-			// this one just returns object
-			return new Object();
+			// this one just returns void, the equivalent of kotlins's Unit
 		};
-		// base dependencies are unable to provide binding support, so they can be upgraded to DependencyBases
-		DependencyBase<Object> upgraded = ancestor.upgrade();
-		// this is the same
-		DependencyBase<Object> upgraded2 = new DependencyBase<>(ancestor);
+		
 		// receivers can be bound to the resolution of the dependency like so
-		upgraded2.onResolve((Object result) -> {
+		dependency.onResolve((Unit result) -> { // this gives us Kotlin's Unit type, which is the same as Java's void
+			// so really there's nothing we can do with it
 			// receive
 		});
 		
 		// receivers can also be bound to the failed resolution of the dependency:
-		upgraded2.onFail((Throwable exception) -> {
+		dependency.onFail((Throwable exception) -> {
+			// receive
+		});
+		
+		// using the VoidDependency as a Lambda looks like this
+		((VoidDependency) (opMode, resolvedFeatures, yielding1) -> {
+		}).onResolve((result) -> {
 			// receive
 		});
 		
 		// Dairy's cells and other consumers can be used to extract directly from the binding,
 		// although this might not always be perfect unless you have written a more customised dependency
-		RefCell<Object> cell = new RefCell<>(new Object());
+		RefCell<Unit> cell = new RefCell<>(Unit.INSTANCE);
 		// now when resolution succeeds, the cell will be receive to the result of resolution
-		upgraded.onResolve(cell);
+		dependency.onResolve(cell);
+		
+		// a second example, this fails if the OpMode isn't teleop, and returns its name
+		Dependency<String> dependency2 = (opMode, resolvedFeatures, yielding) -> {
+			if(opMode.getOpModeType() != OpModeMeta.Flavor.TELEOP) throw new DependencyResolutionException("${opMode.opModeType} is not TELEOP");
+			return opMode.getName();
+		};
 		
 		// kotlin offers infix functions to build compound dependencies
 		// (this will just work, as they are the same condition)
-		upgraded.and(upgraded2);
+		dependency.and(dependency2);
 		// and and or are both short-circuiting, so take care to get the order right if you have side effects
-		upgraded.or(upgraded2);
+		dependency.or(dependency2);
 		
 		// Yielding is often used as the default 'lazy' dependency
 		// Any dependency that Yields is generally considered less important than those that don't
@@ -95,28 +111,31 @@ public class JavaDependencies {
 		// a common set of patterns are the yielding combinations
 		
 		// optional yield
-		upgraded.or(Yielding.INSTANCE); // will resolve after the first condition, or when you reach yielding
+		dependency.or(Yielding.INSTANCE); // will resolve after the first condition, or when you reach yielding
 		
 		// enforced yield
-		upgraded.and(Yielding.INSTANCE); // will resolved to always place after upgraded and Yielding
+		dependency.and(Yielding.INSTANCE); // will resolved to always place after upgraded and Yielding
 		
 		// compounds end up with convoluted return types fast, so while it is possible,
 		// it is not recommended to bind to compound endpoints beyond a single and/or bind
 		// 'and' and 'or' are configured to respect their resolution strategies
 		// when it comes time to supply to bound receivers
 		
-		
-		upgraded.and(upgraded2)
-			.onResolve((Pair<?, ?> pair) -> {
+		dependency.and(dependency2)
+			.onResolve((Pair<? extends Unit, ? extends String> pair) -> {
+				Unit l = pair.component1();
+				String r = pair.component2();
 				// and will return a pair of both the left and right hand results
 			});
 		
-		upgraded.or(upgraded2)
-			.onResolve((Pair<?, ?> pair) -> {
-			// while or will return:
-			// (Object, null) if the left hand succeeded
-			// or (null, Object) if the right hand succeeded
-			// (Object, Object) will never be returned, as or is short-circuiting
+		dependency.or(dependency2)
+			.onResolve((Pair<? extends Unit, ? extends String> pair) -> {
+				Unit l = pair.component1();
+				String r = pair.component2();
+				// while or will return:
+				// (Object, null) if the left hand succeeded
+				// or (null, Object) if the right hand succeeded
+				// (Object, Object) will never be returned, as or is short-circuiting
 		});
 		
 		//
