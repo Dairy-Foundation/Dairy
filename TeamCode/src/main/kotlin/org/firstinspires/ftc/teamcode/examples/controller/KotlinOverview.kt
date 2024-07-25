@@ -87,7 +87,7 @@ class KotlinOverview : OpMode() {
 			inputSupplier = distanceEncoder, // we're using the same distance encoder
 			motionComponent = MotionComponents.VELOCITY, // this time we're working with velocity
 			toleranceEpsilon = 0.2.inches,
-			outputConsumer = motor::setPower,
+			outputConsumer = { motor.power = it.intoCommon().value }, // we use units, so we need to do a little adapting here
 			controllerCalculation = UnitComponent.P(0.5)
 		)
 

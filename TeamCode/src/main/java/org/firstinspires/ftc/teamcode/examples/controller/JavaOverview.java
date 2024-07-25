@@ -90,7 +90,7 @@ public class JavaOverview extends OpMode {
 				distanceEncoder, // we're using the same distance encoder
 				MotionComponents.VELOCITY, // this time we're working with velocity
 				new Distance(DistanceUnits.INCH, 0.2),
-				motor::setPower,
+				distance -> motor.setPower(distance.intoCommon().getValue()), // we're using units, so we need to do a little adapting here
 				new UnitComponent.P<DistanceUnit, Distance>(0.5)
 		);
 		
