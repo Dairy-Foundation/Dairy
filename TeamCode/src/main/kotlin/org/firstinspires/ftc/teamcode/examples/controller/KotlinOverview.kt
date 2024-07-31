@@ -83,7 +83,7 @@ class KotlinOverview : OpMode() {
 		)
 
 		val veloController = UnitController(
-			targetSupplier = positionController::output, // we're going to use the output of the position PID we just put together, to drive this velocity controller
+			targetSupplier = positionController::position, // we're going to use the output of the position PID we just put together, to drive this velocity controller
 			inputSupplier = distanceEncoder, // we're using the same distance encoder
 			motionComponent = MotionComponents.VELOCITY, // this time we're working with velocity
 			toleranceEpsilon = 0.2.inches,

@@ -86,7 +86,7 @@ public class JavaOverview extends OpMode {
 		);
 		
 		UnitController<DistanceUnit, Distance> veloController = new UnitController<DistanceUnit, Distance>(
-				positionController::getOutput, // we're going to use the output of the position PID we just put together, to drive this velocity controller
+				positionController::getPosition, // we're going to use the output of the position PID we just put together, to drive this velocity controller
 				distanceEncoder, // we're using the same distance encoder
 				MotionComponents.VELOCITY, // this time we're working with velocity
 				new Distance(DistanceUnits.INCH, 0.2),
