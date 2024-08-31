@@ -18,5 +18,5 @@
 	url = git@github.com:Dairy-Foundation/Mercurial.git
 [submodule "Curdled"]
 	path = Curdled
-	url = https://github.com/Dairy-Foundation/Curdled.git
+	url = git@github.com:Dairy-Foundation/Curdled.git
 
