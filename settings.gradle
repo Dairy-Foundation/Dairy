@@ -10,3 +10,4 @@ include ':Pasteurized'
 //include ':MilkMan'
 
 include ':Mercurial'
+include ':Curdled'

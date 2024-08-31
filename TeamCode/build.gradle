@@ -39,4 +39,5 @@ dependencies {
     implementation project(':Mercurial')
 //    implementation project(':MilkMan')
     implementation project(':Sinister')
+    implementation project(':Curdled')
 }
