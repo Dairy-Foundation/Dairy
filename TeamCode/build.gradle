@@ -24,19 +24,27 @@ android {
     }
 }
 
+repositories {
+    maven {
+        url "https://repo.dairy.foundation/releases"
+    }
+    maven {
+        url "https://repo.dairy.foundation/snapshots"
+    }
+}
+
 dependencies {
     implementation project(':FtcRobotController')
-    testImplementation 'org.testng:testng:6.9.6'
+    testImplementation testFixtures(project(':Core'))
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
-//    implementation('com.github.Dairy-Foundation.Dairy:Core:master-SNAPSHOT')
-//    implementation('com.github.Dairy-Foundation.Dairy:Calcified:master-SNAPSHOT')
-//    implementation('com.github.Dairy-Foundation.Dairy:DataCarton:master-SNAPSHOT')
+//    implementation "dev.frozenmilk.dairy:Core:1.0.1"
+
     implementation project(':Core')
     implementation project(':Calcified')
     implementation project(':Pasteurized')
     implementation project(':DataCarton')
     implementation project(':Mercurial')
-//    implementation project(':MilkMan')
-    implementation project(':Sinister')
+    // TODO:
+//    implementation 'com.github.Dairy-Foundation:CachingHardware:v1'
 }
