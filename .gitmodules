@@ -16,4 +16,7 @@
 [submodule "Mercurial"]
 	path = Mercurial
 	url = git@github.com:Dairy-Foundation/Mercurial.git
+[submodule "Curdled"]
+	path = Curdled
+	url = git@github.com:Dairy-Foundation/Curdled.git
 

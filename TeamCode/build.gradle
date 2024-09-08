@@ -38,13 +38,11 @@ dependencies {
     testImplementation testFixtures(project(':Core'))
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
-//    implementation "dev.frozenmilk.dairy:Core:1.0.1"
 
     implementation project(':Core')
     implementation project(':Calcified')
     implementation project(':Pasteurized')
     implementation project(':DataCarton')
     implementation project(':Mercurial')
-    // TODO:
-//    implementation 'com.github.Dairy-Foundation:CachingHardware:v1'
+    implementation project(':Sinister')
 }
