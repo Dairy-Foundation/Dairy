@@ -22,11 +22,16 @@ import dev.frozenmilk.mercurial.bindings.BoundBooleanSupplier;
 public class JavaConfigurationFeature implements Feature {
 	// we need Mercurial to be attached before this
 	// and we need our own @Attach annotation
-	private final Dependency<?> dependency = new SingleAnnotation<>(Attach.class).and(new SingleFeature<>(Mercurial.INSTANCE));
+	private Dependency<?> dependency = new SingleAnnotation<>(Attach.class).and(new SingleFeature<>(Mercurial.INSTANCE));
 	@NonNull
 	@Override
 	public Dependency<?> getDependency() {
 		return dependency;
+	}
+	
+	@Override
+	public void setDependency(@NonNull Dependency<?> dependency) {
+		this.dependency = dependency;
 	}
 	
 	// Our configuration code can go here

@@ -9,7 +9,6 @@ import java.util.Map;
 import dev.frozenmilk.dairy.core.util.OpModeLazyCell;
 import dev.frozenmilk.dairy.core.util.supplier.logical.EnhancedBooleanSupplier;
 import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier;
-import dev.frozenmilk.util.modifier.DoubleDeadZone;
 import dev.frozenmilk.dairy.pasteurized.Pasteurized;
 import dev.frozenmilk.dairy.pasteurized.PasteurizedGamepad;
 import dev.frozenmilk.dairy.pasteurized.SDKGamepad;
@@ -24,7 +23,6 @@ public class JavaOverview extends OpMode {
 	
 	@Override
 	public void init() {
-	
 	}
 	
 	@Override
@@ -54,8 +52,8 @@ public class JavaOverview extends OpMode {
 		// if we do not reassign the new EnhancedBooleanSupplier to the variable, or store it in a different variable it will be lost
 
 		// suppliers can also be combined:
-		enhancedBooleanSupplier = enhancedBooleanSupplier.and(() -> Pasteurized.gamepad1().leftTrigger().getPosition() > 5);
-		enhancedBooleanSupplier = enhancedBooleanSupplier.or(() -> Pasteurized.gamepad1().leftTrigger().getPosition() < 100.0);
+		enhancedBooleanSupplier = enhancedBooleanSupplier.and(() -> Pasteurized.gamepad1().leftTrigger().state() > 5);
+		enhancedBooleanSupplier = enhancedBooleanSupplier.or(() -> Pasteurized.gamepad1().leftTrigger().state() < 100.0);
 
 		// this works is all kinds of ways!
 		EnhancedBooleanSupplier twoButtons = Pasteurized.gamepad1().a().and(Pasteurized.gamepad1().b());
@@ -74,14 +72,10 @@ public class JavaOverview extends OpMode {
 		EnhancedDoubleSupplier enhancedNumberSupplier = Pasteurized.gamepad1().leftStickY();
 
 		// the value of the stick
-		enhancedNumberSupplier.getPosition();
-
-		// deadzones, ony other modifying operation can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
-		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier(DoubleDeadZone.lowerDeadZone(-0.05));
-		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier((x) -> x / 2);
+		enhancedNumberSupplier.state();
 
 		// EnhancedNumberSuppliers also interact well with building complex EnhancedBooleanSuppliers from ranges
-		EnhancedBooleanSupplier rangeBasedCondition = enhancedNumberSupplier.conditionalBindPosition()
+		EnhancedBooleanSupplier rangeBasedCondition = enhancedNumberSupplier.conditionalBindState()
 				.greaterThan(-0.5)
 				.lessThan(0.5)
 				.bind();
@@ -89,7 +83,7 @@ public class JavaOverview extends OpMode {
 		// this system is fairly intuitive, and works best if you list numbers from smallest to largest,
 		// or in pairs e.g.:
 
-		EnhancedBooleanSupplier complexRangeBasedCondition = enhancedNumberSupplier.conditionalBindPosition()
+		EnhancedBooleanSupplier complexRangeBasedCondition = enhancedNumberSupplier.conditionalBindState()
 				.greaterThan(0.0)
 				.lessThan(10.0)
 				.greaterThanEqualTo(1.0)

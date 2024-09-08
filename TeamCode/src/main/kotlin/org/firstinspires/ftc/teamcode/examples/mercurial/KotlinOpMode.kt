@@ -58,13 +58,13 @@ class KotlinOpMode : OpMode() {
 		BoundBooleanSupplier { true }
 				.onTrue(LambdaCommand())
 
-		Mercurial.gamepad1.leftStickY.conditionalBindPosition()
+		Mercurial.gamepad1.leftStickY.conditionalBindState()
 				.lessThan(0.0)
 				.bind()
 				.onTrue(LambdaCommand())
 
 		BoundDoubleSupplier { 0.0 }
-				.conditionalBindPosition()
+				.conditionalBindState()
 				.greaterThan(100.0)
 				.bind()
 				.onTrue(

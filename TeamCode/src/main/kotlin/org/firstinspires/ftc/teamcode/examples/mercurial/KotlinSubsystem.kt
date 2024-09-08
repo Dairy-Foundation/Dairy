@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.examples.mercurial
 
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import dev.frozenmilk.dairy.core.FeatureRegistrar
+import dev.frozenmilk.dairy.core.dependency.Dependency
 import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
 import dev.frozenmilk.mercurial.commands.LambdaCommand
@@ -22,7 +23,7 @@ object KotlinSubsystem : Subsystem {
 	annotation class Attach
 	// Subsystems use the core Feature system of Dairy to be attached to OpModes
 	// we need to set up the dependencies, which at its simplest looks like this
-	override val dependency = Subsystem.DEFAULT_DEPENDENCY and
+	override var dependency: Dependency<*> = Subsystem.DEFAULT_DEPENDENCY and
 			// this is the standard attach annotation that is recommended for features
 			// if you are using other features, you should add them as
 			// dependencies as well
@@ -34,7 +35,7 @@ object KotlinSubsystem : Subsystem {
 	// this means that we can always rely on motor to be correct and up-to-date for the current OpMode
 	// this can also work with Calcified
 	// the subsystemCell function is used to reduce the boilerplate of setting up a SubsystemObjectCell
-	val motor by subsystemCell {
+	private val motor by subsystemCell {
 		FeatureRegistrar.activeOpMode.hardwareMap.get(DcMotorEx::class.java, "")
 	}
 
@@ -58,6 +59,9 @@ object KotlinSubsystem : Subsystem {
 	override fun preUserStopHook(opMode: Wrapper) {}
 	// or here
 	override fun postUserStopHook(opMode: Wrapper) {}
+
+	// see the feature dev notes on when to use cleanup vs postStop
+	override fun cleanup(opMode: Wrapper) {}
 
 	// all depending on what you need!
 	// remember, you only need to write implementations for the hooks you actually use

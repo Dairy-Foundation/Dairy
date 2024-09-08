@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.examples.featuredev
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.core.Feature
 import dev.frozenmilk.dairy.core.FeatureRegistrar
+import dev.frozenmilk.dairy.core.dependency.Dependency
 import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation
 import dev.frozenmilk.dairy.core.dependency.feature.SingleFeature
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
@@ -25,7 +26,7 @@ object KotlinWritingAFeature : Feature {
 	// See KotlinDependencies for the full dependencies overview
 	// Dairy features only technically have one dependency, its just that that dependency
 	// can be compound, to check and resolve multiple conditions
-	override val dependency =
+	override var dependency: Dependency<*> =
 			// The 'Annotation' series of dependencies allow us to declare that we
 			// are dependant on some selection of @Annotations
 			SingleAnnotation(Attach::class.java)
@@ -73,7 +74,7 @@ object KotlinWritingAFeature : Feature {
 		// the same as the OpModeWrapper being passed here, this probably isn't useful to you,
 		// and it would be bad practice to use it when you have the OpModeWrapper
 		FeatureRegistrar.activeOpModeWrapper // but it exists none-the-less
-		FeatureRegistrar.opModeActive // if an OpMode is currently active
+		FeatureRegistrar.opModeRunning // if an OpMode is currently active
 
 		opMode.opModeType // teleop | autonomous | none
 
@@ -104,6 +105,10 @@ object KotlinWritingAFeature : Feature {
 	}
 
 	override fun postUserStopHook(opMode: Wrapper) {
+	}
+
+	// cleanup and post stop are similar but slightly different, cleanup is crash-safe
+	override fun cleanup(opMode: Wrapper) {
 		// some features (not this one) might want to automatically deregister themselves after the OpMode
 		// while this isn't really necessary, as features are held weakly, and will disappear if the user doesn't hold onto them
 

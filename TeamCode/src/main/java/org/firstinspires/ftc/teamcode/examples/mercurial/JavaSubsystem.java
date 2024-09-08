@@ -46,7 +46,7 @@ public class JavaSubsystem implements Subsystem {
 	public @interface Attach{}
 	// Subsystems use the core Feature system of Dairy to be attached to OpModes
 	// we need to set up the dependencies, which at its simplest looks like this
-	private final Dependency<?> dependency =
+	private Dependency<?> dependency =
 			// the default dependency ensures that mercurial is attached
 			Subsystem.DEFAULT_DEPENDENCY
 					// this is the standard attach annotation that is recommended for features
@@ -62,6 +62,11 @@ public class JavaSubsystem implements Subsystem {
 	@Override
 	public Dependency<?> getDependency() {
 		return dependency;
+	}
+	
+	@Override
+	public void setDependency(@NonNull Dependency<?> dependency) {
+		this.dependency = dependency;
 	}
 	
 	// SubsystemObjectCells get eagerly reevaluated at the start of every OpMode, if this subsystem is attached
@@ -100,7 +105,11 @@ public class JavaSubsystem implements Subsystem {
 	// or here
 	@Override
 	public void postUserStopHook(@NonNull Wrapper opMode) {}
-
+	
+	// see the feature dev notes on when to use cleanup vs postStop
+	@Override
+	public void cleanup(@NonNull Wrapper opMode) {}
+	
 	// all depending on what you need!
 	// remember, you only need to write implementations for the hooks you actually use
 	// the rest don't need to be added to the class, nice and clean

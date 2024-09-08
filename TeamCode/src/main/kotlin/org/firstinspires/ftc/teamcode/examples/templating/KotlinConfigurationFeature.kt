@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.examples.templating
 
 import dev.frozenmilk.dairy.core.Feature
+import dev.frozenmilk.dairy.core.dependency.Dependency
 import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation
 import dev.frozenmilk.dairy.core.dependency.feature.SingleFeature
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
@@ -14,7 +15,7 @@ import java.lang.annotation.Inherited
 object KotlinConfigurationFeature : Feature {
 	// we need Mercurial to be attached before this
 	// and we need our own @Attach annotation
-	override val dependency = SingleAnnotation(Attach::class.java) and SingleFeature(Mercurial)
+	override var dependency: Dependency<*> = SingleAnnotation(Attach::class.java) and SingleFeature(Mercurial)
 
 	// Our configuration code can go here
 	private var gm1aBefore: BoundBooleanSupplier? = null

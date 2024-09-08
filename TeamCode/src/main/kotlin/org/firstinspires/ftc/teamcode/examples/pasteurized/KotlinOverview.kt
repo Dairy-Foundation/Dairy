@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.examples.pasteurized
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import dev.frozenmilk.util.modifier.DoubleDeadZone
 import dev.frozenmilk.dairy.pasteurized.Pasteurized
 import dev.frozenmilk.dairy.pasteurized.SDKGamepad
 import dev.frozenmilk.dairy.pasteurized.layering.LayeredGamepad
@@ -38,8 +37,8 @@ class KotlinOverview : OpMode() {
 		// if we do not reassign the new EnhancedBooleanSupplier to the variable, or store it in a different variable it will be lost
 
 		// suppliers can also be combined:
-		enhancedBooleanSupplier = enhancedBooleanSupplier and { Pasteurized.gamepad1.leftTrigger.position > 5 }
-		enhancedBooleanSupplier = enhancedBooleanSupplier or { Pasteurized.gamepad1.leftTrigger.position < 100.0 }
+		enhancedBooleanSupplier = enhancedBooleanSupplier and { Pasteurized.gamepad1.leftTrigger.state > 5 }
+		enhancedBooleanSupplier = enhancedBooleanSupplier or { Pasteurized.gamepad1.leftTrigger.state < 100.0 }
 
 		// this works is all kinds of ways!
 		val twoButtons = Pasteurized.gamepad1.a and Pasteurized.gamepad1.b
@@ -53,19 +52,13 @@ class KotlinOverview : OpMode() {
 		// but share a name (i.e. cross on a ps4 controller and a on a logitech or x-box controller) are linked together on the Pasteurized gamepad
 
 		// sticks and triggers are represented via EnhancedNumberSuppliers
-		var enhancedNumberSupplier = Pasteurized.gamepad1.leftStickY
+		val enhancedNumberSupplier = Pasteurized.gamepad1.leftStickY
 
 		// the value of the stick
-		enhancedNumberSupplier.position
-
-		// deadzones, ony other modifying operation can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
-
-		// deadzones, ony other modifying operation can be applied, much like the EnhancedBooleanSupplier, these operations are non-mutating
-		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier(DoubleDeadZone.lowerDeadZone(-0.05))
-		enhancedNumberSupplier = enhancedNumberSupplier.applyModifier { x: Double -> x / 2 }
+		enhancedNumberSupplier.state
 
 		// EnhancedNumberSuppliers also interact well with building complex EnhancedBooleanSuppliers from ranges
-		val rangeBasedCondition = enhancedNumberSupplier.conditionalBindPosition()
+		val rangeBasedCondition = enhancedNumberSupplier.conditionalBindState()
 				.greaterThan(-0.5)
 				.lessThan(0.5)
 				.bind()
@@ -73,7 +66,7 @@ class KotlinOverview : OpMode() {
 		// this system is fairly intuitive, and works best if you list numbers from smallest to largest,
 		// or in pairs e.g.:
 
-		val complexRangeBasedCondition = enhancedNumberSupplier.conditionalBindPosition()
+		val complexRangeBasedCondition = enhancedNumberSupplier.conditionalBindState()
 				.greaterThan(0.0)
 				.lessThan(10.0)
 				.greaterThanEqualTo(1.0)

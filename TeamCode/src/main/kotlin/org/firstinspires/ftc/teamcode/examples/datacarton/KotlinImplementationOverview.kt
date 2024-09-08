@@ -16,10 +16,6 @@ import dev.frozenmilk.dairy.core.FeatureRegistrar
 		autoUpdate = true // this is the setting for the feature that we can set
 		// true is the default, but if you're a more advanced user you may want to make use of this
 )
-// @DairyCore
-// can also be used to activate all dairy library features, but doesn't allow settings,
-// also, if @DairyCore is present it will clash with the @DataCarton.Attach annotation
-
 class KotlinImplementationOverview : OpMode() {
 
 	// the @Pack annotation can be used on val

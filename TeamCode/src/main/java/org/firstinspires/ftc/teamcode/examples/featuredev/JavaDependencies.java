@@ -46,10 +46,10 @@ public class JavaDependencies {
 		// and need to throw an exception to return early, and indicate that the operation has failed
 		// commonly, this is the DependencyResolutionException
 		// which is useful for listing pairs of objects and strings to associate with, to indicate reasons for failure
+		// VoidDependency is for Java code, to remove the need for a return statement
+		
+		// VoidDependency is directly equivalent to Dependency<Unit>
 		VoidDependency dependency = (
-				// VoidDependency is for Java code, to remove the need for a return statement
-				// VoidDependency is directly equivalent to Dependency<Unit>
-				
 				// dependencies have access to:
 				// the opMode wrapper
 				Wrapper opMode,
@@ -175,7 +175,7 @@ public class JavaDependencies {
 		// AllAnnotations is for when you require all the annotations listed,
 		// but don't necessarily care about each one
 		// This collects one of each
-		new AllAnnotations(TeleOp.class, KotlinWritingAFeature.Attach.class).onResolve((Set<? extends Annotation> annotations) -> {
+		new AllAnnotations(TeleOp.class, KotlinWritingAFeature.Attach.class).onResolve((List<? extends Annotation> annotations) -> {
 			for (Annotation annotation : annotations) {
 				if (annotation instanceof TeleOp) {
 					((TeleOp) annotation).name();
@@ -187,7 +187,7 @@ public class JavaDependencies {
 		});
 		
 		// AnyAnnotations is when multiple types are acceptable, it collects all that it can
-		new AnyAnnotations(TeleOp.class, Autonomous.class).onResolve((Set<? extends Annotation> annotations) -> {
+		new AnyAnnotations(TeleOp.class, Autonomous.class).onResolve((List<? extends Annotation> annotations) -> {
 			for (Annotation annotation : annotations) {
 				if (annotation instanceof TeleOp) {
 					((TeleOp) annotation).name();

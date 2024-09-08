@@ -1,40 +1,27 @@
 package org.firstinspires.ftc.teamcode.examples.calcified
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.LynxModuleImuType
 import com.qualcomm.robotcore.hardware.PwmControl
 import dev.frozenmilk.dairy.calcified.Calcified
 import dev.frozenmilk.dairy.calcified.hardware.motor.Direction
 import dev.frozenmilk.dairy.calcified.hardware.motor.MotorGroup
 import dev.frozenmilk.dairy.calcified.hardware.motor.ZeroPowerBehaviour
-import dev.frozenmilk.dairy.calcified.hardware.sensor.fromImuOrientationOnRobot
-import dev.frozenmilk.dairy.calcified.hardware.sensor.fromYawPitchRollAngles
-import dev.frozenmilk.dairy.calcified.hardware.sensor.toYawPitchRoll
 import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.util.OpModeLazyCell
-import dev.frozenmilk.dairy.core.util.current.Current
-import dev.frozenmilk.dairy.core.util.current.CurrentUnits
+import dev.frozenmilk.util.units.current.Current
+import dev.frozenmilk.util.units.current.CurrentUnits
 import dev.frozenmilk.dairy.core.util.supplier.logical.Conditional
-import dev.frozenmilk.dairy.core.util.supplier.numeric.MotionComponents
 import dev.frozenmilk.util.units.angle.Angle
 import dev.frozenmilk.util.units.angle.AngleUnits
 import dev.frozenmilk.util.units.angle.Wrapping
 import dev.frozenmilk.util.units.distance.Distance
-import dev.frozenmilk.util.units.distance.DistanceUnit
 import dev.frozenmilk.util.units.distance.DistanceUnits
-import dev.frozenmilk.util.units.orientation.AngleBasedRobotOrientation
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles
 
 @TeleOp
 @Calcified.Attach( // attaches the Calcified feature
 		automatedCacheHandling = true, // these are settings for the feature that we can set
 )
-// @DairyCore
-// can also be used to activate all dairy library features, but doesn't allow settings,
-// also, if @DairyCore is present it will clash with the @Calcified.Attach annotation
 class KotlinOverview : OpMode() {
 	// This overview will look into using Calcified,
 	// while also covering many features from the Util
@@ -191,10 +178,10 @@ class KotlinOverview : OpMode() {
 		// separate from the motor direction
 		encoder.direction = Direction.FORWARD
 		// the position
-		encoder.position
+		encoder.state
 
 		// the position can be set, this is done software side
-		encoder.position = 100.0
+		encoder.state = 100.0
 		// whereas the reset method does the hardware instruction
 		encoder.reset()
 
@@ -212,10 +199,8 @@ class KotlinOverview : OpMode() {
 
 		// encoders are part of the unit system
 		// encoders take the form of EnhancedNumberSuppliers
-		// for instance, I can form a new encoder output, that passes the output of the first encoder through a function
-		val modifiedEncoder = encoder.applyModifier { x -> x / 2 }
-		modifiedEncoder.position // half of encoder.position!
-		// EnhancedSuppliers are all immutable, which means that modifying methods actually produce a new EnhancedSupplier, independent of the previous one
+		encoder.state // half of encoder.position!
+		// EnhancedSuppliers are all immutable
 		// and can be used to easily form conditional binds
 		// more on this later!
 
@@ -224,10 +209,8 @@ class KotlinOverview : OpMode() {
 		val distanceEncoder = Calcified.controlHub.getDistanceEncoder(2, DistanceUnits.MILLIMETER, 10.0)
 		// these work the same as above, but everything is measured as the appropriate reified unit
 
-		val combinedEncoder = distanceEncoder.merge(encoder::velocity) { distance, velocity -> distance * velocity }
-
 		// Angles
-		val angle = absoluteEncoder.position
+		val angle = absoluteEncoder.state
 		// angles can be either wrapping or linear
 		// for an encoder that is set up to be wrapping, it still produces linear angles for velocity and acceleration
 		// wrapping means that an angle exists in the domain of [0, 1] rotations
@@ -248,7 +231,7 @@ class KotlinOverview : OpMode() {
 		angle.tan
 
 		// Distance
-		val distance = distanceEncoder.position
+		val distance = distanceEncoder.state
 		// distances have 4 predefined units:
 		// meter, millimeter, foot, inch
 
@@ -261,7 +244,7 @@ class KotlinOverview : OpMode() {
 		distance.pow(2)
 		distance.sqrt()
 		// or absolute valued
-		distance.abs()
+		distance.absoluteValue
 		// or coerced
 		distance.coerceAtLeast(Distance.NEGATIVE_INFINITY)
 
@@ -289,47 +272,47 @@ class KotlinOverview : OpMode() {
 		val motorGroup = MotorGroup(motor0, motor1, motor2, crServo)
 		motorGroup.power = 1.0
 
-		//
-		// IMUs
-		//
-		// the imu can be obtained with full defaults
-		val imu = Calcified.controlHub.getIMU()
-		Calcified.controlHub.getIMU(
-				0, // port defaults to 0
-				LynxModuleImuType.BHI260, // if you don't supply this value, it is automatically detected, which is probably for the best
-				fromImuOrientationOnRobot( // there are lots of ways to generate a starting orientation for the imu!
-						RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.FORWARD, RevHubOrientationOnRobot.UsbFacingDirection.UP)
-				)
-		)
-		// Dairy uses its own orientation system, but provides high compatibility with the sdk classes for orientation
-		// the following should all be equivalent
-		val orientation = AngleBasedRobotOrientation(
-				Angle(AngleUnits.DEGREE, Wrapping.WRAPPING, 90.0),
-				Angle(AngleUnits.DEGREE, Wrapping.WRAPPING, 90.0),
-				Angle(AngleUnits.DEGREE, Wrapping.WRAPPING, 90.0),
-		)
-		val orientationFromHubOrientation = fromImuOrientationOnRobot(RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.FORWARD, RevHubOrientationOnRobot.UsbFacingDirection.UP))
-		val orientationFromYawPitchRollAngles = fromYawPitchRollAngles(YawPitchRollAngles(AngleUnit.DEGREES, 90.0, 90.0, 90.0, 0))
-
-		// and the opposite can also be done
-		orientation.toYawPitchRoll().getYaw(AngleUnit.DEGREES)
-
-		// but the Dairy orientation system provides support through the angle units we looked at previously
-		// there are sugar shortcuts for heading (zRot)
-		imu.heading
-		imu.orientation.xRot
-		imu.orientation.yRot
-		imu.orientation.zRot
-		// the enhanced supplier implementations for the axes
-		imu.headingSupplier
-		imu.xRotSupplier
-		imu.yRotSupplier
-		imu.zRotSupplier
-
-		// nice and easy!
-		// also, the heading and orientation be set
-		imu.heading = angle
-		imu.orientation = orientationFromYawPitchRollAngles
+//		//
+//		// IMUs
+//		//
+//		// the imu can be obtained with full defaults
+//		val imu = Calcified.controlHub.getIMU()
+//		Calcified.controlHub.getIMU(
+//				0, // port defaults to 0
+//				LynxModuleImuType.BHI260, // if you don't supply this value, it is automatically detected, which is probably for the best
+//				fromImuOrientationOnRobot( // there are lots of ways to generate a starting orientation for the imu!
+//						RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.FORWARD, RevHubOrientationOnRobot.UsbFacingDirection.UP)
+//				)
+//		)
+//		// Dairy uses its own orientation system, but provides high compatibility with the sdk classes for orientation
+//		// the following should all be equivalent
+//		val orientation = AngleBasedRobotOrientation(
+//				Angle(AngleUnits.DEGREE, Wrapping.WRAPPING, 90.0),
+//				Angle(AngleUnits.DEGREE, Wrapping.WRAPPING, 90.0),
+//				Angle(AngleUnits.DEGREE, Wrapping.WRAPPING, 90.0),
+//		)
+//		val orientationFromHubOrientation = fromImuOrientationOnRobot(RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.FORWARD, RevHubOrientationOnRobot.UsbFacingDirection.UP))
+//		val orientationFromYawPitchRollAngles = fromYawPitchRollAngles(YawPitchRollAngles(AngleUnit.DEGREES, 90.0, 90.0, 90.0, 0))
+//
+//		// and the opposite can also be done
+//		orientation.toYawPitchRoll().getYaw(AngleUnit.DEGREES)
+//
+//		// but the Dairy orientation system provides support through the angle units we looked at previously
+//		// there are sugar shortcuts for heading (zRot)
+//		imu.heading
+//		imu.orientation.xRot
+//		imu.orientation.yRot
+//		imu.orientation.zRot
+//		// the enhanced supplier implementations for the axes
+//		imu.headingSupplier
+//		imu.xRotSupplier
+//		imu.yRotSupplier
+//		imu.zRotSupplier
+//
+//		// nice and easy!
+//		// also, the heading and orientation be set
+//		imu.heading = angle
+//		imu.orientation = orientationFromYawPitchRollAngles
 
 		//
 		// Analog Sensors
@@ -338,7 +321,7 @@ class KotlinOverview : OpMode() {
 		// this one is just doubles
 		val aInput = Calcified.controlHub.getAnalogInput(0)
 		// nothing new...
-		aInput.position
+		aInput.state
 		aInput.velocity
 		aInput.rawVelocity
 		// ...
@@ -377,7 +360,7 @@ class KotlinOverview : OpMode() {
 		// Conditionals
 		//
 		// the conditionals system makes it easy to build EnhancedBooleanSuppliers from EnhancedNumberSuppliers
-		val simpleBinding = encoder.conditionalBindPosition()
+		val simpleBinding = encoder.conditionalBindState()
 				.greaterThan(0.0)
 				.lessThan(100.0)
 				.bind()
@@ -394,7 +377,7 @@ class KotlinOverview : OpMode() {
 		// this more complex binding will return true if the encoder has a velocity in the following domains: [-100, -10), (200, infinity)
 
 		// there are conditional binding builders for all components of motion supplied by an EnhancedNumberSupplier
-		encoder.conditionalBindPosition()
+		encoder.conditionalBindState()
 		encoder.conditionalBindVelocity()
 		encoder.conditionalBindVelocityRaw()
 		encoder.conditionalBindAcceleration()

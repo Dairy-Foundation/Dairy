@@ -64,13 +64,13 @@ public class JavaOpMode extends OpMode {
 		new BoundBooleanSupplier(() -> true)
 				.onTrue(new LambdaCommand());
 
-		Mercurial.gamepad1().leftStickY().conditionalBindPosition()
+		Mercurial.gamepad1().leftStickY().conditionalBindState()
 				.lessThan(0.0)
 				.bind()
 				.onTrue(new LambdaCommand());
 
 		new BoundDoubleSupplier(() -> 0.0)
-				.conditionalBindPosition()
+				.conditionalBindState()
 				.greaterThan(100.0)
 				.bind()
 				.onTrue(

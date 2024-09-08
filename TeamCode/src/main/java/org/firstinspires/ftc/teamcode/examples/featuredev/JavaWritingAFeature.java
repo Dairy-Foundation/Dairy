@@ -23,8 +23,6 @@ import dev.frozenmilk.dairy.core.wrapper.Wrapper;
 import dev.frozenmilk.util.cell.LateInitCell;
 import kotlin.annotation.MustBeDocumented;
 
-// Todo: in the full documentation it would be very nice to put out a quick guide to setting up and publishing a dairy core library on jitpack
-
 // to write a feature using DairyCore is pretty simple
 // the object / class just needs to implement the Feature interface
 // most major features are a static object, but plenty of smaller things implement feature in order to
@@ -39,7 +37,7 @@ public class JavaWritingAFeature implements Feature {
 	// See JavaDependencies for the full dependencies overview
 	// Dairy features only technically have one dependency, its just that that dependency
 	// can be compound, to check and resolve multiple conditions
-	private final Dependency<?> dependency =
+	private Dependency<?> dependency =
 			// The 'Annotation' series of dependencies allow us to declare that we
 			// are dependant on some selection of @Annotations
 			new SingleAnnotation<>(Attach.class)
@@ -63,6 +61,11 @@ public class JavaWritingAFeature implements Feature {
 		return dependency;
 	}
 	
+	@Override
+	public void setDependency(@NonNull Dependency<?> dependency) {
+		this.dependency = dependency;
+	}
+	
 	// we can then use the java equivalent of delegation to get direct access to the collected information
 	private Attach getAttach() {
 		return attachCell.get();
@@ -82,7 +85,7 @@ public class JavaWritingAFeature implements Feature {
 	
 	// these set up a singleton pattern for this feature
 	// it might be good to make static methods that route through this instance
-	private static final JavaWritingAFeature INSTANCE = new JavaWritingAFeature();
+	public static final JavaWritingAFeature INSTANCE = new JavaWritingAFeature();
 
 	@Override
 	public void preUserInitHook(@NotNull Wrapper opMode) {
@@ -104,7 +107,7 @@ public class JavaWritingAFeature implements Feature {
 		// the same as the OpModeWrapper being passed here, this probably isn't useful to you,
 		// and it would be bad practice to use it when you have the OpModeWrapper
 		FeatureRegistrar.getActiveOpModeWrapper(); // but it exists none-the-less
-		FeatureRegistrar.getOpModeActive(); // if an OpMode is currently active
+		FeatureRegistrar.isOpModeRunning(); // if an OpMode is currently active
 
 		opMode.getOpModeType(); // teleop | autonomous | none
 
@@ -143,7 +146,12 @@ public class JavaWritingAFeature implements Feature {
 	}
 	
 	@Override
-	public void postUserStopHook(@NotNull Wrapper opMode) {
+	public void postUserStopHook(@NonNull Wrapper opMode) {
+	}
+	
+	// cleanup and post stop are similar but slightly different, cleanup is crash-safe
+	@Override
+	public void cleanup(@NotNull Wrapper opMode) {
 		// some features (not this one) might want to automatically deregister themselves after the OpMode
 		// while this isn't really necessary, as features are held weakly, and will disappear if the user doesn't hold onto them
 
