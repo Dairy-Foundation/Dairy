@@ -11,3 +11,5 @@ include ':Pasteurized'
 
 include ':Mercurial'
 include ':Curdled'
+include ':RPCRC'
+include ':OnBotRPCRC'
