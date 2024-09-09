@@ -38,7 +38,6 @@ dependencies {
     testImplementation testFixtures(project(':Core'))
     annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
 
-
     implementation project(':Core')
     implementation project(':Calcified')
     implementation project(':Pasteurized')
