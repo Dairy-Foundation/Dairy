@@ -1,12 +1,18 @@
 # Dairy
-<a href="/Util" target="_blank">
+<a href="https://repo.dairy.foundation/#/releases/dev/frozenmilk/dairy/Util" target="_blank">
 <img src="https://repo.dairy.foundation/api/badge/latest/releases/dev/frozenmilk/dairy/Util?color=40c14a&name=Util" />
 </a>
-<a href="/Sinister" target="_blank">
+<a href="https://repo.dairy.foundation/#/releases/dev/frozenmilk/Sinister" target="_blank">
 <img src="https://repo.dairy.foundation/api/badge/latest/releases/dev/frozenmilk/Sinister?color=40c14a&name=Sinister" />
 </a>
-<a href="/Core" target="_blank">
+<a href="https://repo.dairy.foundation/#/releases/dev/frozenmilk/dairy/Core" target="_blank">
 <img src="https://repo.dairy.foundation/api/badge/latest/releases/dev/frozenmilk/dairy/Core?color=40c14a&name=Core" />
+</a>
+<a href="https://repo.dairy.foundation/#/releases/dev/frozenmilk/dairy/Pasteurized" target="_blank">
+<img src="https://repo.dairy.foundation/api/badge/latest/releases/dev/frozenmilk/dairy/Pasteurized?color=40c14a&name=Pasteurized" />
+</a>
+<a href="https://repo.dairy.foundation/#/releases/dev/frozenmilk/mercurial/Mercurial" target="_blank">
+<img src="https://repo.dairy.foundation/api/badge/latest/releases/dev/frozenmilk/mercurial/Mercurial?color=40c14a&name=Mercurial" />
 </a>
 
 This repository contains a multi-module project that contains both core
