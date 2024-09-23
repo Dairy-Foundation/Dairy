@@ -8,7 +8,7 @@ public class JavaTemplatedOpMode extends JavaTemplate {
 	@Override
 	public void init() {
 	}
-	
+
 	@Override
 	public void loop() {
 		getLeftBack().setPower(1.0);

@@ -27,11 +27,11 @@ public abstract class JavaTemplate extends OpMode {
 		switch (FeatureRegistrar.getActiveOpModeWrapper().getOpModeType()) {
 			case AUTONOMOUS:
 				KotlinSubsystem.INSTANCE.setDefaultCommand(null);
-				JavaSubsystem.getInstance().setDefaultCommand(null);
+				JavaSubsystem.INSTANCE.setDefaultCommand(null);
 				break;
 			case TELEOP:
 				KotlinSubsystem.INSTANCE.setDefaultCommand(KotlinSubsystem.INSTANCE.statefulCommand());
-				JavaSubsystem.getInstance().setDefaultCommand(JavaSubsystem.statefulCommand());
+				JavaSubsystem.INSTANCE.setDefaultCommand(JavaSubsystem.statefulCommand());
 				break;
 		}
 		return null;
@@ -41,21 +41,21 @@ public abstract class JavaTemplate extends OpMode {
 		// or if our configuration NEEDS to run after a certain feature runs its own init code
 		// for this, a full feature is needed
 	});
-	
+
 	// each of these will be set up in init, so we don't need to manually call any of it
-	
+
 	private final OpModeLazyCell<DcMotor> leftBackCell =
 			new OpModeLazyCell<>(() -> hardwareMap.get(DcMotor.class, "leftBack"));
 	public DcMotor getLeftBack() { return leftBackCell.get(); }
-	
+
 	private final OpModeLazyCell<DcMotor> leftFrontCell =
 			new OpModeLazyCell<>(() -> hardwareMap.get(DcMotor.class, "leftFront"));
 	public DcMotor getLeftFront() { return leftFrontCell.get(); }
-	
+
 	private final OpModeLazyCell<DcMotor> rightBackCell =
 			new OpModeLazyCell<>(() -> hardwareMap.get(DcMotor.class, "rightBack"));
 	public DcMotor getRightBack() { return rightBackCell.get(); }
-	
+
 	private final OpModeLazyCell<DcMotor> rightFrontCell =
 			new OpModeLazyCell<>(() -> hardwareMap.get(DcMotor.class, "rightFront"));
 	public DcMotor getRightFront() { return rightFrontCell.get(); }

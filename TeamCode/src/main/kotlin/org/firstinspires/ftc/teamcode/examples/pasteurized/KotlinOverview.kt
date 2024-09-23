@@ -1,10 +1,15 @@
 package org.firstinspires.ftc.teamcode.examples.pasteurized
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import dev.frozenmilk.dairy.core.util.supplier.logical.EnhancedBooleanSupplier
+import dev.frozenmilk.dairy.core.util.supplier.numeric.EnhancedDoubleSupplier
 import dev.frozenmilk.dairy.pasteurized.Pasteurized
+import dev.frozenmilk.dairy.pasteurized.PasteurizedGamepad
 import dev.frozenmilk.dairy.pasteurized.SDKGamepad
 import dev.frozenmilk.dairy.pasteurized.layering.LayeredGamepad
+import dev.frozenmilk.dairy.pasteurized.layering.ListLayeringSystem
 import dev.frozenmilk.dairy.pasteurized.layering.MapLayeringSystem
+import dev.frozenmilk.dairy.pasteurized.layering.WrappingLayeringSystem
 
 class KotlinOverview : OpMode() {
 	override fun init() {
@@ -73,32 +78,40 @@ class KotlinOverview : OpMode() {
 				.lessThanEqualTo(1000.0)
 				.bind()
 
+
 		//
 		// Layering
 		//
+		// WARNING: once you add a gamepad to a layering system, it will cease to function normally
+		// when a gamepad is put into a layering system, it is modified to go to being 'at-rest' when its not the active layer for the system
+		// 'at-rest' gamepads have 0 for all axis, and false for all buttons
+
 		// If you want to get more advanced, you can use a layering system to control the layers of your gamepad
 		// gamepads on inactive layers will immediately go to an 'at-rest' state, layering systems achieve this by modifying all gamepads given to it
-		// if a gamepad exits the control of the layering system, it will go back to functioning normally
 		val teleopGamepad = SDKGamepad(gamepad1)
-		// note that an sdk Gamepad can be constructed from a normal sdk gamepad!
+		// note that a PasteurizedGamepad can be constructed from a normal sdk gamepad!
 		// this is the same as the original gamepad1 from Pasteurized, but pasteurized will auto generate one for us the first time we ask for it each OpMode
 		// WARNING: if your layering system is not very stable, you will need to be careful, as a layered gamepad will crash if it can't find a gamepad for the current layer
 		val endgameGamepad = SDKGamepad(gamepad1)
-		val enumLayeringSystem = MapLayeringSystem(Layers1.TELEOP, mutableMapOf(
-				Layers1.TELEOP to teleopGamepad,
-				Layers1.ENDGAME to endgameGamepad
-		))
-		Pasteurized.gamepad1 = LayeredGamepad(enumLayeringSystem)
 
-		Pasteurized.gamepad1.a // a from teleopGamepad
-		enumLayeringSystem.layer = Layers1.ENDGAME
-		Pasteurized.gamepad1.a // a from endgameGamepad
+		val pasteurizedGamepadMap = mapOf(
+			Layers.TELEOP to teleopGamepad,
+			Layers.ENDGAME to endgameGamepad
+		)
+		val enumLayeringSystem = MapLayeringSystem(Layers.TELEOP, pasteurizedGamepadMap)
+
+		// LayeredGamepad takes a LayeringSystem and makes a gamepad from it
+		val layeredGamepad = LayeredGamepad(enumLayeringSystem)
+
+		layeredGamepad.a // a from teleopGamepad
+		enumLayeringSystem.layer = Layers.ENDGAME
+		layeredGamepad.a // a from endgameGamepad
 
 		// there are many more options for a layering system, and its fairly easy to implement your own!
 		// additionally, you can nest layered gamepads in other layered gamepads
 
 		// linking across layers using or
-		teleopGamepad.b = teleopGamepad.b or endgameGamepad.b
+		teleopGamepad.b = teleopGamepad.b.or(endgameGamepad.b)
 		endgameGamepad.b = teleopGamepad.b
 		// now b on both layers is linked!
 
@@ -112,13 +125,40 @@ class KotlinOverview : OpMode() {
 		// Other Layering Systems
 		//
 		// the map layering system can be used for any hashable type, but is probably best for enums
-		val stringLayeringSystem = MapLayeringSystem("one", mutableMapOf(
-				"one" to teleopGamepad,
-				"two" to endgameGamepad
-		))
+		val pasteurizedGamepadMap2: MutableMap<String, PasteurizedGamepad<EnhancedDoubleSupplier, EnhancedBooleanSupplier>> =
+			HashMap()
+		pasteurizedGamepadMap2["one"] = teleopGamepad
+		pasteurizedGamepadMap2["two"] = endgameGamepad
+		val stringLayeringSystem = MapLayeringSystem("one", pasteurizedGamepadMap2)
+
+
+		// list layering system can move linearly
+		val listLayeringSystem = ListLayeringSystem(
+				teleopGamepad,
+				endgameGamepad
+			)
+
+		// next in the list
+		listLayeringSystem.next()
+		// previous in the list
+		listLayeringSystem.previous()
+		// you can't go out of bounds
+
+		// wrapping layering system is similar, but when you reach the end of the bounds, it wraps back to the start
+		val wrappingLayeringSystem = WrappingLayeringSystem(
+				teleopGamepad,
+				endgameGamepad
+			)
+
+		// next in the list
+		wrappingLayeringSystem.next()
+		// we've reached the end, so back to the start
+		wrappingLayeringSystem.next()
+		// we've reached the start of the list, so back to the end
+		wrappingLayeringSystem.previous()
 	}
 
-	enum class Layers1 {
+	enum class Layers {
 		TELEOP,
 		ENDGAME
 	}

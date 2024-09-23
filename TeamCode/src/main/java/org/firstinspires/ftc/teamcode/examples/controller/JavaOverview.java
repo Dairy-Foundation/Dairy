@@ -129,11 +129,11 @@ public class JavaOverview extends OpMode {
 				),
 				new UnitComponent.P<Distance>(MotionComponents.STATE, 0.5)
 						.plus(
-								BinaryBranch.evalTrue(
+								BinaryBranch.<Distance>evalTrue(
 										// there are also branching utilities in controllers
 										ControllerComponents.targetComponent(target -> target.get(MotionComponents.STATE).greaterThan(Distances.ft(1))),
 										// this be added if the target is larger than 1 foot
-										new UnitComponent.D<Distance>(MotionComponents.STATE, 2.0)
+										new UnitComponent.D<>(MotionComponents.STATE, 2.0)
 								)
 								// we'll look more at branching utilities shortly
 								// also, notice that we didn't add an outputConsumer? this controller is just going to do the calculations for it, it won't update anything

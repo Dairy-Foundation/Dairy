@@ -21,11 +21,11 @@ import dev.frozenmilk.dairy.core.dependency.feature.SingleFeature
 import dev.frozenmilk.dairy.core.dependency.feature.SingleFeatureClass
 import dev.frozenmilk.dairy.core.dependency.lazy.Yielding
 import dev.frozenmilk.dairy.core.dependency.resolution.DependencyResolutionException
+import dev.frozenmilk.dairy.core.util.controller.Controller
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
-import dev.frozenmilk.mercurial.Mercurial
-import dev.frozenmilk.mercurial.commands.LambdaCommand
 import dev.frozenmilk.util.cell.RefCell
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta
+import org.firstinspires.ftc.teamcode.examples.featuredev.kdoc.BulkReads
 
 class KotlinDependencies {
 	init {
@@ -43,7 +43,7 @@ class KotlinDependencies {
 				resolvedFeatures: List<Feature>,
 				// and if the resolution process is currently yielding or not
 				yielding: Boolean ->
-			// this one just returns Unit, the equivalent of java's void
+			// this one just returns Unit, the equivalent of Java's void
 		}
 
 		// receivers can be bound to the resolution of the dependency like so
@@ -198,36 +198,42 @@ class KotlinDependencies {
 		// the FeatureDependency base class can be used to quickly
 		// write a custom dependency that analyses the currently resolved Features
 		FeatureDependency { features ->
-			features.filterIsInstance<Mercurial>()
+			features.filterIsInstance<BulkReads>()
 				.ifEmpty {
 					// we need to throw a DependencyResolutionException if we cannot resolve, with a helpful message
-					throw DependencyResolutionException("Mercurial was not attached")
+					throw DependencyResolutionException("BulkReads was not attached")
 				}.first()
-		}.onResolve {
-			// we can schedule an extra startup command for Mercurial
-			it.scheduleCommand(LambdaCommand())
+		}.onResolve { bulkReads: BulkReads ->
+			// we'll deregister BulkReads if we found it
+			bulkReads.deregister()
+			// then, we could register our own one instead!
 		}
 
 		// We have all the same options for annotations for features, but also for both instances and classes
 
 		// SingleFeature is the same as shown above
-		SingleFeature(Mercurial).onResolve {
-			// we can schedule an extra startup command for Mercurial
-			it.scheduleCommand(LambdaCommand())
+		SingleFeature(BulkReads).onResolve {
+			// we'll deregister BulkReads if we found it
+			it.deregister()
+			// then, we could register our own one instead!
 		}
 
 		// The Class equivalent collects all features of the provided type
-		SingleFeatureClass(Mercurial::class.java).onResolve { features ->
-			// we can schedule an extra startup command for Mercurial
-			features.first().scheduleCommand(LambdaCommand())
+		SingleFeatureClass(Controller::class.java).onResolve { features ->
+			// we could disable all the controllers that we find
+			// this isn't amazing, as this is not guaranteed to find all Controllers
+			// unless its attached later
+			features.forEach { controller: Controller<*> ->
+				controller.enabled = false
+			}
 		}
 
 		// AllFeatures ensures that all features are attached, then gives us back the set of them
-		AllFeatures(Mercurial, KotlinWritingAFeature).onResolve { features ->
+		AllFeatures(BulkReads, KotlinWritingAFeature).onResolve { features ->
 			features.forEach {
 				when(it) {
-					is Mercurial -> {
-						it.scheduleCommand(LambdaCommand())
+					is BulkReads -> {
+						it.deregister()
 					}
 					is KotlinWritingAFeature -> {
 						// w/e
@@ -237,11 +243,11 @@ class KotlinDependencies {
 		}
 
 		// the Class equivalent ensures that at least one Feature of each of the given exact classes is attached, and returns all that it found
-		AllFeatureClasses(Mercurial::class.java, KotlinWritingAFeature::class.java).onResolve { features ->
+		AllFeatureClasses(BulkReads::class.java, KotlinWritingAFeature::class.java).onResolve { features ->
 			features.forEach {
 				when(it) {
-					is Mercurial -> {
-						it.scheduleCommand(LambdaCommand())
+					is BulkReads -> {
+						it.deregister()
 					}
 					is KotlinWritingAFeature -> {
 						// w/e
@@ -251,11 +257,11 @@ class KotlinDependencies {
 		}
 
 		// Ensures that at least one of these is attached, and returns all that are
-		AnyFeatures(Mercurial, KotlinWritingAFeature).onResolve { features ->
+		AnyFeatures(BulkReads, KotlinWritingAFeature).onResolve { features ->
 			features.forEach {
 				when(it) {
-					is Mercurial -> {
-						it.scheduleCommand(LambdaCommand())
+					is BulkReads -> {
+						it.deregister()
 					}
 					is KotlinWritingAFeature -> {
 						// w/e
@@ -265,11 +271,11 @@ class KotlinDependencies {
 		}
 
 		// The Class equivalent ensures that at least one Feature of the class types is attached, returns all that are
-		AnyFeatureClasses(Mercurial::class.java, KotlinWritingAFeature::class.java).onResolve { features ->
+		AnyFeatureClasses(BulkReads::class.java, KotlinWritingAFeature::class.java).onResolve { features ->
 			features.forEach {
 				when(it) {
-					is Mercurial -> {
-						it.scheduleCommand(LambdaCommand())
+					is BulkReads -> {
+						it.deregister()
 					}
 					is KotlinWritingAFeature -> {
 						// w/e
@@ -279,10 +285,10 @@ class KotlinDependencies {
 		}
 
 		// Ensures that exactly one of the Features are attached, and returns it
-		OneOfFeatures(Mercurial, KotlinWritingAFeature).onResolve {
+		OneOfFeatures(BulkReads, KotlinWritingAFeature).onResolve {
 			when(it) {
-				is Mercurial -> {
-					it.scheduleCommand(LambdaCommand())
+				is BulkReads -> {
+					it.deregister()
 				}
 				is KotlinWritingAFeature -> {
 					// w/e
@@ -291,10 +297,10 @@ class KotlinDependencies {
 		}
 
 		// Ensures that exactly one Feature of the exact classes is attached, and returns it
-		OneOfFeatureClasses(Mercurial::class.java, KotlinWritingAFeature::class.java).onResolve {
+		OneOfFeatureClasses(BulkReads::class.java, KotlinWritingAFeature::class.java).onResolve {
 			when(it) {
-				is Mercurial -> {
-					it.scheduleCommand(LambdaCommand())
+				is BulkReads -> {
+					it.deregister()
 				}
 				is KotlinWritingAFeature -> {
 					// w/e

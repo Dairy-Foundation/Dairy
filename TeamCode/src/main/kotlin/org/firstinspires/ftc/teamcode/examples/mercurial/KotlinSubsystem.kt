@@ -5,8 +5,8 @@ import dev.frozenmilk.dairy.core.FeatureRegistrar
 import dev.frozenmilk.dairy.core.dependency.Dependency
 import dev.frozenmilk.dairy.core.dependency.annotation.SingleAnnotation
 import dev.frozenmilk.dairy.core.wrapper.Wrapper
-import dev.frozenmilk.mercurial.commands.LambdaCommand
-import dev.frozenmilk.mercurial.commands.stateful.StatefulLambdaCommand
+import dev.frozenmilk.mercurial.commands.Lambda
+import dev.frozenmilk.mercurial.commands.stateful.StatefulLambda
 import dev.frozenmilk.mercurial.subsystems.Subsystem
 import dev.frozenmilk.util.cell.RefCell
 import java.lang.annotation.Inherited
@@ -44,7 +44,10 @@ object KotlinSubsystem : Subsystem {
 	// this gives us a lot of freedom to set up a complex and powerful subsystem
 
 	// init code might go in here
-	override fun preUserInitHook(opMode: Wrapper) {}
+	override fun preUserInitHook(opMode: Wrapper) {
+		// default command should be set up here, not in the constructor
+		defaultCommand = simpleCommand()
+	}
 	// or here
 	override fun postUserInitHook(opMode: Wrapper) {}
 
@@ -72,24 +75,31 @@ object KotlinSubsystem : Subsystem {
 	//
 	// commands are the same as older mercurial!
 	// lambda commands are once again, powerful tools for developing simple units of operation
-	fun simpleCommand(): LambdaCommand {
-		return LambdaCommand()
-				.addRequirements(this)
-				.setInit { motor.power = 0.4 }
-				.setEnd { interrupted ->
-					if (!interrupted) motor.power = 0.0
-				}
+	fun simpleCommand(): Lambda {
+		// we need to give commands names
+		// names help to give helpful error messages when something goes wrong in your command
+		// Mercurial will automatically rename your command to match the standard convention
+		// learn more about names and error messages in the names and messages overview
+		return Lambda("simple")
+			.addRequirements(KotlinSubsystem)
+			.setInit { JavaSubsystem.getMotor().power = 0.4 }
+			.setEnd { interrupted: Boolean? ->
+				if (!interrupted!!) JavaSubsystem.getMotor().power = 0.0
+			}
 	}
 
-	// lambda commands have a new powerful extension, designed to work well with the Cell patterns in Dairy util
+	// lambda commands have a new powerful extension, designed to work well with the Cell patterns in Dairy Util
 	// RefCell<Double> is an immutable reference with interior immutability
 	// we could also use a LazyCell, or an OpModeLazyCell, or SubsystemObjectCell, depending on our needs
 	// we need to manage the state ourselves, if we want to reset it at the start of each run of this command,
 	// or if its persistent across runs, we are in control
 	// note that, each copy of state is unique to each individual instance of this command
 	// if we wanted shared state across all instances, we could capture state from this class instead
-	fun statefulCommand(): StatefulLambdaCommand<RefCell<Double>> {
-		return StatefulLambdaCommand(RefCell(0.0))
+	// state can also be captured from the method itself, so StatefulLambdaCommand is not the only way to carry state
+	fun statefulCommand(): StatefulLambda<RefCell<Double>> {
+		// once again, we need to give it a name
+		// learn more about names and error messages in the names and messages overview
+		return StatefulLambda("statefule", RefCell(0.0))
 				// note that stateful lambda commands have all the same methods that
 				// the regular lambda command has
 				// and variants that also take access to state where appropriate

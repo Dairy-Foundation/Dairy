@@ -26,11 +26,11 @@ abstract class KotlinTemplate : OpMode() {
 		when(FeatureRegistrar.activeOpModeWrapper.opModeType) {
 			OpModeMeta.Flavor.AUTONOMOUS -> {
 				KotlinSubsystem.defaultCommand = null
-				JavaSubsystem.getInstance().defaultCommand = null
+				JavaSubsystem.INSTANCE.defaultCommand = null
 			}
 			OpModeMeta.Flavor.TELEOP -> {
 				KotlinSubsystem.defaultCommand = KotlinSubsystem.statefulCommand()
-				JavaSubsystem.getInstance().defaultCommand = JavaSubsystem.statefulCommand()
+				JavaSubsystem.INSTANCE.defaultCommand = JavaSubsystem.statefulCommand()
 			}
 			OpModeMeta.Flavor.SYSTEM -> {}
 		}
