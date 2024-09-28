@@ -41,3 +41,8 @@ release phase, and we would love to get feedback, We use GitHub issues to help
 track progress on development work, but, we can be found on our Discord, the
 Unofficial FTC Discord Server, Or @Froze-n-Milk can be emailed via
 [oscar.chevalier@pymblelc.nsw.edu.au](mailto:oscar.chevalier@pymblelc.nsw.edu.au)
+
+# Licensing
+The parts of this repository from [FIRST's SDK](https://github.com/FIRST-Tech-Challenge/FtcRobotController) are licensed under [FIRST's BSD 3-Clause Clear License](LICENSE.first)
+
+Dairy is licensed under the [same license](LICENSE.dairy)
